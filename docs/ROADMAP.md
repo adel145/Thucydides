@@ -1,0 +1,51 @@
+# Roadmap
+
+## Phase 0: Foundation
+
+- Inspect Stitch files.
+- Preserve reference files.
+- Create project memory documentation.
+- Create root-level Next.js, TypeScript, Tailwind skeleton.
+- Add placeholder pages.
+- Add shared UI foundation.
+- Document decisions and next steps.
+
+## Phase 1: Data Model And Profile Source Of Truth
+
+- Define local database schema.
+- Add profile intake and editing.
+- Store Adel's constraints and source materials locally.
+- Add seed data/import format.
+- Add tests for role filters and profile validation.
+
+## Phase 2: Job Intake And Filtering
+
+- Add manual job entry/import.
+- Implement forbidden-role detection.
+- Add location, salary, language, degree, and requirement parsing.
+- Track job source and audit notes.
+- Add job edit/archive/delete.
+- Add pipeline status transitions and event history.
+- Add real dashboard metrics.
+- Improve profile validation and feedback.
+
+## Phase 3: Campaign Intelligence Preparation
+
+- Add stronger local job search/filter/sort and campaign operations.
+- Add richer pipeline notes and follow-up reminders.
+- Add local source-file records and manual text intake.
+- Expand deterministic rules with real job examples.
+- Add integration tests before any AI-backed analysis.
+
+## Phase 4: Daily Review And Source Intelligence
+
+- Add daily review workflow for due and overdue follow-ups.
+- Add source editing and linking source records to profile fields.
+- Add saved filters/views for repeated job-search sessions.
+- Add deeper persistence tests around server actions.
+- Prepare AI contracts without making OpenAI calls.
+
+## Phase 5: Resume Lab
+
+- Generate targeted English/Hebrew resume drafts after source data is reliable.
+- Add DOCX/PDF export only after templates and checks are stable.

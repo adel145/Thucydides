@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model CandidateProfile {
+  id                    String   @id @default(cuid())
+  fullName              String
+  preferredName         String?
+  location              String
+  targetSalaryGrossNis  Int?
+  minimumSalaryGrossNis Int?
+  availability          String?
+  degreeStatus          String?
+  expectedCompletion    String?
+  mobility              String?
+  languages             Json
+  technicalSkills       Json
+  softSkills            Json
+  fieldExperience       Json
+  education             Json
+  certificates          Json
+  githubProjects        Json
+  portfolioLinks        Json
+  sourceNotes           String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Job {
+  id               String             @id @default(cuid())
+  title            String
+  company          String?
+  source           String
+  sourceUrl        String?
+  location         String?
+  language         String?
+  roleCategory     String?
+  rawDescription   String
+  salaryText       String?
+  status           String             @default("FOUND")
+  validationStatus String             @default("UNREVIEWED")
+  forbiddenFlags   Json?
+  allowedSignals   Json?
+  riskNotes        String?
+  nextActionAt     DateTime?
+  nextActionNote   String?
+  lastContactedAt  DateTime?
+  priority         String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  events           ApplicationEvent[]
+}
+
+model ApplicationEvent {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  type      String
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model SourceFile {
+  id            String   @id @default(cuid())
+  filename      String
+  type          String
+  path          String?
+  url           String?
+  extractedText String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
