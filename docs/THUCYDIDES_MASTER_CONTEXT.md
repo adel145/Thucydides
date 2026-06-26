@@ -27,10 +27,36 @@ Thucydides should prioritize technical early-career and adjacent technical roles
 - Junior Full-Stack
 - Junior Frontend
 - Junior Backend
+- Junior Software Engineer
+- Junior Software Developer
+- Software Developer Junior
+- Full Stack Developer Junior
+- Frontend Developer Junior
+- Backend Developer Junior
+- React Developer Junior
+- Node.js Developer Junior
 - Junior Python Developer
+- Java Developer Junior
 - Data / ML Junior
+- Data Analyst Junior
+- BI Developer Junior
+- Junior Data Engineer
+- Machine Learning Junior
+- AI Junior
+- Computer Vision Junior
 - Implementation Engineer
 - Technical Integration
+- Application Support Engineer
+- Technical Support Engineer
+- Product Support Engineer
+- API Support Engineer
+- Technical Customer Engineer
+- System Administrator Junior
+- Junior DevOps
+- SOC Tier 1
+- NOC Engineer
+- Solutions Engineer Junior
+- Technical Integration Engineer
 - Real technical Support Engineer roles
 - Field, infrastructure, railway, or state-project technical roles when relevant and safe
 
@@ -44,7 +70,15 @@ Thucydides must filter out:
 - Regular מוקד שירות roles
 - Security clearance mandatory roles
 - Army experience mandatory roles
-- Roles requiring a completed degree before September as a hard requirement
+
+## Risk / Manual-Check Conditions
+
+These conditions should not automatically reject a job, but they must be flagged for review:
+
+- Roles requiring a completed degree before September or before start
+- Hebrew degree wording such as תואר חובה or זכאות לתואר חובה
+- Salary below Adel's temporary minimum
+- Locations outside the South/Beersheba preference
 
 ## Product Principles
 
@@ -69,4 +103,3 @@ Thucydides must filter out:
 Phase 0 creates the foundation only. It includes documentation, a Next.js skeleton, placeholder module pages, navigation, and a Stitch-inspired UI foundation. It does not implement the full product.
 
 No OpenAI calls, Gmail OAuth, Google Calendar, scraping, database, resume export, PDF/DOCX generation, authentication, or deployment were implemented in Phase 0.
-

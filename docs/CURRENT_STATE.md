@@ -45,6 +45,7 @@ As of 2026-06-26, Thucydides is in Phase 3 campaign intelligence preparation sta
 - `/sources` manages local manual source records and pasted text intake.
 - Dashboard includes due follow-ups, overdue follow-ups, and high-priority job counts.
 - Vitest tests exist for role validation with Israeli fixtures, job statuses, lifecycle validation helpers, dashboard metrics, profile validation, filters, priority, and source types.
+- Completed-degree requirements are risk/manual-check notes rather than hard forbidden blockers.
 
 ## What Does Not Exist Yet
 

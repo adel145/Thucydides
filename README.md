@@ -30,9 +30,9 @@ Current state: Phase 3 - Campaign Intelligence Preparation.
 
 The main goal is to help Adel reach 10 interviews.
 
-Target role families include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Developer roles, Implementation Engineer, Technical Integration, and safe technical infrastructure roles.
+Target role families include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Software Engineer/Developer roles, QA Automation, Data Analyst, BI, Junior Data Engineer, ML/AI junior roles, Application/Product/API Support Engineer, Junior DevOps, SOC Tier 1, Implementation Engineer, Technical Integration, and safe technical infrastructure roles.
 
-Forbidden roles include Sales, regular customer service, non-technical service center, regular מוקד שירות, security-clearance-mandatory roles, army-experience-mandatory roles, and roles requiring a completed degree before September as a hard requirement.
+Forbidden roles include Sales, regular customer service, non-technical service center, regular מוקד שירות, security-clearance-mandatory roles, and army-experience-mandatory roles. Completed-degree requirements before September are risk/manual-check notes, not hard forbidden blockers.
 
 ## Not Implemented Yet
 

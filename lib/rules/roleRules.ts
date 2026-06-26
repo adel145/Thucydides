@@ -19,11 +19,6 @@ export const forbiddenRoleRules = [
     id: "army-experience-mandatory",
     label: "Army experience mandatory",
     patterns: ["army experience mandatory", "military experience mandatory", "IDF experience required", "שירות צבאי חובה", "יוצא יחידה טכנולוגית חובה"]
-  },
-  {
-    id: "completed-degree-mandatory",
-    label: "Completed degree mandatory",
-    patterns: ["completed degree mandatory", "degree completed required", "completed degree required", "תואר חובה", "חובה תואר ראשון", "זכאות לתואר חובה"]
   }
 ] as const;
 
@@ -37,8 +32,46 @@ export const allowedRoleRules = [
   {
     id: "junior-developer",
     label: "Junior Developer",
-    patterns: ["junior developer", "junior frontend", "junior backend", "junior full-stack", "junior python"]
+    patterns: [
+      "junior developer",
+      "junior software engineer",
+      "junior software developer",
+      "software developer junior",
+      "junior frontend",
+      "junior backend",
+      "junior full-stack",
+      "full stack developer junior",
+      "frontend developer junior",
+      "backend developer junior",
+      "react developer junior",
+      "node.js developer junior",
+      "python developer junior",
+      "junior python",
+      "java developer junior"
+    ]
   },
+  {
+    id: "qa-automation",
+    label: "QA Automation Junior",
+    patterns: ["qa automation junior", "automation developer junior", "software tester", "test engineer junior"]
+  },
+  {
+    id: "data-analyst",
+    label: "Data Analyst Junior",
+    patterns: ["data analyst junior", "bi developer junior", "junior data engineer", "machine learning junior", "ai junior", "computer vision junior"]
+  },
+  {
+    id: "support-engineering",
+    label: "Support Engineering",
+    patterns: ["application support engineer", "technical support engineer", "product support engineer", "api support engineer", "technical customer engineer"]
+  },
+  {
+    id: "systems-devops",
+    label: "Systems / DevOps Junior",
+    patterns: ["system administrator junior", "junior devops", "soc tier 1"]
+  },
+  { id: "noc-engineer", label: "NOC Engineer", patterns: ["noc engineer"] },
+  { id: "solutions-engineering", label: "Solutions Engineer Junior", patterns: ["solutions engineer junior", "technical integration engineer"] },
   { id: "implementation", label: "Implementation", patterns: ["implementation", "implementation engineer"] },
   { id: "integration", label: "Integration", patterns: ["integration", "technical integration"] },
   { id: "infrastructure", label: "Infrastructure Technical", patterns: ["infrastructure technical", "תשתיות"] },

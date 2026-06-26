@@ -101,3 +101,9 @@ Reason: Adel needs a local source inventory before any future parsing, upload, o
 Decision: replace direct hard delete from job detail with a dedicated `/jobs/[id]/delete` confirmation page.
 
 Reason: archive should remain preferred, and hard delete should be hard to trigger accidentally.
+
+## 2026-06-26: Completed Degree Requirements Are Risk Notes
+
+Decision: remove completed-degree requirements from hard forbidden role rules and keep them as deterministic risk/manual-check notes.
+
+Reason: Adel is close to completing remaining degree requirements, so roles requiring a completed degree before September may still be worth manual review unless another hard blocker exists.

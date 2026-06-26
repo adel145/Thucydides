@@ -42,10 +42,45 @@ export const israeliJobFixtures: IsraeliJobFixture[] = [
     expectedSignal: "Implementation"
   },
   {
+    name: "allowed Junior Software Engineer role",
+    title: "Junior Software Engineer",
+    rawDescription: "Entry-level software engineering role for CS graduates or near-graduates.",
+    expectedStatus: "ALLOWED",
+    expectedSignal: "Junior Developer"
+  },
+  {
+    name: "allowed QA Automation Junior role",
+    title: "QA Automation Junior",
+    rawDescription: "Automation tests, regression suites, TypeScript and Playwright advantage.",
+    expectedStatus: "ALLOWED",
+    expectedSignal: "QA Automation Junior"
+  },
+  {
+    name: "allowed Data Analyst Junior role",
+    title: "Data Analyst Junior",
+    rawDescription: "SQL dashboards, BI reports, junior data analysis for operations team.",
+    expectedStatus: "ALLOWED",
+    expectedSignal: "Data Analyst Junior"
+  },
+  {
+    name: "allowed Application Support Engineer role",
+    title: "Application Support Engineer",
+    rawDescription: "Troubleshoot production application issues, logs, APIs and customer technical cases.",
+    expectedStatus: "ALLOWED",
+    expectedSignal: "Support Engineering"
+  },
+  {
     name: "risky junior developer degree advantage",
     title: "Junior Developer",
     location: "Tel Aviv",
     rawDescription: "Junior developer. Degree is an advantage, not mandatory. Bachelor must be completed is not written.",
+    expectedStatus: "RISKY",
+    expectedSignal: "Junior Developer"
+  },
+  {
+    name: "risky completed degree hard requirement",
+    title: "Junior Developer",
+    rawDescription: "Completed degree required before start. זכאות לתואר חובה.",
     expectedStatus: "RISKY",
     expectedSignal: "Junior Developer"
   },
@@ -85,10 +120,11 @@ export const israeliJobFixtures: IsraeliJobFixture[] = [
     expectedFlag: "Army experience mandatory"
   },
   {
-    name: "forbidden completed degree hard requirement",
-    title: "Junior Developer",
-    rawDescription: "Completed degree required before start. זכאות לתואר חובה.",
+    name: "forbidden technical role with security clearance hard blocker",
+    title: "NOC Engineer",
+    rawDescription: "NOC Engineer for infrastructure monitoring. Security clearance mandatory.",
     expectedStatus: "FORBIDDEN",
-    expectedFlag: "Completed degree mandatory"
+    expectedSignal: "NOC",
+    expectedFlag: "Security clearance mandatory"
   }
 ];

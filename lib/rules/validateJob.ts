@@ -21,6 +21,17 @@ export type JobValidationResult = {
 
 const southernSignals = ["beersheba", "beer sheva", "באר שבע", "south", "southern", "דרום"];
 const distantLocationSignals = ["tel aviv", "תל אביב", "center", "מרכז", "haifa", "חיפה", "jerusalem", "ירושלים"];
+const degreeRiskPhrases = [
+  "degree required before september",
+  "completed degree immediately",
+  "completed degree required before start",
+  "completed degree mandatory",
+  "degree completed required",
+  "completed degree required",
+  "תואר חובה",
+  "חובה תואר ראשון",
+  "זכאות לתואר חובה"
+];
 
 function joinedInput(input: JobValidationInput) {
   return [
@@ -40,8 +51,8 @@ function collectRiskNotes(input: JobValidationInput) {
   const text = normalizeRuleText(joinedInput(input));
   const notes: string[] = [];
 
-  if (text.includes("degree required before september") || text.includes("completed degree immediately")) {
-    notes.push("Role appears to require completed degree before Adel's expected September completion.");
+  if (degreeRiskPhrases.some((phrase) => text.includes(normalizeRuleText(phrase)))) {
+    notes.push("Degree completion appears to be required; review manually because Adel is close to completing remaining requirements.");
   }
 
   if (text.includes("bachelor") && text.includes("must") && text.includes("completed")) {
