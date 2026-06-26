@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import clsx from "clsx";
 import {
@@ -67,9 +67,10 @@ export function Sidebar() {
 
       <div className="mt-8 rounded-lg border border-white/10 bg-white/[0.04] p-4">
         <div className="text-xs uppercase tracking-[0.18em] text-ink-400">Mission target</div>
-        <div className="mt-2 text-2xl font-semibold text-white">0 / 10</div>
-        <p className="mt-2 text-sm leading-6 text-ink-200">Placeholder interview goal until the local database exists.</p>
+        <div className="mt-2 text-2xl font-semibold text-white">10 interviews</div>
+        <p className="mt-2 text-sm leading-6 text-ink-200">Live campaign progress is tracked on the local SQLite dashboard.</p>
       </div>
     </aside>
   );
 }
+

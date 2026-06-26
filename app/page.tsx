@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { NeonButton } from "@/components/ui/NeonButton";
@@ -40,9 +40,9 @@ export default async function DashboardPage() {
     <>
       <GlassCard className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Phase 2 operations</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Phase 3 campaign intelligence</p>
           <h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-5xl">
-            Thucydides is tracking the local campaign toward 10 interviews.
+            Thucydides is preparing the campaign intelligence layer toward 10 interviews.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-ink-200">
             Metrics now come from the local SQLite database. AI, Gmail, scraping, and resume generation remain intentionally unimplemented.
@@ -102,3 +102,4 @@ export default async function DashboardPage() {
     </>
   );
 }
+
