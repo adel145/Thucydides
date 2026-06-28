@@ -62,6 +62,7 @@ export default async function JobDetailPage({
           </div>
         ) : null}
         <div className="mt-5 flex flex-wrap gap-3">
+          <NeonButton href={`/jobs/${job.id}/application`}>Prepare Application Packet</NeonButton>
           <NeonButton href={`/jobs/${job.id}/edit`}>Edit job</NeonButton>
           <form action={rerunValidation}>
             <input type="hidden" name="id" value={job.id} />

@@ -116,6 +116,7 @@ const seedJobs = [
 
 async function main() {
   await prisma.applicationEvent.deleteMany();
+  await prisma.applicationPacket.deleteMany();
   await prisma.profileSourceLink.deleteMany();
   await prisma.job.deleteMany();
   await prisma.sourceFile.deleteMany();

@@ -211,3 +211,30 @@ Verified:
 Not implemented:
 
 - No real AI, OpenAI calls, Gmail, Calendar, scraping, upload parsing, source parsing, generated resume text, real agents, authentication, deployment, automatic applications, or automatic emails.
+
+## 2026-06-28 Phase 5.0
+
+Created:
+
+- `ApplicationPacket` additive Prisma model and migration.
+- `lib/applications/applicationPacket.ts` for deterministic CV language, application decision, checklist, missing-item, and readiness summaries.
+- `/jobs/[id]/application` manual job-specific application workspace.
+- Application packet save and mark-ready server actions.
+- Tests for application packet helper behavior.
+
+Updated:
+
+- Job Detail and Job Inbox cards link to packet preparation.
+- Dashboard links to Resume Lab and shows application packet counts.
+- Resume Lab now shows profile readiness, source readiness, evidence readiness, base CV data, missing inputs, and recent packets.
+- Seed reset order handles `ApplicationPacket`.
+
+Verified:
+
+- `npx prisma migrate dev --name phase5_application_packet` succeeded.
+- `npx prisma generate` succeeded.
+- `npm run db:seed` succeeded.
+
+Not implemented:
+
+- No AI generation, OpenAI calls, Gmail, Calendar, scraping, upload parsing, resume export, DOCX/PDF generation, real agents, authentication, deployment, automatic applications, or automatic emails.

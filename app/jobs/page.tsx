@@ -213,6 +213,7 @@ export default async function JobsPage({
                   </p>
                 ) : null}
                 <div className="mt-3 flex flex-wrap gap-2">
+                  <Link href={`/jobs/${job.id}/application`} className="rounded-lg border border-aqua-400/40 px-3 py-2 text-xs font-semibold text-aqua-400">Prepare</Link>
                   <Link href={`/jobs/${job.id}`} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-ink-200">Details</Link>
                   <Link href={`/jobs/${job.id}/edit`} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-ink-200">Edit</Link>
                   <form action={archiveJob}>

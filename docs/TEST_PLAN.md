@@ -82,6 +82,22 @@ Remaining Phase 4 follow-up tests:
 - Server action tests for job reminders and priority updates.
 - Persistence tests for profile source link server actions.
 
+## Phase 5 Test Needs
+
+- Run `npx prisma migrate dev --name phase5_application_packet`. Completed.
+- Run `npx prisma generate`. Completed.
+- Run `npm run db:seed`. Completed.
+- Run `npm run test`.
+- Run `npm run build`.
+- Run `npm run lint`.
+- Verify Application Packet helper language, decision, checklist, and missing-item logic.
+- Smoke-check `/jobs/[id]/application`.
+- Smoke-check `/resumes`.
+
+Remaining Phase 5 follow-up tests:
+
+- Persistence tests for packet save and mark-ready server actions.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

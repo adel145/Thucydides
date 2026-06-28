@@ -155,3 +155,15 @@ Reason: future AI and CV work needs auditable evidence, but Phase 4.1 must not p
 Decision: define local TypeScript contracts for future agent outputs without running agents or calling models.
 
 Reason: future agents must carry evidence references, uncertainty, safety status, and human-review state before any real AI integration is considered.
+
+## 2026-06-28: Application Packet As Manual Workspace
+
+Decision: add one `ApplicationPacket` per job as the manual job-specific application preparation workspace.
+
+Reason: Adel needs a practical place to prepare CV notes, messages, follow-up plans, and missing-item checks before AI or exports exist.
+
+## 2026-06-28: Resume Lab Manual Before Generation
+
+Decision: make Resume Lab show profile/source/evidence readiness, base CV data, and application packets without generating documents.
+
+Reason: Phase 5.0 should support real application preparation while avoiding fake AI output, DOCX/PDF export, or automatic communication.

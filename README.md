@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 4.1 - Manual Source-to-Profile Linking + AI Contracts Foundation.
+Current state: Phase 5.0 - Application Packet + Resume Lab MVP.
 
 ## What Works Now
 
@@ -32,6 +32,8 @@ Current state: Phase 4.1 - Manual Source-to-Profile Linking + AI Contracts Found
 - Source readiness indicators
 - Manual source-to-profile evidence links
 - Local agent output contracts without API calls
+- Job-specific Application Packet workspace
+- Manual Resume Lab MVP
 - Vitest coverage for rules, filters, dashboard metrics, priorities, source types, and Israeli job fixtures
 
 ## Mission
@@ -67,7 +69,7 @@ The UI should stay dark, local-first, and sidebar-based. It should remain mostly
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 4.1 uses local SQLite data, deterministic validation, manual job/source intake, manual evidence links, and roadmap pages. AI, Gmail, upload parsing, real agents, and resume generation are intentionally not connected yet.
+Current limitation: Phase 5.0 uses local SQLite data, deterministic validation, manual job/source intake, manual evidence links, and manual application packets. AI, Gmail, upload parsing, real agents, resume generation, DOCX/PDF export, and automatic communication are intentionally not connected yet.
 
 ## Local Setup
 
@@ -136,14 +138,13 @@ Future work should read and update these files after each phase.
 
 ## Roadmap
 
-Next planned phase: Phase 4.2 - Source Intelligence Refinement.
+Next planned phase: Phase 5.1 - Controlled AI Drafting.
 
 Planned work:
 
-- Daily review refinements
+- Controlled AI drafting from reviewed Application Packets
 - Source-to-profile linking refinements
-- Saved job-search views
-- AI readiness contracts without calling OpenAI
+- Saved job-search views if still useful
 - More persistence/server-action tests
 
 Later phases include Resume Lab, English/Hebrew CV drafts, cover letters, recruiter messages, DOCX/PDF export, OpenAI-backed Agent Council, and Gmail integration.

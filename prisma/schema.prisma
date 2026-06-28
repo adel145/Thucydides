@@ -55,6 +55,7 @@ model Job {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   events           ApplicationEvent[]
+  applicationPacket ApplicationPacket?
 }
 
 model ApplicationEvent {
@@ -93,4 +94,26 @@ model ProfileSourceLink {
   @@unique([profileId, sourceId, targetField])
   @@index([profileId])
   @@index([sourceId])
+}
+
+model ApplicationPacket {
+  id                     String   @id @default(cuid())
+  jobId                  String   @unique
+  job                    Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  status                 String   @default("DRAFT")
+  cvLanguage             String?
+  applicationDecision    String?
+  checklist              Json?
+  missingItems           Json?
+  profileEvidenceSummary Json?
+  cvTailoringNotes       String?
+  skillsToHighlight      String?
+  experienceBulletsDraft String?
+  coverLetterDraft       String?
+  recruiterMessageDraft  String?
+  followUpPlan           String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@index([jobId])
 }

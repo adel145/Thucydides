@@ -75,10 +75,20 @@
 - Updated Agent Council page to show contract-only status and safety principles.
 - Added tests for profile source links and agent contract id validation.
 
+## Completed In Phase 5.0
+
+- Added additive `ApplicationPacket` schema and migration.
+- Added deterministic application packet helper for CV language, decision, checklist, missing items, and readiness.
+- Added job-specific `/jobs/[id]/application` manual workspace.
+- Added save and mark-ready packet actions.
+- Linked Job Detail and Job Inbox cards to packet preparation.
+- Replaced Resume Lab placeholder with manual Resume Lab MVP.
+- Added Dashboard Resume Lab link and packet counts.
+- Added tests for application packet language, decision, checklist, and missing inputs.
+
 ## Next Tasks
 
-- Refine Daily Mission with daily review actions.
+- Phase 5.1 Controlled AI Drafting after Application Packet MVP is stable.
 - Refine manual source-to-profile linking after Adel adds real sources.
 - Add saved job-search views.
-- Add first AI preparation design without API calls.
 - Add persistence/server-action integration tests.

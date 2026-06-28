@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 4.1 Architecture
+## Phase 5.0 Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -16,6 +16,7 @@ Primary folders:
 - `lib/jobs/jobFilters.ts`: pure filtering and sort normalization helpers for `/jobs`.
 - `lib/jobs/jobPriority.ts`: priority model.
 - `lib/dashboard/`: pure dashboard metric and mission calculation.
+- `lib/applications/`: deterministic application packet helpers.
 - `lib/profile/`: profile validation and source evidence link helpers.
 - `lib/sources/`: source type and readiness models.
 - `lib/agents/`: local future-agent contract types only.
@@ -47,8 +48,9 @@ Phase 1 uses Prisma with SQLite at `prisma/dev.db`. The schema includes:
 - `SourceFile`: future local source-file tracking.
 - `SourceFile`: manual source records with title/filename, type, optional path/URL, pasted text, notes, and timestamps.
 - `ProfileSourceLink`: manual evidence/audit links from a source to a profile field.
+- `ApplicationPacket`: one manual job-specific application workspace per job.
 
-Prisma 7 stores the datasource URL in `prisma.config.ts` and uses `@prisma/adapter-better-sqlite3` in runtime code. `.env.example` contains a local `DATABASE_URL` and a blank `OPENAI_API_KEY`; OpenAI is not used in Phase 4.1.
+Prisma 7 stores the datasource URL in `prisma.config.ts` and uses `@prisma/adapter-better-sqlite3` in runtime code. `.env.example` contains a local `DATABASE_URL` and a blank `OPENAI_API_KEY`; OpenAI is not used in Phase 5.0.
 
 ## Operational Architecture
 
@@ -87,6 +89,13 @@ Phase 4.1 adds agent contracts only:
 - `lib/agents/agentContracts.ts` defines future agent ids, evidence refs, findings, recommendations, review state, confidence, uncertainty, and safety status.
 - No agent execution or model calls exist.
 
+Phase 5.0 adds manual application preparation:
+
+- `ApplicationPacket` stores status, CV language, decision, checklist snapshots, missing items, evidence summary, and manual drafting fields.
+- `lib/applications/applicationPacket.ts` recommends CV language and application decision deterministically.
+- `/jobs/[id]/application` is the job-specific preparation workspace.
+- `/resumes` is a manual Resume Lab MVP, not a generator or export system.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -107,15 +116,19 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 4.1
+## Non-Goals in Phase 5.0
 
 - OpenAI API calls
 - Gmail OAuth
+- Calendar integration
 - Scraping
 - Authentication
 - Real job scoring
 - Real agent execution
 - Resume generation
+- DOCX/PDF export
+- Automatic applications
+- Automatic emails
 - Cloud deployment
 - Source-file parsing
 - Follow-up notifications

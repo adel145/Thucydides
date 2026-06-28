@@ -111,8 +111,8 @@ Future degree logic should treat "student welcome", "final-year student", and "n
 - Future OpenAI API integration for analysis and drafting
 - Future Gmail and Calendar integrations only after explicit design, OAuth, and safety planning
 
-## Phase 4.1 Status
+## Phase 5.0 Status
 
-Phase 4.1 adds manual source-to-profile evidence links and local AI/agent output contracts. The app currently has local SQLite data for profile, jobs, sources, source evidence links, pipeline, deterministic validation, and audit events.
+Phase 5.0 adds a job-specific Application Packet workspace and manual Resume Lab MVP. The app currently has local SQLite data for profile, jobs, sources, source evidence links, application packets, pipeline, deterministic validation, and audit events.
 
-No OpenAI calls, Gmail OAuth, Google Calendar, scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, or deployment are implemented yet.
+No OpenAI calls, Gmail OAuth, Google Calendar, scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, deployment, automatic applications, or automatic emails are implemented yet.

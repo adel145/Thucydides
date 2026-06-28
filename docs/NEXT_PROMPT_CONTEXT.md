@@ -1,6 +1,6 @@
 # Next Prompt Context
 
-Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 4.1 has added Manual Source-to-Profile Linking + AI Contracts Foundation. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, and Phase 4.0 Daily Mission + Job Review UX Foundation.
+Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.0 has added Application Packet + Resume Lab MVP. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, and Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation.
 
 The product mission is to help Adel reach 10 interviews in the Israeli job market. Adel lives in Beersheba, prefers the South, wants above 10,000 NIS gross if staying in Beersheba, can temporarily accept 8,000 NIS gross, and expects to complete remaining degree requirements around September.
 
@@ -25,6 +25,15 @@ Current Phase 4.1 behavior:
 - `lib/profile/profileSourceLinks.ts` defines allowed target fields, source-type recommendations, grouping, and readiness summary.
 - `lib/agents/agentContracts.ts` defines future agent output contracts only. No agent runs, model call, fake score, automatic application, or email exists.
 
+Current Phase 5.0 behavior:
+
+- `ApplicationPacket` stores one manual local application workspace per job.
+- `/jobs/[id]/application` shows deterministic application decision, recommended CV language, checklist, missing items, evidence summary, risks, and manual draft fields.
+- Application packet fields are manually saved; no AI generates content.
+- Job detail and Job Inbox link to packet preparation.
+- `/resumes` is a manual Resume Lab MVP with profile/source/evidence readiness, base CV data, missing inputs, and recent packets.
+- Dashboard links to Resume Lab and shows packet counts.
+
 Allowed roles include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Full-Stack, Frontend, Backend, Python, Java, junior software engineering/development, QA automation, software testing, data analyst, BI, junior data engineering, ML/AI/computer vision junior, application/product/API/technical support engineering, system administrator junior, junior DevOps, SOC Tier 1, Implementation Engineer, Technical Integration, Solutions Engineer Junior, real technical Support Engineer roles, and safe technical infrastructure/state-project roles.
 
 Future degree logic should treat "student welcome", "final-year student", and "near graduate" as favorable signals. Hebrew wording such as "תואר חובה" or "זכאות לתואר חובה", and completed-degree requirements before September, are risk/manual-check notes, not hard forbidden blockers.
@@ -44,11 +53,11 @@ Known toolchain notes:
 
 Recommended next work:
 
-1. Refine Daily Mission into an explicit daily review action flow.
-2. Refine source-to-profile evidence workflows after Adel adds real sources.
-3. Add saved job-search views if they still feel useful after quick filters.
-4. Design AI readiness contracts and agent output schemas without API calls.
-5. Add persistence/server-action tests for source update/delete and reminder actions.
+1. Phase 5.1 Controlled AI Drafting, only after Application Packet MVP is stable.
+2. Use reviewed profile/source evidence and packet fields as inputs.
+3. Keep human confirmation and audit trail before any generated content is used.
+4. Add persistence/server-action tests for packet save and readiness actions.
+5. Refine source-to-profile evidence workflows after Adel adds real sources.
 6. Consider OpenAI only after real Profile/Sources data, audit trails, and user-review flows are strong.
 
 Do not add OpenAI, Gmail, Calendar, scraping, browser automation, upload parsing, real agents, resume generation, exports, auth, deployment, automatic applications, or automatic emails unless a later phase explicitly asks for them.

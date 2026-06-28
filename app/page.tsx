@@ -24,6 +24,10 @@ export default async function DashboardPage() {
     orderBy: { createdAt: "asc" },
     include: { sourceLinks: true }
   });
+  const packetCounts = {
+    draft: await db.applicationPacket.count({ where: { status: "DRAFT" } }),
+    ready: await db.applicationPacket.count({ where: { status: "READY" } })
+  };
   const metrics = calculateDashboardMetrics(jobs);
   const mission = calculateDashboardMission(jobs, sources, profile);
   const evidence = summarizeProfileEvidence(profile?.sourceLinks ?? []);
@@ -58,6 +62,7 @@ export default async function DashboardPage() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <NeonButton href="/jobs?view=ready">Jobs Ready To Apply</NeonButton>
+            <NeonButton href="/resumes" className="border-white/20 text-ink-100">Resume Lab</NeonButton>
             <NeonButton href="/jobs" className="border-white/20 text-ink-100">Paste Job</NeonButton>
             <NeonButton href="/pipeline" className="border-white/20 text-ink-100">Pipeline</NeonButton>
           </div>
@@ -84,6 +89,10 @@ export default async function DashboardPage() {
             <div>
               <div className="text-2xl font-semibold text-aqua-400">{evidence.readyCount}/{evidence.totalCount}</div>
               <div className="text-xs text-ink-400">Evidence</div>
+            </div>
+            <div>
+              <div className="text-2xl font-semibold text-aqua-400">{packetCounts.ready}/{packetCounts.draft + packetCounts.ready}</div>
+              <div className="text-xs text-ink-400">Packets</div>
             </div>
           </div>
         </div>
@@ -115,16 +124,17 @@ export default async function DashboardPage() {
           </div>
           <div className="mt-5 grid gap-3">
             {mission.readyToApplyJobs.slice(0, 5).map((job) => (
-              <Link key={job.id} href={`/jobs/${job.id}`} className="rounded-lg border border-white/10 bg-white/[0.03] p-4 transition hover:border-aqua-400/50">
+              <div key={job.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4 transition hover:border-aqua-400/50">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <div className="font-semibold text-white">{job.title}</div>
+                    <Link href={`/jobs/${job.id}`} className="font-semibold text-white hover:text-aqua-400">{job.title}</Link>
                     <div className="mt-1 text-sm text-ink-200">{[job.company, job.location].filter(Boolean).join(" | ") || "No metadata"}</div>
                   </div>
                   <ScoreBadge tone={validationTone(job.validationStatus)}>{job.validationStatus === "RISKY" ? "דורש בדיקה" : "משרה מתאימה"}</ScoreBadge>
                 </div>
                 {job.riskNotes ? <p className="mt-3 line-clamp-2 text-sm text-ink-300">{job.riskNotes}</p> : null}
-              </Link>
+                <Link href={`/jobs/${job.id}/application`} className="mt-3 inline-flex rounded-lg border border-aqua-400/40 px-3 py-2 text-xs font-semibold text-aqua-400">Prepare</Link>
+              </div>
             ))}
             {mission.readyToApplyJobs.length === 0 ? <p className="text-sm text-ink-400">No ready jobs yet. Paste a job description in Job Inbox.</p> : null}
           </div>
