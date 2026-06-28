@@ -57,6 +57,8 @@ export async function createOpenAiJsonResponse(request: OpenAiJsonResponseReques
       instructions: request.instructions,
       input: request.input,
       store: false,
+      tools: [],
+      tool_choice: "none",
       temperature: 0.2,
       max_output_tokens: request.maxOutputTokens ?? 1600,
       text: {

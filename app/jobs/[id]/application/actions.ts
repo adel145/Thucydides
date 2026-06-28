@@ -82,14 +82,15 @@ export async function markApplicationPacketReady(formData: FormData) {
   const jobId = requiredString(formData.get("jobId"));
   const job = await db.job.findUnique({ where: { id: jobId }, include: { applicationPacket: true } });
   if (!job) redirect("/jobs");
+  if (!job.applicationPacket) redirect(`/jobs/${jobId}/application?packetMissing=1`);
 
   const profile = await db.candidateProfile.findFirst({
     orderBy: { createdAt: "asc" },
     include: { sourceLinks: true }
   });
   const sources = await db.sourceFile.findMany();
-  const summary = buildApplicationPacketSummary(job, profile, sources, profile?.sourceLinks ?? [], job.applicationPacket ?? {});
-  const applicationDecision = sanitizeApplicationDecisionForJob(job, job.applicationPacket?.applicationDecision ?? summary.applicationDecision, summary.applicationDecision);
+  const summary = buildApplicationPacketSummary(job, profile, sources, profile?.sourceLinks ?? [], job.applicationPacket);
+  const applicationDecision = sanitizeApplicationDecisionForJob(job, job.applicationPacket.applicationDecision ?? summary.applicationDecision, summary.applicationDecision);
   const status = sanitizeApplicationPacketStatusForJob(job, "READY", applicationDecision, summary);
 
   if (status !== "READY") {

@@ -264,3 +264,20 @@ Verified:
 Not implemented:
 
 - No Gmail, Calendar, scraping, browser automation, upload parsing, real agents, autonomous applications, automatic emails, DOCX/PDF export, auth, deployment, or resume export.
+
+## 2026-06-28 Phase 5.1 QA Patch
+
+Updated:
+
+- Responses API request body now explicitly sets `tools: []`, `tool_choice: "none"`, and keeps `store: false`.
+- AI draft validation now rejects non-string items in generated array fields instead of accepting mixed arrays.
+- Application Packet UI copy now states that applying an AI draft replaces current packet draft fields and sends nothing.
+- `markApplicationPacketReady` now redirects with `packetMissing=1` if no saved packet exists.
+
+Verified:
+
+- Added tests for OpenAI request body hardening and stricter AI draft output validation.
+
+Not implemented:
+
+- No Gmail, Calendar, scraping, browser automation, upload parsing, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, or new AI features outside controlled Application Packet drafting.

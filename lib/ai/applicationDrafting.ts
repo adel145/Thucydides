@@ -64,20 +64,24 @@ function asStringArray(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
 }
 
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
 function isDraftOutput(value: unknown): value is ApplicationDraftOutput {
   if (!value || typeof value !== "object") return false;
   const output = value as Partial<ApplicationDraftOutput>;
   return (
     typeof output.cvTailoringNotes === "string" &&
-    Array.isArray(output.skillsToHighlight) &&
-    Array.isArray(output.experienceBulletsDraft) &&
+    isStringArray(output.skillsToHighlight) &&
+    isStringArray(output.experienceBulletsDraft) &&
     typeof output.coverLetterDraft === "string" &&
     typeof output.recruiterMessageDraft === "string" &&
     typeof output.followUpPlan === "string" &&
-    Array.isArray(output.missingEvidence) &&
-    Array.isArray(output.warnings) &&
+    isStringArray(output.missingEvidence) &&
+    isStringArray(output.warnings) &&
     (output.confidence === "LOW" || output.confidence === "MEDIUM" || output.confidence === "HIGH") &&
-    Array.isArray(output.evidenceNotes)
+    isStringArray(output.evidenceNotes)
   );
 }
 

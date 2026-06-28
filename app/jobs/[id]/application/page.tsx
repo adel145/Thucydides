@@ -34,7 +34,7 @@ export default async function ApplicationPacketPage({
   searchParams
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ saved?: string; ready?: string; readyBlocked?: string; aiDisabled?: string; aiBlocked?: string; aiDraft?: string; aiSaved?: string; aiError?: string }>;
+  searchParams?: Promise<{ saved?: string; ready?: string; readyBlocked?: string; packetMissing?: string; aiDisabled?: string; aiBlocked?: string; aiDraft?: string; aiSaved?: string; aiError?: string }>;
 }) {
   const { id } = await params;
   const notices = await searchParams;
@@ -80,10 +80,11 @@ export default async function ApplicationPacketPage({
         {notices?.saved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Application packet saved locally.</div> : null}
         {notices?.ready ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Application packet marked ready.</div> : null}
         {notices?.readyBlocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Ready was blocked by the safety gate. Fix critical checklist items or review the job decision first.</div> : null}
+        {notices?.packetMissing ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Create and save an application packet before marking it ready.</div> : null}
         {notices?.aiDisabled ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">AI drafting is not configured. Add both OPENAI_API_KEY and OPENAI_MODEL to enable it.</div> : null}
         {notices?.aiBlocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">AI drafting is blocked for forbidden, archived, or rejected jobs.</div> : null}
         {notices?.aiDraft ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">AI draft generated for review. Nothing was sent.</div> : null}
-        {notices?.aiSaved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">AI draft copied into packet fields for manual editing.</div> : null}
+        {notices?.aiSaved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">AI draft replaced packet draft fields for manual editing. Nothing was sent.</div> : null}
         {notices?.aiError ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">AI drafting failed. Check the latest draft run error or configuration.</div> : null}
       </GlassCard>
 
@@ -208,7 +209,10 @@ export default async function ApplicationPacketPage({
             </div>
             <form action={saveAiDraftToPacket}>
               <input type="hidden" name="runId" value={latestAiRun?.id} />
-              <NeonButton className="border-white/20 text-ink-100">Copy draft into packet fields</NeonButton>
+              <p className="mb-3 max-w-3xl text-sm leading-6 text-ink-200">
+                This is a manual copy action. It will replace the current packet draft fields, but nothing is sent or applied automatically.
+              </p>
+              <NeonButton className="border-white/20 text-ink-100">Replace packet fields with this AI draft</NeonButton>
             </form>
           </div>
         ) : null}

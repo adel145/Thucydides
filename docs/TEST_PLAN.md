@@ -93,7 +93,10 @@ Remaining Phase 4 follow-up tests:
 - Verify Application Packet helper language, decision, checklist, and missing-item logic.
 - Verify Application Packet READY safety gate blocks forbidden, archived, rejected, closed, and critically incomplete packets.
 - Verify controlled AI drafting helpers with missing env, blocked jobs, review-only prompt wording, response text extraction, and output validation.
+- Verify controlled AI request bodies include `store: false`, `tools: []`, and `tool_choice: "none"`.
+- Verify AI draft output validation rejects array fields with non-string items and rejects empty/no-useful generated output.
 - Verify missing `OPENAI_API_KEY` or `OPENAI_MODEL` disables AI drafting without fake output.
+- Manually verify direct mark-ready attempts without a saved packet show `packetMissing=1` and do not mark READY.
 - Smoke-check `/jobs/[id]/application`.
 - Smoke-check `/resumes`.
 

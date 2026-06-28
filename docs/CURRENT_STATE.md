@@ -54,7 +54,9 @@ As of 2026-06-28, Thucydides is in Phase 5.1 Controlled AI Drafting + Applicatio
 - `/jobs/[id]/application` shows application decision, recommended CV language, checklist, evidence summary, risks, and manual draft fields.
 - `/jobs/[id]/application` prevents READY status for forbidden, archived, rejected, or critically incomplete packets.
 - `/jobs/[id]/application` can request controlled OpenAI drafting only when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured.
-- AI draft output is review-only and must be explicitly copied into packet fields by Adel.
+- Controlled OpenAI requests use `store: false`, `tools: []`, and `tool_choice: "none"`.
+- AI draft output is review-only and must be explicitly copied into packet fields by Adel; that copy action replaces current packet draft fields.
+- AI draft output validation rejects non-string values in generated array fields.
 - Job detail and Job Inbox link to application packet preparation.
 - `/resumes` is a manual Resume Lab MVP showing profile/source/evidence readiness, base CV data, and recent application packets.
 - Dashboard includes a Resume Lab button and application packet counts.

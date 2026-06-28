@@ -32,8 +32,10 @@ Current Phase 5.1 behavior:
 - READY status is safety-gated: forbidden, archived, rejected, closed, or critically incomplete packets stay DRAFT.
 - `AiDraftRun` stores controlled OpenAI draft runs for application packets, including prompt version, model, input summary, output, and errors.
 - OpenAI drafting is disabled unless both `OPENAI_API_KEY` and `OPENAI_MODEL` are configured. The app does not guess a model.
-- AI drafting uses the Responses API with `store: false`, no tools, no browsing, no Gmail, and no autonomous application behavior.
-- Generated drafts are review-only and must be explicitly copied into packet fields by Adel.
+- AI drafting uses the Responses API with `store: false`, `tools: []`, `tool_choice: "none"`, no browsing, no Gmail, and no autonomous application behavior.
+- Generated drafts are review-only and must be explicitly copied into packet fields by Adel; this replaces current packet draft fields.
+- AI draft validation rejects non-string array items and empty/no-useful generated output.
+- Mark ready requires a saved packet; direct attempts without one redirect to `packetMissing=1`.
 - Job detail and Job Inbox link to packet preparation.
 - `/resumes` is a manual Resume Lab MVP with profile/source/evidence readiness, base CV data, missing inputs, and recent packets.
 - Dashboard links to Resume Lab and shows packet counts.

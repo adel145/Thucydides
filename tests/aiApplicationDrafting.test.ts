@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildApplicationDraftRequest, canRequestApplicationAiDraft, validateApplicationDraftOutput } from "../lib/ai/applicationDrafting";
-import { extractResponseText, getOpenAiDraftingConfig } from "../lib/ai/openaiClient";
+import { createOpenAiJsonResponse, extractResponseText, getOpenAiDraftingConfig } from "../lib/ai/openaiClient";
 
 const profile = {
   fullName: "Adel Mohsen",
@@ -10,7 +10,24 @@ const profile = {
   education: ["Computer Science"]
 };
 
+const validDraftOutput = {
+  cvTailoringNotes: "Tailor the CV to the TypeScript project evidence.",
+  skillsToHighlight: ["TypeScript"],
+  experienceBulletsDraft: ["Built a small project."],
+  coverLetterDraft: "Cover note",
+  recruiterMessageDraft: "Recruiter note",
+  followUpPlan: "Follow up in five business days.",
+  missingEvidence: [],
+  warnings: ["Review before use."],
+  confidence: "MEDIUM",
+  evidenceNotes: ["Used supplied source text."]
+};
+
 describe("controlled AI application drafting", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("is disabled unless both OpenAI env values are configured", () => {
     expect(getOpenAiDraftingConfig({}).enabled).toBe(false);
     expect(getOpenAiDraftingConfig({ OPENAI_API_KEY: "key" }).enabled).toBe(false);
@@ -61,18 +78,44 @@ describe("controlled AI application drafting", () => {
       evidenceNotes: []
     })).toBeNull();
 
-    expect(validateApplicationDraftOutput({
-      cvTailoringNotes: "Tailor the CV to the TypeScript project evidence.",
-      skillsToHighlight: ["TypeScript"],
-      experienceBulletsDraft: ["Built a small project."],
-      coverLetterDraft: "Cover note",
-      recruiterMessageDraft: "Recruiter note",
-      followUpPlan: "Follow up in five business days.",
-      missingEvidence: [],
-      warnings: ["Review before use."],
-      confidence: "MEDIUM",
-      evidenceNotes: ["Used supplied source text."]
-    })?.confidence).toBe("MEDIUM");
+    expect(validateApplicationDraftOutput(validDraftOutput)?.confidence).toBe("MEDIUM");
+  });
+
+  it("rejects generated draft arrays that contain non-string items", () => {
+    for (const field of ["skillsToHighlight", "experienceBulletsDraft", "missingEvidence", "warnings", "evidenceNotes"] as const) {
+      expect(validateApplicationDraftOutput({ ...validDraftOutput, [field]: ["ok", 42] })).toBeNull();
+      expect(validateApplicationDraftOutput({ ...validDraftOutput, [field]: ["ok", null] })).toBeNull();
+    }
+  });
+
+  it("sends Responses API requests with tools disabled and storage off", async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      statusText: "OK",
+      json: async () => ({ output_text: "{\"ok\":true}" })
+    } as Response));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createOpenAiJsonResponse(
+      {
+        instructions: "Return JSON.",
+        input: "{}",
+        schemaName: "test_schema",
+        schema: {
+          type: "object",
+          additionalProperties: false,
+          required: ["ok"],
+          properties: { ok: { type: "boolean" } }
+        }
+      },
+      { enabled: true, apiKey: "test-key", model: "test-model" }
+    );
+
+    const init = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    const body = JSON.parse(init.body as string) as { store?: unknown; tools?: unknown; tool_choice?: unknown };
+    expect(body.store).toBe(false);
+    expect(body.tools).toEqual([]);
+    expect(body.tool_choice).toBe("none");
   });
 
   it("extracts output text from Responses API-style response bodies", () => {
