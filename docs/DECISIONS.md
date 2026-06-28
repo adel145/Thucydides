@@ -131,3 +131,15 @@ Reason: the dashboard is visually close, but the first-open view should guide Ad
 Decision: the final agent system should support specialist agents that can work together as a council or individually, with a Final Decision Chief summarizing recommendations.
 
 Reason: Adel wants a coordinated assistant system that can find jobs, evaluate fit, prepare material, track applications, and support reaching 10 interviews while keeping human confirmation.
+
+## 2026-06-28: Phase 4.0 Uses Deterministic Readiness
+
+Decision: implement Jobs Ready To Apply as deterministic readiness, not a fit score.
+
+Reason: Phase 4.0 should make the first-open workflow useful with existing local data while avoiding fake AI or unsupported scoring.
+
+## 2026-06-28: Source Editing Without Parsing
+
+Decision: add manual source detail/edit and readiness indicators using existing `SourceFile` fields only.
+
+Reason: Adel needs reliable source inventory before serious AI/CV work, but upload parsing and automatic profile linking remain later-phase work.

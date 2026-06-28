@@ -1,9 +1,9 @@
 ﻿import Link from "next/link";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { MetricCard } from "@/components/ui/MetricCard";
 import { NeonButton } from "@/components/ui/NeonButton";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { db } from "@/lib/db";
+import { calculateDashboardMission } from "@/lib/dashboard/dashboardMission";
 import { calculateDashboardMetrics } from "@/lib/dashboard/dashboardMetrics";
 
 function validationTone(status: string) {
@@ -14,11 +14,17 @@ function validationTone(status: string) {
 
 export default async function DashboardPage() {
   const jobs = await db.job.findMany({
-    orderBy: { updatedAt: "desc" },
-    take: 50
+    orderBy: { updatedAt: "desc" }
   });
-  const recentJobs = jobs.slice(0, 5);
+  const sources = await db.sourceFile.findMany({
+    orderBy: { updatedAt: "desc" }
+  });
+  const profile = await db.candidateProfile.findFirst({
+    orderBy: { createdAt: "asc" }
+  });
   const metrics = calculateDashboardMetrics(jobs);
+  const mission = calculateDashboardMission(jobs, sources, profile);
+  const readinessWarning = mission.sourceReadiness.missing.length > 0 || mission.profileWarnings.length > 0;
 
   const metricCards = [
     ["Interview Goal", `${metrics.interviewGoalCurrent} / ${metrics.interviewGoalTarget}`, "Local interviews tracked against the mission target."],
@@ -38,50 +44,108 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <GlassCard className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
+      <GlassCard className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Phase 3 campaign intelligence</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Phase 4.0 daily mission</p>
           <h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-5xl">
-            Thucydides is preparing the campaign intelligence layer toward 10 interviews.
+            Today&apos;s Mission
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-ink-200">
-            Metrics now come from the local SQLite database. AI, Gmail, scraping, and resume generation remain intentionally unimplemented.
+            Start with jobs ready to apply, follow-ups, and source readiness. Local SQLite only; no AI or Gmail is connected.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <NeonButton href="/jobs">Open Job Inbox</NeonButton>
-            <NeonButton href="/pipeline" className="border-white/20 text-ink-100">Open Pipeline</NeonButton>
+            <NeonButton href="/jobs?view=ready">Jobs Ready To Apply</NeonButton>
+            <NeonButton href="/jobs" className="border-white/20 text-ink-100">Paste Job</NeonButton>
+            <NeonButton href="/pipeline" className="border-white/20 text-ink-100">Pipeline</NeonButton>
           </div>
         </div>
         <div className="rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-5">
-          <div className="text-xs uppercase tracking-[0.18em] text-ink-400">Validation mix</div>
-          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+          <div className="text-xs uppercase tracking-[0.18em] text-ink-400">Mission counts</div>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-center">
             <div>
-              <div className="text-2xl font-semibold text-aqua-400">{metrics.allowedJobs}</div>
-              <div className="text-xs text-ink-400">Allowed</div>
+              <div className="text-2xl font-semibold text-aqua-400">{mission.readyToApplyJobs.length}</div>
+              <div className="text-xs text-ink-400">מוכן להגשה</div>
             </div>
             <div>
-              <div className="text-2xl font-semibold text-ink-100">{metrics.riskyJobs}</div>
-              <div className="text-xs text-ink-400">Risky</div>
+              <div className="text-2xl font-semibold text-ink-100">{mission.dueFollowUps.length + mission.overdueFollowUps.length}</div>
+              <div className="text-xs text-ink-400">Follow-ups</div>
             </div>
             <div>
-              <div className="text-2xl font-semibold text-signal-red">{metrics.forbiddenJobs}</div>
-              <div className="text-xs text-ink-400">Forbidden</div>
+              <div className="text-2xl font-semibold text-ink-100">{mission.highPriorityJobs.length}</div>
+              <div className="text-xs text-ink-400">High priority</div>
+            </div>
+            <div>
+              <div className="text-2xl font-semibold text-aqua-400">{mission.sourceReadiness.readyCount}/{mission.sourceReadiness.totalCount}</div>
+              <div className="text-xs text-ink-400">Sources</div>
             </div>
           </div>
         </div>
       </GlassCard>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        {metricCards.map(([label, value, note]) => (
-          <MetricCard key={label} label={label} value={value} note={note} />
-        ))}
+      {readinessWarning ? (
+        <GlassCard className="border border-signal-red/30 bg-signal-red/10">
+          <h2 className="text-xl font-semibold text-white">Profile and Sources need work</h2>
+          <p className="mt-3 text-sm leading-6 text-ink-200">
+            Profile and Sources are not ready for serious AI/CV work yet. Add CV, LinkedIn, GitHub/projects, certificates, and academic sources first.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {mission.profileWarnings.slice(0, 3).map((warning) => <ScoreBadge key={warning} tone="warning">{warning}</ScoreBadge>)}
+            {mission.sourceReadiness.missing.map((item) => <ScoreBadge key={item.label} tone="warning">Missing {item.label}</ScoreBadge>)}
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <NeonButton href="/profile">Update Profile</NeonButton>
+            <NeonButton href="/sources" className="border-white/20 text-ink-100">Update Sources</NeonButton>
+          </div>
+        </GlassCard>
+      ) : null}
+
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <GlassCard>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-2xl font-semibold text-white">Jobs Ready To Apply</h2>
+            <Link href="/jobs?view=ready" className="text-sm font-semibold text-aqua-400">Open all</Link>
+          </div>
+          <div className="mt-5 grid gap-3">
+            {mission.readyToApplyJobs.slice(0, 5).map((job) => (
+              <Link key={job.id} href={`/jobs/${job.id}`} className="rounded-lg border border-white/10 bg-white/[0.03] p-4 transition hover:border-aqua-400/50">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="font-semibold text-white">{job.title}</div>
+                    <div className="mt-1 text-sm text-ink-200">{[job.company, job.location].filter(Boolean).join(" | ") || "No metadata"}</div>
+                  </div>
+                  <ScoreBadge tone={validationTone(job.validationStatus)}>{job.validationStatus === "RISKY" ? "דורש בדיקה" : "משרה מתאימה"}</ScoreBadge>
+                </div>
+                {job.riskNotes ? <p className="mt-3 line-clamp-2 text-sm text-ink-300">{job.riskNotes}</p> : null}
+              </Link>
+            ))}
+            {mission.readyToApplyJobs.length === 0 ? <p className="text-sm text-ink-400">No ready jobs yet. Paste a job description in Job Inbox.</p> : null}
+          </div>
+        </GlassCard>
+
+        <GlassCard>
+          <h2 className="text-2xl font-semibold text-white">Follow-ups</h2>
+          <div className="mt-5 grid gap-4">
+            <Link href="/jobs?view=follow-up-due" className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="text-sm text-ink-400">Due today</div>
+              <div className="mt-2 text-3xl font-semibold text-white">{mission.dueFollowUps.length}</div>
+            </Link>
+            <Link href="/jobs?view=follow-up-due" className="rounded-lg border border-signal-red/30 bg-signal-red/10 p-4">
+              <div className="text-sm text-ink-400">Overdue</div>
+              <div className="mt-2 text-3xl font-semibold text-white">{mission.overdueFollowUps.length}</div>
+            </Link>
+            <Link href="/jobs?view=high-priority" className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="text-sm text-ink-400">High priority jobs</div>
+              <div className="mt-2 text-3xl font-semibold text-white">{mission.highPriorityJobs.length}</div>
+            </Link>
+          </div>
+        </GlassCard>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <GlassCard>
           <h2 className="text-2xl font-semibold text-white">Recent jobs</h2>
           <div className="mt-5 divide-y divide-white/10">
-            {recentJobs.map((job) => (
+            {mission.recentJobs.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div>
                   <div className="font-semibold text-white">{job.title}</div>
@@ -93,10 +157,19 @@ export default async function DashboardPage() {
           </div>
         </GlassCard>
         <GlassCard>
-          <h2 className="text-2xl font-semibold text-white">Phase boundary</h2>
+          <h2 className="text-2xl font-semibold text-white">Campaign summary</h2>
           <p className="mt-3 text-sm leading-6 text-ink-200">
-            This operational layer is local and deterministic. Future fit scores, agent council, Gmail, and CV generation are planned for later phases.
+            Useful metrics stay below the mission view so they do not dominate first open.
           </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {metricCards.slice(0, 6).map(([label, value, note]) => (
+              <div key={label} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                <div className="text-xs uppercase tracking-[0.16em] text-ink-400">{label}</div>
+                <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
+                <p className="mt-2 text-xs leading-5 text-ink-300">{note}</p>
+              </div>
+            ))}
+          </div>
         </GlassCard>
       </div>
     </>

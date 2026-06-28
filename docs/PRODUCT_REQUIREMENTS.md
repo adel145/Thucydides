@@ -25,14 +25,14 @@ Supporting metrics planned for later phases:
 
 ## Core Modules
 
-- Dashboard: campaign overview and metrics.
+- Dashboard: Today's Mission, campaign overview, and metrics.
 - Profile Intelligence: source of truth for Adel's CV, LinkedIn, GitHub, portfolio, certificates, academic status, salary constraints, and geography preferences.
-- Job Inbox: imported jobs and first-pass filtering.
+- Job Inbox: pasted job descriptions, card-based review, quick filtering, and first-pass validation.
 - Job Detail: role analysis, fit notes, dealbreakers, and application readiness.
 - Resume Lab: English/Hebrew resume variants and targeted application material.
 - Agent Council: coordinated specialist agents for profile, job search, filtering, scoring, drafting, and QA.
 - Pipeline: tracking from discovered to interview or archive.
-- Sources: local source records and manual text intake for CVs, LinkedIn, GitHub projects, portfolio, certificates, academic documents, and job-search notes.
+- Sources: local source records, manual text intake, readiness checks, and manual editing for CVs, LinkedIn, GitHub projects, portfolio, certificates, academic documents, and job-search notes.
 - Gmail: recruiter email monitoring and follow-up support.
 - Settings: local configuration, secrets guidance, source preferences, and safety controls.
 
@@ -44,6 +44,7 @@ Supporting metrics planned for later phases:
 - First-open priority should be Today's Mission and Jobs Ready To Apply.
 - Job Inbox should move toward card-based review and paste-job-description intake.
 - Profile and Sources must hold real Adel data before serious AI, CV tailoring, or resume work.
+- Deterministic readiness may guide daily review, but must not be presented as a real fit score.
 
 ## Agent Direction
 

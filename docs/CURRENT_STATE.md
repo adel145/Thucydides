@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-28, Thucydides is in Phase 3.6 product alignment state.
+As of 2026-06-28, Thucydides is in Phase 4.0 Daily Mission + Job Review UX Foundation state.
 
 ## What Exists
 
@@ -19,7 +19,7 @@ As of 2026-06-28, Thucydides is in Phase 3.6 product alignment state.
   - Pipeline
   - Gmail
   - Settings
-- Dashboard metrics are connected to local SQLite data.
+- Dashboard has a Today's Mission first-open view backed by local SQLite data.
 - UI reflects the Stitch-inspired dark navy, neon aqua, glass command-center style.
 - Dependencies have been installed into `node_modules/`.
 - The dev server was started on `http://localhost:3000`.
@@ -29,9 +29,10 @@ As of 2026-06-28, Thucydides is in Phase 3.6 product alignment state.
 - Seed profile exists for Adel Mohsen.
 - Ten seed jobs exist with deterministic validation statuses.
 - `/profile` loads and saves the local candidate profile.
-- `/jobs` lists local jobs and can create manually entered jobs.
+- `/jobs` lists local jobs as review cards and can create manually entered jobs from pasted descriptions.
 - `/jobs` supports text search, validation/status/facet filters, sorting, visible active-filter state, and clear filters.
-- Job list rows show created/updated dates, signal/flag counts, and quick links for details, edit, and archive.
+- `/jobs` supports quick review filters for ready-to-apply, high-priority, due follow-up, risky review, and forbidden/archive review views.
+- Job cards show metadata, validation status, pipeline status, priority, next action date, signal/flag counts, risk/blocker preview, and quick links for details, edit, and archive.
 - `/jobs/[id]` shows stored job metadata, raw description, validation status, flags, signals, risk notes, manual lifecycle actions, and event history.
 - `/jobs/[id]` shows priority, next action, next action note, and last contacted date.
 - `/jobs/[id]/edit` edits local job records and reruns deterministic validation.
@@ -42,8 +43,9 @@ As of 2026-06-28, Thucydides is in Phase 3.6 product alignment state.
 - `ApplicationEvent` records are created for new job creation, job updates, validation reruns, status changes, and archives.
 - `/profile` validates required fields, salary consistency, and honest degree wording; it shows save feedback and preserves submitted values on validation errors.
 - `/profile` includes a source-file intake design placeholder without upload parsing.
-- `/sources` manages local manual source records and pasted text intake.
-- Dashboard includes due follow-ups, overdue follow-ups, and high-priority job counts.
+- `/sources` manages local manual source records, pasted text intake, source readiness, and source edit/detail workflow.
+- Dashboard includes jobs ready to apply, due follow-ups, overdue follow-ups, high-priority jobs, recent jobs, and profile/source readiness warnings.
+- Pure helpers exist for deterministic job readiness, dashboard mission grouping, and source readiness.
 - Vitest tests exist for role validation with Israeli fixtures, job statuses, lifecycle validation helpers, dashboard metrics, profile validation, filters, priority, and source types.
 - Completed-degree requirements are risk/manual-check notes rather than hard forbidden blockers.
 - Top-bar and placeholder page copy has been cleaned up to reflect current Phase 3 local SQLite status and planned later-phase AI/Gmail work.
@@ -71,6 +73,7 @@ As of 2026-06-28, Thucydides is in Phase 3.6 product alignment state.
 - No deployment setup.
 - No real upload parsing for source files.
 - No notification system for due follow-ups.
+- No automatic source-to-profile linking.
 
 ## Important Warning
 

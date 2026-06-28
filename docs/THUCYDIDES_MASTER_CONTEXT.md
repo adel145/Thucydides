@@ -111,8 +111,8 @@ Future degree logic should treat "student welcome", "final-year student", and "n
 - Future OpenAI API integration for analysis and drafting
 - Future Gmail and Calendar integrations only after explicit design, OAuth, and safety planning
 
-## Phase 3.6 Status
+## Phase 4.0 Status
 
-Phase 3.6 records Adel's latest UX/product direction and cleans stale placeholder copy. The app currently has local SQLite data for profile, jobs, sources, pipeline, deterministic validation, and audit events.
+Phase 4.0 adds a Daily Mission dashboard, deterministic Jobs Ready To Apply readiness, card-based Job Inbox review, quick review filters, paste-first job intake copy, source readiness indicators, and manual source detail/edit workflow. The app currently has local SQLite data for profile, jobs, sources, pipeline, deterministic validation, and audit events.
 
 No OpenAI calls, Gmail OAuth, Google Calendar, scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, or deployment are implemented yet.

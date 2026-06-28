@@ -48,10 +48,24 @@
 - Added type-to-confirm hard delete.
 - Added tests for filters, priority, source types, fixture validation, and follow-up metrics.
 
+## Completed In Phase 4.0
+
+- Refactored Dashboard first view into Today's Mission.
+- Added deterministic Jobs Ready To Apply helper.
+- Added dashboard mission grouping helper.
+- Added source readiness helper.
+- Added card-based Job Inbox review.
+- Added quick review filters for ready, high-priority, follow-up due, risky, and forbidden views.
+- Made paste job description the primary Job Inbox intake path.
+- Added source readiness indicators.
+- Added source detail/edit route.
+- Made source delete require typing DELETE.
+- Added tests for job readiness, dashboard mission grouping, source readiness, and quick filters.
+
 ## Next Tasks
 
-- Add follow-up notification surfaces and daily review workflow.
-- Add richer source editing and manual source-to-profile linking.
+- Refine Daily Mission with daily review actions.
+- Add manual source-to-profile linking.
 - Add saved job-search views.
 - Add first AI preparation design without API calls.
 - Add persistence/server-action integration tests.

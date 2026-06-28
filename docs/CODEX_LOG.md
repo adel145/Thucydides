@@ -145,3 +145,25 @@ Verified:
 Note:
 
 - The initially generated Phase 3 migration timestamp sorted before the Phase 1 migration. The folder was renamed to `20260626190000_phase3_campaign_intelligence` and the local `_prisma_migrations` record was updated so shadow replay applies Phase 1 before Phase 3.
+
+## 2026-06-28 Phase 4.0
+
+Created:
+
+- `lib/jobs/jobReadiness.ts` for deterministic Jobs Ready To Apply readiness.
+- `lib/dashboard/dashboardMission.ts` for Today's Mission grouping.
+- `lib/sources/sourceReadiness.ts` for manual source readiness.
+- `/sources/[id]` source detail/edit route.
+- Tests for job readiness, dashboard mission grouping, source readiness, and quick filters.
+
+Updated:
+
+- Dashboard first-open experience now starts with Today's Mission.
+- Job Inbox now uses review cards, quick review filters, and a paste-first intake layout.
+- Sources now shows readiness and links to editable source records.
+- Source deletion now requires typing DELETE.
+- Docs now describe Phase 4.0 as implemented.
+
+Not implemented:
+
+- OpenAI, Gmail, Google Calendar, scraping, browser automation, upload parsing, real agents, resume generation, DOCX/PDF export, authentication, deployment, automatic applications, and automatic emails.

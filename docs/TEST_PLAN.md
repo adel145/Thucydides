@@ -65,11 +65,20 @@ Remaining visual QA:
 
 ## Phase 4 Test Needs
 
-- Persistence tests for source create/delete behavior.
+- Run `npm run test`.
+- Run `npm run build`.
+- Run `npm run lint`.
+- Verify deterministic Jobs Ready To Apply helper.
+- Verify dashboard mission grouping.
+- Verify source readiness helper.
+- Verify quick review filters.
+- Smoke-check `/`, `/jobs`, `/sources`, and a real `/sources/[id]` after seeding local data.
+
+Remaining Phase 4 follow-up tests:
+
+- Persistence tests for source update/delete behavior.
 - Server action tests for job reminders and priority updates.
-- Saved-view/filter tests.
-- Daily review metric tests.
-- Integration tests around source-to-profile workflows.
+- Integration tests around future source-to-profile workflows.
 
 ## Future Automated Tests
 

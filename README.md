@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 3 - Campaign Intelligence Preparation.
+Current state: Phase 4.0 - Daily Mission + Job Review UX Foundation.
 
 ## What Works Now
 
@@ -17,13 +17,19 @@ Current state: Phase 3 - Campaign Intelligence Preparation.
 - SQLite local database
 - Local candidate profile
 - Manual job intake
+- Today's Mission dashboard
+- Jobs Ready To Apply deterministic readiness
+- Card-based Job Inbox review
 - Deterministic allowed/risky/forbidden job validation
 - Job search, filters, and sorting
+- Quick review filters
 - Job detail, edit, archive, and type-to-confirm delete
 - Pipeline status tracking
 - Priority and follow-up tracking
 - Application event history
 - Manual source records and pasted text intake
+- Manual source detail/edit workflow
+- Source readiness indicators
 - Vitest coverage for rules, filters, dashboard metrics, priorities, source types, and Israeli job fixtures
 
 ## Mission
@@ -59,7 +65,7 @@ The UI should stay dark, local-first, and sidebar-based. It should remain mostly
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 3 uses local SQLite data, deterministic validation, manual job/source intake, and roadmap pages. AI, Gmail, upload parsing, real agents, and resume generation are intentionally not connected yet.
+Current limitation: Phase 4.0 uses local SQLite data, deterministic validation, manual job/source intake, and roadmap pages. AI, Gmail, upload parsing, real agents, and resume generation are intentionally not connected yet.
 
 ## Local Setup
 
@@ -128,13 +134,11 @@ Future work should read and update these files after each phase.
 
 ## Roadmap
 
-Next planned phase: Phase 4 - Daily Review and Source Intelligence.
+Next planned phase: Phase 4.1 - Source Intelligence and AI Contracts.
 
 Planned work:
 
-- Daily review workflow
-- Today's mission panel
-- Source editing
+- Daily review refinements
 - Source-to-profile linking
 - Saved job-search views
 - AI readiness contracts without calling OpenAI
