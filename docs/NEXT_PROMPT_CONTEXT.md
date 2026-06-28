@@ -9,8 +9,9 @@ Current Phase 4.0 behavior:
 - Dashboard first view is Today's Mission.
 - Dashboard shows Jobs Ready To Apply, follow-ups due today, overdue follow-ups, high-priority jobs, recent jobs, and Profile/Sources readiness.
 - Jobs Ready To Apply is deterministic readiness only, not a real fit score.
+- Phase 4.0 QA tightened actionable views so archived, rejected, and forbidden jobs do not leak into ready/high-priority/follow-up mission surfaces.
 - Job Inbox uses card-based review.
-- Job Inbox has quick filters for ready-to-apply, high-priority, due follow-up, risky review, and forbidden/archive review.
+- Job Inbox has quick filters for ready-to-apply, high-priority, due follow-up, risky review, and forbidden/archive review. Forbidden/archive review shows active forbidden jobs that may still need archiving, not already archived forbidden jobs.
 - Paste job description is the main intake path, with title and source required.
 - Sources has manual source readiness and source detail/edit workflow.
 - Source deletion requires typing DELETE.

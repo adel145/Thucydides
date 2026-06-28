@@ -1,5 +1,4 @@
-import { getReadyToApplyJobs, type ReadinessJob } from "../jobs/jobReadiness";
-import { normalizeJobStatus } from "../jobs/jobStatus";
+import { getReadyToApplyJobs, isActionableJob, type ReadinessJob } from "../jobs/jobReadiness";
 import { calculateSourceReadiness, type SourceReadinessSource } from "../sources/sourceReadiness";
 
 export type MissionJob = ReadinessJob & {
@@ -30,15 +29,6 @@ function endOfDay(now: Date) {
   return value;
 }
 
-function isActive(job: MissionJob) {
-  const status = normalizeJobStatus(job.status);
-  return status !== "ARCHIVED" && status !== "REJECTED";
-}
-
-function isActionable(job: MissionJob) {
-  return isActive(job) && job.validationStatus !== "FORBIDDEN";
-}
-
 function hasListValue(value: unknown) {
   return Array.isArray(value) ? value.length > 0 : Boolean(value);
 }
@@ -51,17 +41,17 @@ export function calculateDashboardMission(
 ) {
   const todayStart = startOfDay(now);
   const todayEnd = endOfDay(now);
-  const activeJobs = jobs.filter(isActive);
-  const dueFollowUps = activeJobs.filter((job) => {
+  const actionableJobs = jobs.filter(isActionableJob);
+  const dueFollowUps = actionableJobs.filter((job) => {
     if (!job.nextActionAt) return false;
     const due = new Date(job.nextActionAt);
     return due >= todayStart && due <= todayEnd;
   });
-  const overdueFollowUps = activeJobs.filter((job) => {
+  const overdueFollowUps = actionableJobs.filter((job) => {
     if (!job.nextActionAt) return false;
     return new Date(job.nextActionAt) < todayStart;
   });
-  const highPriorityJobs = jobs.filter((job) => isActionable(job) && (job.priority === "HIGH" || job.priority === "CRITICAL"));
+  const highPriorityJobs = actionableJobs.filter((job) => job.priority === "HIGH" || job.priority === "CRITICAL");
   const recentJobs = [...jobs].sort((a, b) => new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()).slice(0, 5);
   const sourceReadiness = calculateSourceReadiness(sources);
   const profileWarnings = [

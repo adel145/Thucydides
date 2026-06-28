@@ -1,5 +1,5 @@
 import type { Job } from "../../generated/prisma/client";
-import { isReadyToApplyJob } from "./jobReadiness";
+import { isActionableJob, isActiveJob, isReadyToApplyJob } from "./jobReadiness";
 import { isJobStatus } from "./jobStatus";
 
 export const JOB_SORTS = [
@@ -47,10 +47,12 @@ function matchesQuickView<T extends Pick<Job, "validationStatus" | "status"> & {
 ) {
   if (!view) return true;
   if (view === "ready") return isReadyToApplyJob(job);
-  if (view === "high-priority") return job.priority === "HIGH" || job.priority === "CRITICAL";
-  if (view === "follow-up-due") return isDue(job.nextActionAt);
-  if (view === "risky") return job.validationStatus === "RISKY";
-  if (view === "forbidden") return job.validationStatus === "FORBIDDEN";
+  if (view === "high-priority") return isActionableJob(job) && (job.priority === "HIGH" || job.priority === "CRITICAL");
+  if (view === "follow-up-due") return isActionableJob(job) && isDue(job.nextActionAt);
+  if (view === "risky") return isActiveJob(job) && job.validationStatus === "RISKY";
+  // "Forbidden / Archive Review" means active forbidden jobs Adel may still need to archive,
+  // so already archived/rejected forbidden jobs stay out of this quick view.
+  if (view === "forbidden") return isActiveJob(job) && job.validationStatus === "FORBIDDEN";
   return true;
 }
 

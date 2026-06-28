@@ -7,8 +7,9 @@ describe("calculateDashboardMission", () => {
       [
         { id: "1", title: "Ready", status: "FOUND", validationStatus: "ALLOWED", priority: "HIGH", nextActionAt: "2026-06-28T09:00:00.000Z", updatedAt: "2026-06-28T10:00:00.000Z" },
         { id: "2", title: "Overdue", status: "ANALYZED", validationStatus: "RISKY", priority: "MEDIUM", nextActionAt: "2026-06-27T09:00:00.000Z", updatedAt: "2026-06-27T10:00:00.000Z" },
-        { id: "3", title: "Forbidden", status: "FOUND", validationStatus: "FORBIDDEN", priority: "CRITICAL", updatedAt: "2026-06-26T10:00:00.000Z" },
-        { id: "4", title: "Applied", status: "APPLIED", validationStatus: "ALLOWED", priority: "HIGH", updatedAt: "2026-06-25T10:00:00.000Z" }
+        { id: "3", title: "Forbidden", status: "FOUND", validationStatus: "FORBIDDEN", priority: "CRITICAL", nextActionAt: "2026-06-28T09:00:00.000Z", updatedAt: "2026-06-26T10:00:00.000Z" },
+        { id: "4", title: "Applied", status: "APPLIED", validationStatus: "ALLOWED", priority: "HIGH", updatedAt: "2026-06-25T10:00:00.000Z" },
+        { id: "5", title: "Rejected", status: "REJECTED", validationStatus: "RISKY", priority: "CRITICAL", nextActionAt: "2026-06-27T09:00:00.000Z", updatedAt: "2026-06-24T10:00:00.000Z" }
       ],
       [{ type: "CV" }, { type: "LINKEDIN_TEXT" }],
       { fullName: "Adel", location: "Beersheba", degreeStatus: "Near completion", technicalSkills: [], education: ["CS"] },
@@ -19,6 +20,9 @@ describe("calculateDashboardMission", () => {
     expect(mission.dueFollowUps.map((job) => job.title)).toEqual(["Ready"]);
     expect(mission.overdueFollowUps.map((job) => job.title)).toEqual(["Overdue"]);
     expect(mission.highPriorityJobs.map((job) => job.title)).toEqual(["Ready", "Applied"]);
+    expect(mission.dueFollowUps.map((job) => job.title)).not.toContain("Forbidden");
+    expect(mission.overdueFollowUps.map((job) => job.title)).not.toContain("Rejected");
+    expect(mission.highPriorityJobs.map((job) => job.title)).not.toContain("Forbidden");
     expect(mission.sourceReadiness.readyCount).toBe(2);
     expect(mission.profileWarnings).toContain("Add technical skills.");
   });

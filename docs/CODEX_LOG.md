@@ -167,3 +167,20 @@ Updated:
 Not implemented:
 
 - OpenAI, Gmail, Google Calendar, scraping, browser automation, upload parsing, real agents, resume generation, DOCX/PDF export, authentication, deployment, automatic applications, and automatic emails.
+
+## 2026-06-28 Phase 4.0 QA Patch
+
+Updated:
+
+- Centralized active/actionable/ready job logic in `lib/jobs/jobReadiness.ts`.
+- Tightened quick filters so ready, high-priority, and follow-up due views exclude archived, rejected, and forbidden jobs as appropriate.
+- Kept forbidden/archive review focused on active forbidden jobs that may still need archiving.
+- Tightened dashboard mission grouping so forbidden jobs do not appear in due/overdue follow-ups or high-priority mission sections.
+
+Verified:
+
+- Added tests for ready-to-apply exclusions, quick filter exclusions, forbidden/archive behavior, and dashboard mission exclusions.
+
+Not implemented:
+
+- No integrations, schema changes, AI, Gmail, scraping, upload parsing, real agents, auth, deployment, automatic applications, or automatic emails.

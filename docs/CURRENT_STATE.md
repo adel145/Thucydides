@@ -48,7 +48,7 @@ As of 2026-06-28, Thucydides is in Phase 4.0 Daily Mission + Job Review UX Found
 - Pure helpers exist for deterministic job readiness, dashboard mission grouping, and source readiness.
 - Vitest tests exist for role validation with Israeli fixtures, job statuses, lifecycle validation helpers, dashboard metrics, profile validation, filters, priority, and source types.
 - Completed-degree requirements are risk/manual-check notes rather than hard forbidden blockers.
-- Top-bar and placeholder page copy has been cleaned up to reflect current Phase 3 local SQLite status and planned later-phase AI/Gmail work.
+- Top-bar and placeholder page copy reflects current Phase 4.0 local SQLite status and planned later-phase AI/Gmail work.
 
 ## Latest UX Review Summary
 

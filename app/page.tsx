@@ -143,7 +143,7 @@ export default async function DashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <GlassCard>
-          <h2 className="text-2xl font-semibold text-white">Recent jobs</h2>
+          <h2 className="text-2xl font-semibold text-white">Recent local jobs</h2>
           <div className="mt-5 divide-y divide-white/10">
             {mission.recentJobs.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`} className="flex flex-wrap items-center justify-between gap-3 py-3">

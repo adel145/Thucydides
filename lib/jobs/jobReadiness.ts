@@ -9,7 +9,8 @@ export type ReadinessJob = {
   updatedAt?: Date | string | null;
 };
 
-const completedStatuses = new Set(["APPLIED", "REPLIED", "INTERVIEW", "OFFER", "ARCHIVED", "REJECTED"]);
+const completedOrClosedStatuses = new Set(["APPLIED", "REPLIED", "INTERVIEW", "OFFER", "ARCHIVED", "REJECTED"]);
+const applicationProgressStatuses = new Set(["APPLIED", "REPLIED", "INTERVIEW", "OFFER"]);
 
 function dateTime(value: Date | string | null | undefined) {
   return value ? new Date(value).getTime() : Number.POSITIVE_INFINITY;
@@ -17,7 +18,20 @@ function dateTime(value: Date | string | null | undefined) {
 
 export function isReadyToApplyJob(job: ReadinessJob) {
   const status = normalizeJobStatus(job.status);
-  return !completedStatuses.has(status) && (job.validationStatus === "ALLOWED" || job.validationStatus === "RISKY");
+  return isActiveJob(job) && !applicationProgressStatuses.has(status) && (job.validationStatus === "ALLOWED" || job.validationStatus === "RISKY");
+}
+
+export function isCompletedOrClosedJob(job: ReadinessJob) {
+  return completedOrClosedStatuses.has(normalizeJobStatus(job.status));
+}
+
+export function isActiveJob(job: ReadinessJob) {
+  const status = normalizeJobStatus(job.status);
+  return status !== "ARCHIVED" && status !== "REJECTED";
+}
+
+export function isActionableJob(job: ReadinessJob) {
+  return isActiveJob(job) && job.validationStatus !== "FORBIDDEN";
 }
 
 export function getReadyToApplyJobs<T extends ReadinessJob>(jobs: T[]) {
