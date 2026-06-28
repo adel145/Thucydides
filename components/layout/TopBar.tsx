@@ -11,10 +11,10 @@ export function TopBar() {
         </div>
         <div className="flex flex-wrap gap-2">
           <ScoreBadge tone="muted" icon={<DatabaseZap className="h-3.5 w-3.5" />}>
-            No database yet
+            Local SQLite active
           </ScoreBadge>
           <ScoreBadge tone="warning" icon={<CircleAlert className="h-3.5 w-3.5" />}>
-            Phase 0 placeholders
+            AI/Gmail not connected
           </ScoreBadge>
         </div>
       </div>

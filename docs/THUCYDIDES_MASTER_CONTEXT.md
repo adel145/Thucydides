@@ -80,13 +80,26 @@ These conditions should not automatically reject a job, but they must be flagged
 - Salary below Adel's temporary minimum
 - Locations outside the South/Beersheba preference
 
+Future degree logic should treat "student welcome", "final-year student", and "near graduate" as favorable signals.
+
 ## Product Principles
 
 - Local-first: private career data, imported job data, generated notes, and future agent outputs should be stored locally by default.
-- Truthful UI: features that are not connected yet must be labeled as placeholders.
+- Truthful UI: features that are not connected yet must be labeled as planned or placeholders.
 - Human review: automated recommendations should support Adel, not silently apply to jobs or send communication.
 - Specification driven: every phase should update docs before and after implementation.
 - Conservative engineering: build small, testable foundations before API calls, scraping, database work, or automation.
+- UX language: keep the UI mostly English, but use Hebrew Israeli job-market terms where they reduce confusion.
+- First-open focus: guide Adel toward Today's Mission and Jobs Ready To Apply before secondary metrics.
+- Source readiness: real Profile and Sources data must exist before serious AI, resume, or agent work.
+
+## Product Direction
+
+- Keep the dark command-center UI and sidebar.
+- Job Inbox should move toward job cards and paste-job-description intake.
+- Sources should support CV, LinkedIn, GitHub, project, certificate, and academic intake before upload parsing.
+- Resume Lab, Agent Council, Gmail, and Settings should remain visible as planned roadmap pages with honest copy.
+- The final agent system should be a specialist council with a Final Decision Chief, human confirmation, audit trail, and uncertainty labels.
 
 ## Planned Stack
 
@@ -94,12 +107,12 @@ These conditions should not automatically reject a job, but they must be flagged
 - TypeScript
 - Tailwind CSS
 - Reusable React components
-- Future local SQLite database, likely through Prisma or another typed local persistence layer
+- Local SQLite database through Prisma
 - Future OpenAI API integration for analysis and drafting
 - Future Gmail and Calendar integrations only after explicit design, OAuth, and safety planning
 
-## Phase 0 Status
+## Phase 3.6 Status
 
-Phase 0 creates the foundation only. It includes documentation, a Next.js skeleton, placeholder module pages, navigation, and a Stitch-inspired UI foundation. It does not implement the full product.
+Phase 3.6 records Adel's latest UX/product direction and cleans stale placeholder copy. The app currently has local SQLite data for profile, jobs, sources, pipeline, deterministic validation, and audit events.
 
-No OpenAI calls, Gmail OAuth, Google Calendar, scraping, database, resume export, PDF/DOCX generation, authentication, or deployment were implemented in Phase 0.
+No OpenAI calls, Gmail OAuth, Google Calendar, scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, or deployment are implemented yet.

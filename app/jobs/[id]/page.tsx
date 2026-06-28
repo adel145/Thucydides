@@ -189,7 +189,7 @@ export default async function JobDetailPage({
         {["Future fit score", "Future agent council", "Future CV generation"].map((title) => (
           <GlassCard key={title}>
             <h3 className="text-lg font-semibold text-white">{title}</h3>
-            <p className="mt-3 text-sm leading-6 text-ink-200">Not implemented in Phase 2.</p>
+            <p className="mt-3 text-sm leading-6 text-ink-200">Planned for later phases after profile, sources, and review flows are ready.</p>
           </GlassCard>
         ))}
       </div>

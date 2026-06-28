@@ -51,6 +51,16 @@ The following are intentionally not implemented yet:
 - File upload parsing
 - Notifications
 
+## Product Direction
+
+The desired product is an agent-assisted job-search command center that helps Adel find suitable Israeli jobs, evaluate fit, prepare CV/application material, track applications, and reach 10 interviews.
+
+The UI should stay dark, local-first, and sidebar-based. It should remain mostly English, but use helpful Hebrew job-market terms and simple explanations. The first-open flow should increasingly focus on Today's Mission and Jobs Ready To Apply.
+
+The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
+
+Current limitation: Phase 3 uses local SQLite data, deterministic validation, manual job/source intake, and roadmap pages. AI, Gmail, upload parsing, real agents, and resume generation are intentionally not connected yet.
+
 ## Local Setup
 
 Create a local environment file:

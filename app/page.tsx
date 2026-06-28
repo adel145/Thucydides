@@ -95,7 +95,7 @@ export default async function DashboardPage() {
         <GlassCard>
           <h2 className="text-2xl font-semibold text-white">Phase boundary</h2>
           <p className="mt-3 text-sm leading-6 text-ink-200">
-            This operational layer is local and deterministic. Future fit scores, agent council, Gmail, and CV generation are still placeholders until later phases.
+            This operational layer is local and deterministic. Future fit scores, agent council, Gmail, and CV generation are planned for later phases.
           </p>
         </GlassCard>
       </div>

@@ -36,6 +36,21 @@ Supporting metrics planned for later phases:
 - Gmail: recruiter email monitoring and follow-up support.
 - Settings: local configuration, secrets guidance, source preferences, and safety controls.
 
+## UX Direction
+
+- Keep the dark command-center UI and sidebar.
+- Keep the UI mostly English, with helpful Hebrew job-market terms where they reduce confusion.
+- Keep explanatory copy short and plain.
+- First-open priority should be Today's Mission and Jobs Ready To Apply.
+- Job Inbox should move toward card-based review and paste-job-description intake.
+- Profile and Sources must hold real Adel data before serious AI, CV tailoring, or resume work.
+
+## Agent Direction
+
+The final product should support a specialist agent council with Career Strategy, Israeli Job Market, ATS Optimization, CV Tailoring, Hebrew Language, English Language, Job Fit Scoring, Hidden Market / Sourcing, Risk & Compliance, and Final Decision Chief agents.
+
+Agents may eventually run together or individually, but they must not silently apply to jobs or send emails. Adel must review and confirm agent-proposed actions.
+
 ## Constraints
 
 - Must run from `C:\Users\adelm\Documents\Thucydides`.

@@ -1,12 +1,26 @@
 # Next Prompt Context
 
-Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 3 has added campaign intelligence preparation: job search/filter/sort, better job list rows, priority/reminder fields, manual source records, Israeli job fixtures, and safer hard delete.
+Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 3.6 has added product alignment notes and copy cleanup after Adel's UX review. Phase 3 added campaign intelligence preparation: job search/filter/sort, better job list rows, priority/reminder fields, manual source records, Israeli job fixtures, and safer hard delete.
 
 The product mission is to help Adel reach 10 interviews in the Israeli job market. Adel lives in Beersheba, prefers the South, wants above 10,000 NIS gross if staying in Beersheba, can temporarily accept 8,000 NIS gross, and expects to complete remaining degree requirements around September.
 
+Phase 3.6 product alignment recorded Adel's latest UX review:
+
+- Keep the dark command-center UI and sidebar.
+- Keep the UI mainly English, but add helpful Hebrew job-market terminology and simpler explanations.
+- The first-open experience should lead Adel toward jobs ready to apply.
+- Dashboard should prioritize Today's Mission and Jobs Ready To Apply instead of many metric cards.
+- Job Inbox should move toward cards and paste-job-description intake; the current manual form should be less dominant.
+- Profile and Sources need real Adel data before serious AI, CV tailoring, or resume work.
+- Sources should support CV, LinkedIn, GitHub, project, certificate, and academic intake. Upload workflows can come later, but no parsing yet.
+
 Allowed roles include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Full-Stack, Frontend, Backend, Python, Java, junior software engineering/development, QA automation, software testing, data analyst, BI, junior data engineering, ML/AI/computer vision junior, application/product/API/technical support engineering, system administrator junior, junior DevOps, SOC Tier 1, Implementation Engineer, Technical Integration, Solutions Engineer Junior, real technical Support Engineer roles, and safe technical infrastructure/state-project roles.
 
-Forbidden roles include sales, regular customer service, non-technical service center, regular מוקד שירות, security-clearance-mandatory roles, and army-experience-mandatory roles. Completed-degree requirements before September are risk/manual-check notes, not hard forbidden blockers.
+Future degree logic should treat "student welcome", "final-year student", and "near graduate" as favorable signals. Hebrew wording such as "תואר חובה" or "זכאות לתואר חובה", and completed-degree requirements before September, are risk/manual-check notes, not hard forbidden blockers.
+
+Forbidden roles include sales, regular customer service, non-technical service center, regular מוקד שירות, security-clearance-mandatory roles, and army-experience-mandatory roles.
+
+Agent vision to preserve: Adel wants a council-based system with Career Strategy Agent, Israeli Job Market Agent, ATS Optimization Agent, CV Tailoring Agent, Hebrew Language Agent, English Language Agent, Job Fit Scoring Agent, Hidden Market / Sourcing Agent, Risk & Compliance Agent, and Final Decision Chief Agent. These agents should eventually work together or individually to find suitable jobs, evaluate fit, respect constraints, prepare CV/application material, track applications, suggest next actions, and support reaching 10 interviews. Agents must not silently apply or send emails; Adel must review and confirm, with audit trail and uncertainty labels.
 
 The Stitch reference files are preserved in `stitch_mission_matrix_web_design/`. Use them only as visual reference. Do not paste generated Stitch HTML into the app.
 
@@ -57,11 +71,11 @@ Phase 3 verification:
 
 Recommended Phase 4:
 
-1. Add daily review workflow for due/overdue follow-ups.
-2. Add source editing and source-to-profile linking.
-3. Add saved job views and improved filters.
-4. Add server-action/persistence integration tests.
-5. Design AI readiness contracts without calling OpenAI yet.
+1. Add Daily Review / Today's Mission for due follow-ups and jobs ready to apply.
+2. Add Source Intelligence: source editing, source-to-profile linking, and better CV/LinkedIn/GitHub/project/certificate intake without upload parsing.
+3. Move Job Inbox toward card-based review and a faster paste-job-description workflow.
+4. Design AI readiness contracts and agent output schemas without API calls yet.
+5. Add server-action/persistence integration tests.
 6. Consider OpenAI only after source data, audit trails, and user-review flows are strong.
 
 Before changing code in the next session, inspect the root folder and read `docs/THUCYDIDES_MASTER_CONTEXT.md`, `docs/CURRENT_STATE.md`, `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, and this file.

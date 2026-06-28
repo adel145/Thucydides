@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-26, Thucydides is in Phase 3 campaign intelligence preparation state.
+As of 2026-06-28, Thucydides is in Phase 3.6 product alignment state.
 
 ## What Exists
 
@@ -46,6 +46,16 @@ As of 2026-06-26, Thucydides is in Phase 3 campaign intelligence preparation sta
 - Dashboard includes due follow-ups, overdue follow-ups, and high-priority job counts.
 - Vitest tests exist for role validation with Israeli fixtures, job statuses, lifecycle validation helpers, dashboard metrics, profile validation, filters, priority, and source types.
 - Completed-degree requirements are risk/manual-check notes rather than hard forbidden blockers.
+- Top-bar and placeholder page copy has been cleaned up to reflect current Phase 3 local SQLite status and planned later-phase AI/Gmail work.
+
+## Latest UX Review Summary
+
+- The dark command-center direction and sidebar should stay.
+- The app feels too fully English in places; future UI should stay English but include helpful Hebrew job-market terms and simpler explanations.
+- The dashboard has too many cards for first-open use. Future priority should be Today's Mission and Jobs Ready To Apply.
+- Job Inbox should move toward job cards and a paste-job-description workflow. The current Add Manual Job form is useful but should not dominate the experience.
+- Profile and Sources must be filled with real Adel data before serious AI, CV tailoring, or resume work.
+- Resume Lab, Agent Council, Gmail, and Settings should remain visible as roadmap pages with honest copy.
 
 ## What Does Not Exist Yet
 
@@ -65,6 +75,8 @@ As of 2026-06-26, Thucydides is in Phase 3 campaign intelligence preparation sta
 ## Important Warning
 
 Dashboard, jobs, sources, and pipeline data are now local SQLite data. Future AI, Gmail, scraping, resume features, notifications, and file parsing remain placeholders.
+
+Profile and Sources are the required groundwork for future AI/resume features. Do not add AI calls until Adel's real profile, CV/LinkedIn/GitHub/project/certificate sources, audit trail, and confirmation flow are ready.
 
 ## Known Limitations
 

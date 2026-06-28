@@ -107,3 +107,27 @@ Reason: archive should remain preferred, and hard delete should be hard to trigg
 Decision: remove completed-degree requirements from hard forbidden role rules and keep them as deterministic risk/manual-check notes.
 
 Reason: Adel is close to completing remaining degree requirements, so roles requiring a completed degree before September may still be worth manual review unless another hard blocker exists.
+
+## 2026-06-28: English UI With Hebrew Job-Market Terms
+
+Decision: keep the UI primarily English, but use Hebrew Israeli job-market terminology where it reduces confusion, and keep explanatory text short and simple.
+
+Reason: Adel likes the current visual direction but feels lost when the product is too fully English or too technically worded.
+
+## 2026-06-28: Job Inbox Moves Toward Paste And Cards
+
+Decision: evolve Job Inbox toward a paste-job-description workflow and card-based review, while keeping current manual local intake functional.
+
+Reason: pasted job descriptions are the natural next intake path, and job cards should make ready-to-apply work easier to scan.
+
+## 2026-06-28: Dashboard Priority Is Daily Mission
+
+Decision: future dashboard work should prioritize Today's Mission and Jobs Ready To Apply over many small metric cards.
+
+Reason: the dashboard is visually close, but the first-open view should guide Adel toward the next useful application action.
+
+## 2026-06-28: Final Agent System Is Council-Based
+
+Decision: the final agent system should support specialist agents that can work together as a council or individually, with a Final Decision Chief summarizing recommendations.
+
+Reason: Adel wants a coordinated assistant system that can find jobs, evaluate fit, prepare material, track applications, and support reaching 10 interviews while keeping human confirmation.

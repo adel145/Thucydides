@@ -46,9 +46,9 @@ export default async function ProfilePage() {
 
       <GlassCard>
         <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Source files</p>
-        <h2 className="mt-3 text-2xl font-semibold text-white">Future intake placeholder</h2>
+        <h2 className="mt-3 text-2xl font-semibold text-white">Profile sources live in Sources</h2>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-          Later phases will support local intake for CV files, LinkedIn text, GitHub project lists, certificates, and academic documents. Phase 2 does not parse uploads or extract text.
+          Add CV, LinkedIn, GitHub, project, certificate, and academic source records in Sources. Upload parsing is planned for later phases, so keep important details in pasted text or notes for now.
         </p>
         <div className="mt-5 divide-y divide-white/10">
           {sourceFiles.length === 0 ? (

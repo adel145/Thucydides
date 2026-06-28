@@ -55,9 +55,9 @@ export default async function JobsPage({
     <div className="grid gap-6">
       <GlassCard>
         <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Job Inbox</p>
-        <h2 className="mt-3 text-3xl font-semibold text-white">Search, filter, and intake local jobs</h2>
+        <h2 className="mt-3 text-3xl font-semibold text-white">Review local jobs and paste job descriptions</h2>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-          Search and filters are applied from query params against local SQLite data. Manual job creation still reruns deterministic validation.
+          Search and filters run on local SQLite data. Paste job descriptions here for deterministic validation; richer job cards and a faster paste flow are planned next.
         </p>
         {params.deleted ? (
           <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Job deleted locally.</div>
@@ -126,7 +126,7 @@ export default async function JobsPage({
       </GlassCard>
 
       <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Add manual job</h3>
+        <h3 className="text-xl font-semibold text-white">Paste a job description</h3>
         <form action={createJob} className="mt-5 grid gap-4">
           <div className="grid gap-4 md:grid-cols-2">
             {[

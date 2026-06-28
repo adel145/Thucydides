@@ -36,7 +36,7 @@ export function SkillMatrixPreview() {
           </div>
         </div>
         <p className="relative z-10 mt-4 text-sm leading-6 text-ink-200">
-          Lightweight placeholder for the later Three.js skills model. No WebGL production logic is included in Phase 0.
+          Lightweight placeholder for the later Three.js skills model. No production WebGL logic is included yet.
         </p>
       </div>
     </GlassCard>
