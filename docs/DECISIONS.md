@@ -167,3 +167,9 @@ Reason: Adel needs a practical place to prepare CV notes, messages, follow-up pl
 Decision: make Resume Lab show profile/source/evidence readiness, base CV data, and application packets without generating documents.
 
 Reason: Phase 5.0 should support real application preparation while avoiding fake AI output, DOCX/PDF export, or automatic communication.
+
+## 2026-06-28: Controlled AI Drafting Behind Packet Safety Gate
+
+Decision: allow OpenAI only for review-only Application Packet drafting, gated by `OPENAI_API_KEY`, `OPENAI_MODEL`, deterministic job safety, local audit storage, and explicit user copy into packet fields.
+
+Reason: Adel can benefit from draft support after packet/profile/source groundwork exists, but the product must not fake output, silently apply, send emails, browse, scrape, or behave like an autonomous agent.

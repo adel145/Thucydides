@@ -111,8 +111,8 @@ Future degree logic should treat "student welcome", "final-year student", and "n
 - Future OpenAI API integration for analysis and drafting
 - Future Gmail and Calendar integrations only after explicit design, OAuth, and safety planning
 
-## Phase 5.0 Status
+## Phase 5.1 Status
 
-Phase 5.0 adds a job-specific Application Packet workspace and manual Resume Lab MVP. The app currently has local SQLite data for profile, jobs, sources, source evidence links, application packets, pipeline, deterministic validation, and audit events.
+Phase 5.1 adds a mandatory Application Packet safety gate and controlled OpenAI drafting for packet text only. The app currently has local SQLite data for profile, jobs, sources, source evidence links, application packets, AI draft runs, pipeline, deterministic validation, and audit events.
 
-No OpenAI calls, Gmail OAuth, Google Calendar, scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, deployment, automatic applications, or automatic emails are implemented yet.
+OpenAI is available only from the Application Packet page when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured. It uses review-only drafting, stores local draft-run audit records, and never applies to jobs or sends email. Gmail OAuth, Google Calendar, scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, deployment, automatic applications, and automatic emails are not implemented.

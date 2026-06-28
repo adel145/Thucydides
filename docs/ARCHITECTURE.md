@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 5.0 Architecture
+## Phase 5.1 Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -17,6 +17,7 @@ Primary folders:
 - `lib/jobs/jobPriority.ts`: priority model.
 - `lib/dashboard/`: pure dashboard metric and mission calculation.
 - `lib/applications/`: deterministic application packet helpers.
+- `lib/ai/`: controlled OpenAI drafting boundary for Application Packets.
 - `lib/profile/`: profile validation and source evidence link helpers.
 - `lib/sources/`: source type and readiness models.
 - `lib/agents/`: local future-agent contract types only.
@@ -49,8 +50,9 @@ Phase 1 uses Prisma with SQLite at `prisma/dev.db`. The schema includes:
 - `SourceFile`: manual source records with title/filename, type, optional path/URL, pasted text, notes, and timestamps.
 - `ProfileSourceLink`: manual evidence/audit links from a source to a profile field.
 - `ApplicationPacket`: one manual job-specific application workspace per job.
+- `AiDraftRun`: local audit record for controlled application-packet draft attempts.
 
-Prisma 7 stores the datasource URL in `prisma.config.ts` and uses `@prisma/adapter-better-sqlite3` in runtime code. `.env.example` contains a local `DATABASE_URL` and a blank `OPENAI_API_KEY`; OpenAI is not used in Phase 5.0.
+Prisma 7 stores the datasource URL in `prisma.config.ts` and uses `@prisma/adapter-better-sqlite3` in runtime code. `.env.example` contains local `DATABASE_URL`, blank `OPENAI_API_KEY`, and blank `OPENAI_MODEL` values. OpenAI is disabled unless both OpenAI values are configured.
 
 ## Operational Architecture
 
@@ -96,6 +98,14 @@ Phase 5.0 adds manual application preparation:
 - `/jobs/[id]/application` is the job-specific preparation workspace.
 - `/resumes` is a manual Resume Lab MVP, not a generator or export system.
 
+Phase 5.1 adds controlled AI drafting:
+
+- `lib/ai/openaiClient.ts` is the only OpenAI HTTP boundary.
+- Drafting uses the Responses API with `store: false`, no tools, no browsing, no streaming, and no background work.
+- `lib/ai/applicationDrafting.ts` builds review-only packet prompts, validates JSON output, and blocks forbidden/archived/rejected jobs.
+- Generated content is stored as `AiDraftRun` output until Adel explicitly copies it into packet fields.
+- Missing OpenAI env values disable the UI and do not create fake output.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -116,15 +126,14 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 5.0
+## Non-Goals in Phase 5.1
 
-- OpenAI API calls
 - Gmail OAuth
 - Calendar integration
 - Scraping
 - Authentication
 - Real job scoring
-- Real agent execution
+- Real autonomous agent execution
 - Resume generation
 - DOCX/PDF export
 - Automatic applications

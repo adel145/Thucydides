@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-28, Thucydides is in Phase 5.0 Application Packet + Resume Lab MVP state.
+As of 2026-06-28, Thucydides is in Phase 5.1 Controlled AI Drafting + Application Packet safety gate state.
 
 ## What Exists
 
@@ -50,7 +50,11 @@ As of 2026-06-28, Thucydides is in Phase 5.0 Application Packet + Resume Lab MVP
 - `ProfileSourceLink` stores manual evidence/audit links between `SourceFile` and `CandidateProfile`.
 - Local agent contract types exist for future evidence-based agent output, with no execution.
 - `ApplicationPacket` stores one manual job-specific application workspace per job.
+- `AiDraftRun` stores controlled application-packet draft attempts, generated output, errors, model, prompt version, and input summary.
 - `/jobs/[id]/application` shows application decision, recommended CV language, checklist, evidence summary, risks, and manual draft fields.
+- `/jobs/[id]/application` prevents READY status for forbidden, archived, rejected, or critically incomplete packets.
+- `/jobs/[id]/application` can request controlled OpenAI drafting only when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured.
+- AI draft output is review-only and must be explicitly copied into packet fields by Adel.
 - Job detail and Job Inbox link to application packet preparation.
 - `/resumes` is a manual Resume Lab MVP showing profile/source/evidence readiness, base CV data, and recent application packets.
 - Dashboard includes a Resume Lab button and application packet counts.
@@ -58,7 +62,7 @@ As of 2026-06-28, Thucydides is in Phase 5.0 Application Packet + Resume Lab MVP
 - Pure helpers exist for deterministic job readiness, dashboard mission grouping, and source readiness.
 - Vitest tests exist for role validation with Israeli fixtures, job statuses, lifecycle validation helpers, dashboard metrics, profile validation, filters, priority, and source types.
 - Completed-degree requirements are risk/manual-check notes rather than hard forbidden blockers.
-- Top-bar and placeholder page copy reflects current Phase 4.1 local SQLite status and planned later-phase AI/Gmail work.
+- Top-bar and placeholder page copy reflects local SQLite status, controlled packet drafting, and planned later-phase Gmail/agent work.
 
 ## Latest UX Review Summary
 
@@ -71,7 +75,6 @@ As of 2026-06-28, Thucydides is in Phase 5.0 Application Packet + Resume Lab MVP
 
 ## What Does Not Exist Yet
 
-- No OpenAI API calls.
 - No Gmail OAuth.
 - No Google Calendar.
 - No scraping or browser automation.
@@ -85,14 +88,15 @@ As of 2026-06-28, Thucydides is in Phase 5.0 Application Packet + Resume Lab MVP
 - No notification system for due follow-ups.
 - No automatic source-to-profile linking.
 - No AI/agent execution from the contract types.
-- No AI-generated application content.
+- No autonomous AI/agent execution from the contract types.
+- No AI-generated content outside controlled Application Packet drafting.
 - No automatic applications or automatic emails.
 
 ## Important Warning
 
-Dashboard, jobs, sources, and pipeline data are now local SQLite data. Future AI, Gmail, scraping, resume features, notifications, and file parsing remain placeholders.
+Dashboard, jobs, sources, packets, and AI draft runs are local SQLite data. Gmail, scraping, resume exports, notifications, and file parsing remain placeholders.
 
-Profile, Sources, and manual evidence links are the required groundwork for future AI/resume features. Do not add AI calls until Adel's real profile, CV/LinkedIn/GitHub/project/certificate sources, audit trail, and confirmation flow are ready.
+Profile, Sources, and manual evidence links are the required groundwork for useful AI/resume features. Controlled AI drafting may use only reviewed local packet/profile/source data, and generated text must stay behind Adel review and confirmation.
 
 ## Known Limitations
 

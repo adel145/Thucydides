@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 5.0 - Application Packet + Resume Lab MVP.
+Current state: Phase 5.1 - Controlled AI Drafting + Application Packet safety gate.
 
 ## What Works Now
 
@@ -33,6 +33,8 @@ Current state: Phase 5.0 - Application Packet + Resume Lab MVP.
 - Manual source-to-profile evidence links
 - Local agent output contracts without API calls
 - Job-specific Application Packet workspace
+- Application Packet safety gate for READY status
+- Controlled OpenAI drafting for Application Packets when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured
 - Manual Resume Lab MVP
 - Vitest coverage for rules, filters, dashboard metrics, priorities, source types, and Israeli job fixtures
 
@@ -48,7 +50,6 @@ Forbidden roles include Sales, regular customer service, non-technical service c
 
 The following are intentionally not implemented yet:
 
-- OpenAI API calls
 - Gmail OAuth
 - Google Calendar
 - Scraping
@@ -60,6 +61,7 @@ The following are intentionally not implemented yet:
 - Deployment
 - File upload parsing
 - Notifications
+- Autonomous applications or automatic emails
 
 ## Product Direction
 
@@ -69,7 +71,7 @@ The UI should stay dark, local-first, and sidebar-based. It should remain mostly
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 5.0 uses local SQLite data, deterministic validation, manual job/source intake, manual evidence links, and manual application packets. AI, Gmail, upload parsing, real agents, resume generation, DOCX/PDF export, and automatic communication are intentionally not connected yet.
+Current limitation: Phase 5.1 uses local SQLite data, deterministic validation, manual job/source intake, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. Gmail, upload parsing, real agents, resume generation, DOCX/PDF export, and automatic communication are intentionally not connected.
 
 ## Local Setup
 
@@ -138,13 +140,12 @@ Future work should read and update these files after each phase.
 
 ## Roadmap
 
-Next planned phase: Phase 5.1 - Controlled AI Drafting.
+Next planned phase: Phase 5.2 - refine controlled drafting and evidence workflows.
 
 Planned work:
 
-- Controlled AI drafting from reviewed Application Packets
 - Source-to-profile linking refinements
 - Saved job-search views if still useful
 - More persistence/server-action tests
 
-Later phases include Resume Lab, English/Hebrew CV drafts, cover letters, recruiter messages, DOCX/PDF export, OpenAI-backed Agent Council, and Gmail integration.
+Later phases include stronger Resume Lab generation, English/Hebrew CV drafts, cover letters, recruiter messages, DOCX/PDF export, OpenAI-backed Agent Council, and Gmail integration.

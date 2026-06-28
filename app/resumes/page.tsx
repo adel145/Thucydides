@@ -45,7 +45,7 @@ export default async function ResumesPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Resume Lab</p>
         <h2 className="mt-3 text-3xl font-semibold text-white">Manual CV preparation workspace</h2>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-          Resume Lab is manual in Phase 5.0. No AI, DOCX, PDF, or export yet. Use Application Packets to prepare job-specific CV notes.
+          Resume Lab is manual in Phase 5.1. Controlled drafting lives inside Application Packets; DOCX, PDF, and export are not connected yet.
         </p>
       </GlassCard>
 

@@ -38,6 +38,7 @@ export type PacketChecklistItem = {
   label: string;
   done: boolean;
   missingText: string;
+  critical?: boolean;
 };
 
 const evidenceFields = ["technicalSkills", "education", "githubProjects", "certificates"] as const;
@@ -70,6 +71,41 @@ export function normalizeCvLanguage(value: string | null | undefined): CvLanguag
   return CV_LANGUAGES.includes(value as CvLanguage) ? (value as CvLanguage) : "English";
 }
 
+export function isApplicationDecisionSafeForReady(decision: ApplicationDecision) {
+  return decision === "READY_TO_PREPARE" || decision === "NEEDS_MANUAL_REVIEW";
+}
+
+export function getCriticalChecklistItems(checklist: PacketChecklistItem[]) {
+  return checklist.filter((item) => item.critical);
+}
+
+export function canMarkApplicationPacketReady(summary: { applicationDecision: ApplicationDecision; checklist: PacketChecklistItem[] }) {
+  return isApplicationDecisionSafeForReady(summary.applicationDecision) && getCriticalChecklistItems(summary.checklist).every((item) => item.done);
+}
+
+export function sanitizeApplicationDecisionForJob(
+  job: ApplicationPacketJob,
+  requestedDecision: string | null | undefined,
+  deterministicDecision: ApplicationDecision
+): ApplicationDecision {
+  const normalizedRequestedDecision = normalizeApplicationDecision(requestedDecision);
+  if (deterministicDecision === "DO_NOT_APPLY" || deterministicDecision === "CLOSED") return deterministicDecision;
+  if (job.validationStatus === "RISKY") return "NEEDS_MANUAL_REVIEW";
+  return normalizedRequestedDecision;
+}
+
+export function sanitizeApplicationPacketStatusForJob(
+  job: ApplicationPacketJob,
+  requestedStatus: string | null | undefined,
+  applicationDecision: ApplicationDecision,
+  summary: { checklist: PacketChecklistItem[] }
+): ApplicationPacketStatus {
+  const normalizedRequestedStatus = normalizeApplicationPacketStatus(requestedStatus);
+  if (normalizedRequestedStatus !== "READY") return "DRAFT";
+  if (job.validationStatus === "FORBIDDEN" || !isActiveJob(job)) return "DRAFT";
+  return canMarkApplicationPacketReady({ applicationDecision, checklist: summary.checklist }) ? "READY" : "DRAFT";
+}
+
 export function recommendCvLanguage(job: Pick<ApplicationPacketJob, "language" | "rawDescription">): CvLanguage {
   const language = (job.language ?? "").toLocaleLowerCase();
   const rawDescription = job.rawDescription ?? "";
@@ -90,7 +126,7 @@ export function getApplicationDecision(
 
   const checklist = buildApplicationChecklist(job, profile, sources, links, {});
   const hasProfileEvidenceGap = checklist.some(
-    (item) => !item.done && (item.label.includes("evidence") || item.label.includes("Profile") || item.label.includes("Source"))
+    (item) => item.critical && !item.done && (item.label.includes("Profile") || item.label.includes("Source"))
   );
   if (hasProfileEvidenceGap || !profile) return "NEEDS_PROFILE_EVIDENCE";
   if (isReadyToApplyJob(job)) return "READY_TO_PREPARE";
@@ -107,18 +143,19 @@ export function buildApplicationChecklist(
   const sourceReadiness = calculateSourceReadiness(sources);
   const evidence = summarizeProfileEvidence(links);
   return [
-    { label: "Job is allowed/risky, not forbidden", done: job.validationStatus === "ALLOWED" || job.validationStatus === "RISKY", missingText: "Review forbidden flags before preparing." },
-    { label: "Job is active, not archived/rejected", done: isActiveJob(job), missingText: "Closed jobs should not be prepared." },
-    { label: "Profile has full name/location/degree/skills/education", done: Boolean(profile?.fullName && profile.location && profile.degreeStatus && hasValue(profile.technicalSkills) && hasValue(profile.education)), missingText: "Complete required profile fields." },
-    { label: "Source readiness exists", done: sourceReadiness.readyCount > 0, missingText: "Add CV, LinkedIn, GitHub/projects, certificates, or academic sources." },
+    { label: "Job is allowed/risky, not forbidden", done: job.validationStatus === "ALLOWED" || job.validationStatus === "RISKY", missingText: "Review forbidden flags before preparing.", critical: true },
+    { label: "Job is active, not archived/rejected", done: isActiveJob(job), missingText: "Closed jobs should not be prepared.", critical: true },
+    { label: "Profile has full name/location/degree/skills/education", done: Boolean(profile?.fullName && profile.location && profile.degreeStatus && hasValue(profile.technicalSkills) && hasValue(profile.education)), missingText: "Complete required profile fields.", critical: true },
+    { label: "Source readiness exists", done: sourceReadiness.readyCount > 0, missingText: "Add CV, LinkedIn, GitHub/projects, certificates, or academic sources.", critical: true },
     ...evidenceFields.map((field) => ({
       label: `${field} evidence linked`,
       done: evidence.grouped[field].length > 0,
-      missingText: `Link source evidence for ${field}.`
+      missingText: `Link source evidence for ${field}.`,
+      critical: false
     })),
-    { label: "CV tailoring notes written", done: hasText(draft.cvTailoringNotes), missingText: "Write manual CV tailoring notes." },
-    { label: "Recruiter message or cover note written", done: hasText(draft.recruiterMessageDraft) || hasText(draft.coverLetterDraft), missingText: "Write a recruiter message or cover note." },
-    { label: "Follow-up plan written", done: hasText(draft.followUpPlan), missingText: "Write a follow-up plan." }
+    { label: "CV tailoring notes written", done: hasText(draft.cvTailoringNotes), missingText: "Write manual CV tailoring notes.", critical: true },
+    { label: "Recruiter message or cover note written", done: hasText(draft.recruiterMessageDraft) || hasText(draft.coverLetterDraft), missingText: "Write a recruiter message or cover note.", critical: true },
+    { label: "Follow-up plan written", done: hasText(draft.followUpPlan), missingText: "Write a follow-up plan.", critical: true }
   ];
 }
 

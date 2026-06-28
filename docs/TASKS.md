@@ -86,9 +86,17 @@
 - Added Dashboard Resume Lab link and packet counts.
 - Added tests for application packet language, decision, checklist, and missing inputs.
 
+## Completed In Phase 5.1
+
+- Added Application Packet READY safety gate for forbidden, archived, rejected, closed, and critically incomplete packets.
+- Added additive `AiDraftRun` schema and migration for controlled draft audit records.
+- Added env-gated OpenAI Responses API drafting for Application Packets only.
+- Added review-only AI draft preview and explicit copy-to-packet action.
+- Added tests for packet readiness safety and controlled AI drafting helpers.
+
 ## Next Tasks
 
-- Phase 5.1 Controlled AI Drafting after Application Packet MVP is stable.
+- Phase 5.2 controlled drafting refinements and stronger persistence/server-action tests.
 - Refine manual source-to-profile linking after Adel adds real sources.
 - Add saved job-search views.
 - Add persistence/server-action integration tests.

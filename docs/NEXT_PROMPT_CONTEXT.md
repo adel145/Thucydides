@@ -1,6 +1,6 @@
 # Next Prompt Context
 
-Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.0 has added Application Packet + Resume Lab MVP. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, and Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation.
+Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.1 has added Controlled AI Drafting and a mandatory Application Packet safety gate. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation, and Phase 5.0 Application Packet + Resume Lab MVP.
 
 The product mission is to help Adel reach 10 interviews in the Israeli job market. Adel lives in Beersheba, prefers the South, wants above 10,000 NIS gross if staying in Beersheba, can temporarily accept 8,000 NIS gross, and expects to complete remaining degree requirements around September.
 
@@ -25,11 +25,15 @@ Current Phase 4.1 behavior:
 - `lib/profile/profileSourceLinks.ts` defines allowed target fields, source-type recommendations, grouping, and readiness summary.
 - `lib/agents/agentContracts.ts` defines future agent output contracts only. No agent runs, model call, fake score, automatic application, or email exists.
 
-Current Phase 5.0 behavior:
+Current Phase 5.1 behavior:
 
 - `ApplicationPacket` stores one manual local application workspace per job.
 - `/jobs/[id]/application` shows deterministic application decision, recommended CV language, checklist, missing items, evidence summary, risks, and manual draft fields.
-- Application packet fields are manually saved; no AI generates content.
+- READY status is safety-gated: forbidden, archived, rejected, closed, or critically incomplete packets stay DRAFT.
+- `AiDraftRun` stores controlled OpenAI draft runs for application packets, including prompt version, model, input summary, output, and errors.
+- OpenAI drafting is disabled unless both `OPENAI_API_KEY` and `OPENAI_MODEL` are configured. The app does not guess a model.
+- AI drafting uses the Responses API with `store: false`, no tools, no browsing, no Gmail, and no autonomous application behavior.
+- Generated drafts are review-only and must be explicitly copied into packet fields by Adel.
 - Job detail and Job Inbox link to packet preparation.
 - `/resumes` is a manual Resume Lab MVP with profile/source/evidence readiness, base CV data, missing inputs, and recent packets.
 - Dashboard links to Resume Lab and shows packet counts.
@@ -53,11 +57,10 @@ Known toolchain notes:
 
 Recommended next work:
 
-1. Phase 5.1 Controlled AI Drafting, only after Application Packet MVP is stable.
-2. Use reviewed profile/source evidence and packet fields as inputs.
-3. Keep human confirmation and audit trail before any generated content is used.
-4. Add persistence/server-action tests for packet save and readiness actions.
-5. Refine source-to-profile evidence workflows after Adel adds real sources.
-6. Consider OpenAI only after real Profile/Sources data, audit trails, and user-review flows are strong.
+1. Phase 5.2 refine controlled drafting and evidence workflows.
+2. Add stronger persistence/server-action tests around packet save, READY gating, and AI draft runs.
+3. Improve Resume Lab and source evidence review before export/generation.
+4. Refine source-to-profile evidence workflows after Adel adds real sources.
+5. Keep OpenAI limited to controlled Application Packet drafting until broader confirmation/audit flows are stronger.
 
-Do not add OpenAI, Gmail, Calendar, scraping, browser automation, upload parsing, real agents, resume generation, exports, auth, deployment, automatic applications, or automatic emails unless a later phase explicitly asks for them.
+Do not add Gmail, Calendar, scraping, browser automation, upload parsing, real agents, autonomous applications, automatic emails, resume generation, exports, auth, or deployment unless a later phase explicitly asks for them.

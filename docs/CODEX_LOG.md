@@ -238,3 +238,29 @@ Verified:
 Not implemented:
 
 - No AI generation, OpenAI calls, Gmail, Calendar, scraping, upload parsing, resume export, DOCX/PDF generation, real agents, authentication, deployment, automatic applications, or automatic emails.
+
+## 2026-06-28 Phase 5.1
+
+Created:
+
+- `AiDraftRun` additive Prisma model and migration.
+- `lib/ai/openaiClient.ts` for the env-gated Responses API boundary.
+- `lib/ai/applicationDrafting.ts` for packet-scoped prompt building, safety checks, JSON schema, and output validation.
+- Controlled AI drafting panel on `/jobs/[id]/application`.
+- Tests for AI drafting config, blocked jobs, review-only prompt wording, output validation, and Responses API text extraction.
+
+Updated:
+
+- Application Packet READY status is now safety-gated by deterministic job status, validation status, critical checklist items, and decision safety.
+- Forbidden, archived, and rejected jobs cannot be marked READY through form saves or the Mark ready action.
+- Risky jobs can be READY only as `NEEDS_MANUAL_REVIEW` with required manual preparation fields present.
+- `.env.example` now includes `OPENAI_MODEL`.
+- Docs now describe Phase 5.1 controlled drafting and remaining exclusions.
+
+Verified:
+
+- Gate A passed before AI work: `npm run test`, `npm run build`, and `npm run lint`.
+
+Not implemented:
+
+- No Gmail, Calendar, scraping, browser automation, upload parsing, real agents, autonomous applications, automatic emails, DOCX/PDF export, auth, deployment, or resume export.

@@ -91,12 +91,16 @@ Remaining Phase 4 follow-up tests:
 - Run `npm run build`.
 - Run `npm run lint`.
 - Verify Application Packet helper language, decision, checklist, and missing-item logic.
+- Verify Application Packet READY safety gate blocks forbidden, archived, rejected, closed, and critically incomplete packets.
+- Verify controlled AI drafting helpers with missing env, blocked jobs, review-only prompt wording, response text extraction, and output validation.
+- Verify missing `OPENAI_API_KEY` or `OPENAI_MODEL` disables AI drafting without fake output.
 - Smoke-check `/jobs/[id]/application`.
 - Smoke-check `/resumes`.
 
 Remaining Phase 5 follow-up tests:
 
 - Persistence tests for packet save and mark-ready server actions.
+- Persistence tests for AI draft run creation, error storage, and copy-to-packet action.
 
 ## Future Automated Tests
 

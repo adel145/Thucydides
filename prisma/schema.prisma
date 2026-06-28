@@ -114,6 +114,24 @@ model ApplicationPacket {
   followUpPlan           String?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+  aiDraftRuns            AiDraftRun[]
 
   @@index([jobId])
+}
+
+model AiDraftRun {
+  id                  String            @id @default(cuid())
+  applicationPacketId String
+  applicationPacket   ApplicationPacket @relation(fields: [applicationPacketId], references: [id], onDelete: Cascade)
+  kind                String
+  status              String            @default("DRAFT")
+  model               String?
+  promptVersion       String
+  inputSummary        Json?
+  output              Json?
+  error               String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([applicationPacketId])
 }

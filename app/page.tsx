@@ -58,7 +58,7 @@ export default async function DashboardPage() {
             Today&apos;s Mission
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-ink-200">
-            Start with jobs ready to apply, follow-ups, and source readiness. Local SQLite only; no AI or Gmail is connected.
+            Start with jobs ready to apply, follow-ups, and source readiness. Local SQLite active; Gmail is not connected.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <NeonButton href="/jobs?view=ready">Jobs Ready To Apply</NeonButton>
