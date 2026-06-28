@@ -1,6 +1,6 @@
 # Next Prompt Context
 
-Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 4.0 has added Daily Mission + Job Review UX Foundation. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, and Phase 3.6 product alignment.
+Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 4.1 has added Manual Source-to-Profile Linking + AI Contracts Foundation. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, and Phase 4.0 Daily Mission + Job Review UX Foundation.
 
 The product mission is to help Adel reach 10 interviews in the Israeli job market. Adel lives in Beersheba, prefers the South, wants above 10,000 NIS gross if staying in Beersheba, can temporarily accept 8,000 NIS gross, and expects to complete remaining degree requirements around September.
 
@@ -15,6 +15,15 @@ Current Phase 4.0 behavior:
 - Paste job description is the main intake path, with title and source required.
 - Sources has manual source readiness and source detail/edit workflow.
 - Source deletion requires typing DELETE.
+
+Current Phase 4.1 behavior:
+
+- `ProfileSourceLink` additively links `SourceFile` records to `CandidateProfile` fields.
+- Source detail pages can create/delete manual evidence links.
+- Profile shows linked source evidence grouped by target profile field.
+- Dashboard shows profile evidence readiness count.
+- `lib/profile/profileSourceLinks.ts` defines allowed target fields, source-type recommendations, grouping, and readiness summary.
+- `lib/agents/agentContracts.ts` defines future agent output contracts only. No agent runs, model call, fake score, automatic application, or email exists.
 
 Allowed roles include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Full-Stack, Frontend, Backend, Python, Java, junior software engineering/development, QA automation, software testing, data analyst, BI, junior data engineering, ML/AI/computer vision junior, application/product/API/technical support engineering, system administrator junior, junior DevOps, SOC Tier 1, Implementation Engineer, Technical Integration, Solutions Engineer Junior, real technical Support Engineer roles, and safe technical infrastructure/state-project roles.
 
@@ -36,7 +45,7 @@ Known toolchain notes:
 Recommended next work:
 
 1. Refine Daily Mission into an explicit daily review action flow.
-2. Add manual source-to-profile linking without automatic parsing.
+2. Refine source-to-profile evidence workflows after Adel adds real sources.
 3. Add saved job-search views if they still feel useful after quick filters.
 4. Design AI readiness contracts and agent output schemas without API calls.
 5. Add persistence/server-action tests for source update/delete and reminder actions.

@@ -5,6 +5,7 @@ import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { db } from "@/lib/db";
 import { calculateDashboardMission } from "@/lib/dashboard/dashboardMission";
 import { calculateDashboardMetrics } from "@/lib/dashboard/dashboardMetrics";
+import { summarizeProfileEvidence } from "@/lib/profile/profileSourceLinks";
 
 function validationTone(status: string) {
   if (status === "FORBIDDEN") return "warning";
@@ -20,10 +21,12 @@ export default async function DashboardPage() {
     orderBy: { updatedAt: "desc" }
   });
   const profile = await db.candidateProfile.findFirst({
-    orderBy: { createdAt: "asc" }
+    orderBy: { createdAt: "asc" },
+    include: { sourceLinks: true }
   });
   const metrics = calculateDashboardMetrics(jobs);
   const mission = calculateDashboardMission(jobs, sources, profile);
+  const evidence = summarizeProfileEvidence(profile?.sourceLinks ?? []);
   const readinessWarning = mission.sourceReadiness.missing.length > 0 || mission.profileWarnings.length > 0;
 
   const metricCards = [
@@ -78,6 +81,10 @@ export default async function DashboardPage() {
               <div className="text-2xl font-semibold text-aqua-400">{mission.sourceReadiness.readyCount}/{mission.sourceReadiness.totalCount}</div>
               <div className="text-xs text-ink-400">Sources</div>
             </div>
+            <div>
+              <div className="text-2xl font-semibold text-aqua-400">{evidence.readyCount}/{evidence.totalCount}</div>
+              <div className="text-xs text-ink-400">Evidence</div>
+            </div>
           </div>
         </div>
       </GlassCard>
@@ -91,6 +98,7 @@ export default async function DashboardPage() {
           <div className="mt-4 flex flex-wrap gap-2">
             {mission.profileWarnings.slice(0, 3).map((warning) => <ScoreBadge key={warning} tone="warning">{warning}</ScoreBadge>)}
             {mission.sourceReadiness.missing.map((item) => <ScoreBadge key={item.label} tone="warning">Missing {item.label}</ScoreBadge>)}
+            {evidence.fieldsMissingEvidence.slice(0, 4).map((field) => <ScoreBadge key={field.key} tone="warning">{field.label} evidence missing</ScoreBadge>)}
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
             <NeonButton href="/profile">Update Profile</NeonButton>

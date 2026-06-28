@@ -184,3 +184,30 @@ Verified:
 Not implemented:
 
 - No integrations, schema changes, AI, Gmail, scraping, upload parsing, real agents, auth, deployment, automatic applications, or automatic emails.
+
+## 2026-06-28 Phase 4.1
+
+Created:
+
+- `ProfileSourceLink` additive Prisma model and migration.
+- `lib/profile/profileSourceLinks.ts` for target field whitelist, source-type recommendations, grouping, and readiness summary.
+- `lib/agents/agentContracts.ts` for future agent output contracts only.
+- Tests for profile source links and agent contract id validation.
+
+Updated:
+
+- Source detail page can create/delete manual evidence links to profile fields.
+- Profile page shows linked evidence grouped by target profile field.
+- Dashboard shows profile evidence readiness counts.
+- Agent Council page states that only contracts and safety rules exist.
+- Seed reset order handles `ProfileSourceLink`.
+
+Verified:
+
+- `npx prisma migrate dev --name phase4_1_profile_source_links` succeeded.
+- `npx prisma generate` succeeded.
+- `npm run db:seed` succeeded.
+
+Not implemented:
+
+- No real AI, OpenAI calls, Gmail, Calendar, scraping, upload parsing, source parsing, generated resume text, real agents, authentication, deployment, automatic applications, or automatic emails.

@@ -72,13 +72,15 @@ Remaining visual QA:
 - Verify dashboard mission grouping.
 - Verify source readiness helper.
 - Verify quick review filters.
+- Verify manual source-to-profile evidence linking.
+- Verify agent contract helper behavior.
 - Smoke-check `/`, `/jobs`, `/sources`, and a real `/sources/[id]` after seeding local data.
 
 Remaining Phase 4 follow-up tests:
 
 - Persistence tests for source update/delete behavior.
 - Server action tests for job reminders and priority updates.
-- Integration tests around future source-to-profile workflows.
+- Persistence tests for profile source link server actions.
 
 ## Future Automated Tests
 

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { deleteSourceRecord, updateSourceRecord } from "@/app/sources/actions";
+import { createProfileSourceLink, deleteProfileSourceLink, deleteSourceRecord, updateSourceRecord } from "@/app/sources/actions";
 import { DangerButton } from "@/components/ui/DangerButton";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonButton } from "@/components/ui/NeonButton";
 import { db } from "@/lib/db";
+import { getProfileSourceTargetField, getRecommendedTargetFields, PROFILE_SOURCE_TARGET_FIELDS } from "@/lib/profile/profileSourceLinks";
 import { SOURCE_TYPES, sourceTypeLabels } from "@/lib/sources/sourceTypes";
 
 export default async function SourceDetailPage({
@@ -12,12 +13,17 @@ export default async function SourceDetailPage({
   searchParams
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ saved?: string; deleteError?: string }>;
+  searchParams?: Promise<{ saved?: string; deleteError?: string; linked?: string; unlinked?: string; linkError?: string }>;
 }) {
   const { id } = await params;
   const notices = await searchParams;
-  const source = await db.sourceFile.findUnique({ where: { id } });
+  const source = await db.sourceFile.findUnique({
+    where: { id },
+    include: { profileLinks: { orderBy: { updatedAt: "desc" } } }
+  });
   if (!source) notFound();
+  const profile = await db.candidateProfile.findFirst({ orderBy: { createdAt: "asc" } });
+  const recommendedFields = getRecommendedTargetFields(source.type);
 
   return (
     <div className="grid gap-6">
@@ -28,7 +34,67 @@ export default async function SourceDetailPage({
           Edit manual source data only. No file upload parsing or automatic profile linking happens here.
         </p>
         {notices?.saved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Source saved.</div> : null}
+        {notices?.linked ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Evidence link saved.</div> : null}
+        {notices?.unlinked ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Evidence link removed.</div> : null}
+        {notices?.linkError ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-signal-red">Choose a valid profile field.</div> : null}
         {notices?.deleteError ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-signal-red">Type DELETE to remove this source.</div> : null}
+      </GlassCard>
+
+      <GlassCard>
+        <h3 className="text-xl font-semibold text-white">Link this source to Profile</h3>
+        <p className="mt-3 text-sm leading-6 text-ink-200">
+          This is a manual evidence link. No parsing or automatic profile update happens here. Use the link to remember which source supports which profile field.
+        </p>
+        <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-200">
+          Source type: <span className="font-semibold text-white">{sourceTypeLabels[source.type as keyof typeof sourceTypeLabels] ?? source.type}</span>
+          <div className="mt-2 text-xs text-ink-400">
+            Recommended: {recommendedFields.map((field) => field.label).join(", ") || "Source notes"}
+          </div>
+        </div>
+        {profile ? (
+          <form action={createProfileSourceLink} className="mt-5 grid gap-4">
+            <input type="hidden" name="profileId" value={profile.id} />
+            <input type="hidden" name="sourceId" value={source.id} />
+            <label>
+              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Profile field</span>
+              <select name="targetField" className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white outline-none focus:border-aqua-400/70">
+                {PROFILE_SOURCE_TARGET_FIELDS.map((field) => (
+                  <option key={field.key} value={field.key}>{field.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Evidence note</span>
+              <input name="note" className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
+            </label>
+            <div><NeonButton>Create evidence link</NeonButton></div>
+          </form>
+        ) : (
+          <p className="mt-4 text-sm text-ink-400">Create a profile before linking evidence.</p>
+        )}
+
+        <div className="mt-6 grid gap-3">
+          <h4 className="font-semibold text-white">Existing links for this source</h4>
+          {source.profileLinks.length === 0 ? <p className="text-sm text-ink-400">No profile evidence links yet.</p> : null}
+          {source.profileLinks.map((link) => {
+            const field = getProfileSourceTargetField(link.targetField);
+            return (
+              <div key={link.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="font-semibold text-white">{field?.label ?? link.targetField}</div>
+                    {link.note ? <p className="mt-1 text-sm text-ink-200">{link.note}</p> : null}
+                  </div>
+                  <form action={deleteProfileSourceLink}>
+                    <input type="hidden" name="id" value={link.id} />
+                    <input type="hidden" name="sourceId" value={source.id} />
+                    <button className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-ink-200">Unlink</button>
+                  </form>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </GlassCard>
 
       <GlassCard>

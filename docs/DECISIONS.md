@@ -143,3 +143,15 @@ Reason: Phase 4.0 should make the first-open workflow useful with existing local
 Decision: add manual source detail/edit and readiness indicators using existing `SourceFile` fields only.
 
 Reason: Adel needs reliable source inventory before serious AI/CV work, but upload parsing and automatic profile linking remain later-phase work.
+
+## 2026-06-28: Manual Evidence Links Before AI
+
+Decision: add `ProfileSourceLink` as an additive table that manually links a source to a profile field.
+
+Reason: future AI and CV work needs auditable evidence, but Phase 4.1 must not parse files or automatically update profile fields.
+
+## 2026-06-28: Agent Contracts Only
+
+Decision: define local TypeScript contracts for future agent outputs without running agents or calling models.
+
+Reason: future agents must carry evidence references, uncertainty, safety status, and human-review state before any real AI integration is considered.

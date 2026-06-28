@@ -29,6 +29,7 @@ model CandidateProfile {
   sourceNotes           String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+  sourceLinks           ProfileSourceLink[]
 }
 
 model Job {
@@ -75,4 +76,21 @@ model SourceFile {
   notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  profileLinks  ProfileSourceLink[]
+}
+
+model ProfileSourceLink {
+  id          String           @id @default(cuid())
+  profileId   String
+  profile     CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  sourceId    String
+  source      SourceFile       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  targetField String
+  note        String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([profileId, sourceId, targetField])
+  @@index([profileId])
+  @@index([sourceId])
 }

@@ -46,3 +46,13 @@ Adel's desired final product is a coordinated agent system that can run as a cou
 - Agents must mark uncertainty.
 - Agents must respect forbidden roles.
 - Agents must prefer local data and explicit user confirmation.
+
+## Phase 4.1 Contracts
+
+Phase 4.1 adds local TypeScript contracts for future agent output in `lib/agents/agentContracts.ts`.
+
+- Contracts include agent id, input snapshot, evidence refs, findings, recommendations, confidence, uncertainty, safety status, and human review state.
+- Contracts do not call models.
+- Contracts do not create mock AI output.
+- Contracts do not apply to jobs or send emails.
+- Future agent output must reference linked evidence and remain reviewable by Adel before any action.

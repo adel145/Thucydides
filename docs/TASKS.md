@@ -62,10 +62,23 @@
 - Made source delete require typing DELETE.
 - Added tests for job readiness, dashboard mission grouping, source readiness, and quick filters.
 
+## Completed In Phase 4.1
+
+- Added additive `ProfileSourceLink` schema and migration.
+- Added manual evidence links from sources to profile fields.
+- Added profile source-link whitelist and source-type recommendation helper.
+- Added profile evidence grouping/readiness summary.
+- Added source detail UI for creating and deleting evidence links.
+- Added Profile evidence section grouped by target field.
+- Added Dashboard evidence readiness count.
+- Added local agent output contract types with safety/review/evidence fields.
+- Updated Agent Council page to show contract-only status and safety principles.
+- Added tests for profile source links and agent contract id validation.
+
 ## Next Tasks
 
 - Refine Daily Mission with daily review actions.
-- Add manual source-to-profile linking.
+- Refine manual source-to-profile linking after Adel adds real sources.
 - Add saved job-search views.
 - Add first AI preparation design without API calls.
 - Add persistence/server-action integration tests.

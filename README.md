@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 4.0 - Daily Mission + Job Review UX Foundation.
+Current state: Phase 4.1 - Manual Source-to-Profile Linking + AI Contracts Foundation.
 
 ## What Works Now
 
@@ -30,6 +30,8 @@ Current state: Phase 4.0 - Daily Mission + Job Review UX Foundation.
 - Manual source records and pasted text intake
 - Manual source detail/edit workflow
 - Source readiness indicators
+- Manual source-to-profile evidence links
+- Local agent output contracts without API calls
 - Vitest coverage for rules, filters, dashboard metrics, priorities, source types, and Israeli job fixtures
 
 ## Mission
@@ -65,7 +67,7 @@ The UI should stay dark, local-first, and sidebar-based. It should remain mostly
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 4.0 uses local SQLite data, deterministic validation, manual job/source intake, and roadmap pages. AI, Gmail, upload parsing, real agents, and resume generation are intentionally not connected yet.
+Current limitation: Phase 4.1 uses local SQLite data, deterministic validation, manual job/source intake, manual evidence links, and roadmap pages. AI, Gmail, upload parsing, real agents, and resume generation are intentionally not connected yet.
 
 ## Local Setup
 
@@ -134,12 +136,12 @@ Future work should read and update these files after each phase.
 
 ## Roadmap
 
-Next planned phase: Phase 4.1 - Source Intelligence and AI Contracts.
+Next planned phase: Phase 4.2 - Source Intelligence Refinement.
 
 Planned work:
 
 - Daily review refinements
-- Source-to-profile linking
+- Source-to-profile linking refinements
 - Saved job-search views
 - AI readiness contracts without calling OpenAI
 - More persistence/server-action tests

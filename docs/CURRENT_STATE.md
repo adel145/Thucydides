@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-28, Thucydides is in Phase 4.0 Daily Mission + Job Review UX Foundation state.
+As of 2026-06-28, Thucydides is in Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation state.
 
 ## What Exists
 
@@ -42,13 +42,18 @@ As of 2026-06-28, Thucydides is in Phase 4.0 Daily Mission + Job Review UX Found
 - `/pipeline` can set priority, next action date, next action note, and last contacted date.
 - `ApplicationEvent` records are created for new job creation, job updates, validation reruns, status changes, and archives.
 - `/profile` validates required fields, salary consistency, and honest degree wording; it shows save feedback and preserves submitted values on validation errors.
-- `/profile` includes a source-file intake design placeholder without upload parsing.
+- `/profile` shows source records and manual evidence links without upload parsing.
 - `/sources` manages local manual source records, pasted text intake, source readiness, and source edit/detail workflow.
+- `/sources/[id]` can manually link a source to allowed profile fields as evidence.
+- `/profile` shows profile source evidence grouped by target field.
+- Dashboard source readiness includes manual profile evidence link counts.
+- `ProfileSourceLink` stores manual evidence/audit links between `SourceFile` and `CandidateProfile`.
+- Local agent contract types exist for future evidence-based agent output, with no execution.
 - Dashboard includes jobs ready to apply, due follow-ups, overdue follow-ups, high-priority jobs, recent jobs, and profile/source readiness warnings.
 - Pure helpers exist for deterministic job readiness, dashboard mission grouping, and source readiness.
 - Vitest tests exist for role validation with Israeli fixtures, job statuses, lifecycle validation helpers, dashboard metrics, profile validation, filters, priority, and source types.
 - Completed-degree requirements are risk/manual-check notes rather than hard forbidden blockers.
-- Top-bar and placeholder page copy reflects current Phase 4.0 local SQLite status and planned later-phase AI/Gmail work.
+- Top-bar and placeholder page copy reflects current Phase 4.1 local SQLite status and planned later-phase AI/Gmail work.
 
 ## Latest UX Review Summary
 
@@ -74,12 +79,13 @@ As of 2026-06-28, Thucydides is in Phase 4.0 Daily Mission + Job Review UX Found
 - No real upload parsing for source files.
 - No notification system for due follow-ups.
 - No automatic source-to-profile linking.
+- No AI/agent execution from the contract types.
 
 ## Important Warning
 
 Dashboard, jobs, sources, and pipeline data are now local SQLite data. Future AI, Gmail, scraping, resume features, notifications, and file parsing remain placeholders.
 
-Profile and Sources are the required groundwork for future AI/resume features. Do not add AI calls until Adel's real profile, CV/LinkedIn/GitHub/project/certificate sources, audit trail, and confirmation flow are ready.
+Profile, Sources, and manual evidence links are the required groundwork for future AI/resume features. Do not add AI calls until Adel's real profile, CV/LinkedIn/GitHub/project/certificate sources, audit trail, and confirmation flow are ready.
 
 ## Known Limitations
 
