@@ -251,3 +251,21 @@ Reason: parser output is imperfect and must remain behind Adel review. Forbidden
 Decision: top-bar copy says "AI drafting configured" rather than "AI drafting active."
 
 Reason: env variables prove configuration, not a live health check or successful model call.
+
+## 2026-06-29: Discovery Priority Is Company Careers First
+
+Decision: Phase 6.1 job discovery prioritizes company career pages and public ATS APIs first, job platforms second, and Gmail alerts third as fallback/intake.
+
+Reason: manual Gmail alerts proved the local lead pipeline, but Adel needs real discovery that starts closer to source-of-truth employer postings while still keeping every result behind review.
+
+## 2026-06-29: Web Discovery Produces Leads, Not Applications
+
+Decision: Tavily, SerpApi, Greenhouse, and page extraction outputs must create `JobDiscoveryLead` records before any normal `Job` exists.
+
+Reason: external results can be incomplete, duplicated, stale, or risky. Adel must manually import selected non-forbidden leads; no provider API may submit applications or send communication.
+
+## 2026-06-29: Discovery Providers Are Env-Gated
+
+Decision: Tavily and SerpApi are optional providers controlled by `TAVILY_API_KEY`, `SERPAPI_API_KEY`, `JOB_DISCOVERY_MAX_RESULTS`, and `JOB_DISCOVERY_COUNTRY`.
+
+Reason: missing provider keys should degrade gracefully in local development and tests, without blocking build or creating fake data.

@@ -402,3 +402,27 @@ Updated:
 Not implemented:
 
 - No Gmail OAuth, automatic Gmail reading, email sending, Calendar, scraping, browser automation, OpenAI parsing, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, or fake AI output.
+
+## 2026-06-29 Phase 6.1 - Internet Job Discovery Engine + Company Career Pages First
+
+Created:
+
+- Additive `JobDiscoveryRun` model and internet discovery fields on `JobDiscoveryLead`.
+- Migration `20260629194527_phase6_1_internet_job_discovery`.
+- `/discovery` page with provider status, discovery run form, run list, counts, and lead review board.
+- Discovery server actions for run, enrichment retry, import, skip, and duplicate marking.
+- `lib/discovery/` provider config, query generation, Tavily client, SerpApi client, Greenhouse helpers, page fetcher, extractor, engine, scoring, counts, and import helper.
+- Tests for provider config, query generation, Greenhouse mapping, JSON-LD extraction, HTML fallback extraction, role expansion, scoring, import behavior, and counts.
+
+Updated:
+
+- Dashboard now leads with "Find suitable jobs" and shows provider/discovery lead counts.
+- Sidebar includes Discovery.
+- Gmail page links back to Discovery as fallback/manual intake.
+- `.env.example` includes `TAVILY_API_KEY`, `SERPAPI_API_KEY`, `JOB_DISCOVERY_MAX_RESULTS`, and `JOB_DISCOVERY_COUNTRY`.
+- Role rules now recognize backend, full-stack, Python, software engineer, AI training, and software-student title variants.
+- Docs now record company career pages first, job platforms second, Gmail alerts third.
+
+Not implemented:
+
+- No automatic applications, automatic emails, Gmail OAuth, automatic inbox reading, provider login, captcha bypass, authenticated scraping, OpenAI discovery scoring/parsing, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.

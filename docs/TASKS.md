@@ -151,8 +151,25 @@
 - Added `npm run verify`.
 - Added tests for provider classification, parser behavior, role safety, import helper behavior, duplicate detection, and lead counts.
 
+## Completed In Phase 6.1
+
+- Added env-gated internet discovery foundation with company career pages first, job platforms second, Gmail alerts third.
+- Added optional Tavily and SerpApi provider config helpers and clients with timeouts.
+- Added company-career query generation and target company defaults.
+- Added Greenhouse public board token detection and job mapping.
+- Added public page fetch and JSON-LD JobPosting / visible HTML extraction.
+- Added deterministic discovery fit scoring and review counts.
+- Added `/discovery` page with provider status, run form, run history, and lead review board.
+- Added discovery server actions for running discovery, enrichment retry, import, skip, and duplicate marking.
+- Added discovery import path that uses enriched/extracted descriptions before noisy snippets.
+- Added additive `JobDiscoveryRun` model and internet discovery fields on `JobDiscoveryLead`.
+- Expanded deterministic role rules for backend, full-stack, Python, software engineer, AI training, and software-student titles.
+- Added tests for provider config, query generation, Greenhouse, extraction, scoring, role rules, import behavior, and counts.
+
 ## Next Tasks
 
+- Tune internet discovery results conservatively after real Tavily/SerpApi/career-page runs.
+- Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.
 - Improve packet quality review before exports.
 - Refine manual source-to-profile linking after Adel adds more real sources.

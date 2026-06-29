@@ -101,7 +101,7 @@ Future degree logic should treat "student welcome", "final-year student", and "n
 - Resume Lab, Agent Council, Gmail, and Settings should remain visible as planned roadmap pages with honest copy.
 - The final agent system should be a specialist council with a Final Decision Chief, human confirmation, audit trail, and uncertainty labels.
 - Future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply.
-- Future discovery sources: company career pages first, then LinkedIn, Indeed, Drushim, AllJobs, Glassdoor/Google Jobs, and Gmail job alerts as fallback/intake.
+- Discovery sources: company career pages first, then LinkedIn, Indeed, Drushim, AllJobs, Glassdoor/Google Jobs, and Gmail job alerts as fallback/intake.
 - Future export goals: DOCX/PDF for CV and cover letters, TXT for recruiter messages/notes, local per-job folders, and RTL/LTR support.
 
 ## Planned Stack
@@ -114,12 +114,12 @@ Future degree logic should treat "student welcome", "final-year student", and "n
 - Future OpenAI API integration for analysis and drafting
 - Future Gmail and Calendar integrations only after explicit design, OAuth, and safety planning
 
-## Phase 6.0 Status
+## Phase 6.1 Status
 
-Phase 6.0 has a mandatory Application Packet safety gate, controlled OpenAI drafting for packet text only, manual source/profile evidence workflows, local/manual Gmail job-alert paste intake, and clearer product direction for real applications. The app currently has local SQLite data for profile, jobs, sources, source evidence links, pasted Gmail alerts, discovery leads, application packets, AI draft runs, pipeline, deterministic validation, and audit events.
+Phase 6.1 has a mandatory Application Packet safety gate, controlled OpenAI drafting for packet text only, manual source/profile evidence workflows, local/manual Gmail job-alert paste intake, and env-gated internet discovery. The app currently has local SQLite data for profile, jobs, sources, source evidence links, pasted Gmail alerts, discovery runs, discovery leads, application packets, AI draft runs, pipeline, deterministic validation, and audit events.
 
-OpenAI is available only from the Application Packet page when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured. It uses review-only drafting, stores local draft-run audit records, and never applies to jobs or sends email. Gmail alert intake is manual pasted text only. Gmail OAuth, automatic Gmail reading, Google Calendar, scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, deployment, automatic applications, and automatic emails are not implemented.
+OpenAI is available only from the Application Packet page when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured. It uses review-only drafting, stores local draft-run audit records, and never applies to jobs or sends email. Discovery uses company career pages first, job platforms second, and Gmail alerts third. Tavily and SerpApi are optional env-gated providers; Greenhouse public job boards can be mapped when detected. Gmail OAuth, automatic Gmail reading, Google Calendar, authenticated scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, deployment, automatic applications, and automatic emails are not implemented.
 
 AI/ML research student roles are target role signals, including Deep Learning, Machine Learning, AI Research, Research Student, Student Researcher, Computer Vision, Data Science Student, Algorithm Student, AI/ML Intern, and Research Intern. Sales, regular customer service, non-technical service center, mandatory security clearance, and mandatory army experience remain hard forbidden blockers.
 
-Phase 6.0 leads are review candidates. A `JobDiscoveryLead` becomes a normal `Job` only after Adel explicitly imports it, and forbidden leads are blocked from normal import.
+Discovery leads are review candidates. A `JobDiscoveryLead` becomes a normal `Job` only after Adel explicitly imports it, and forbidden leads are blocked from normal import.

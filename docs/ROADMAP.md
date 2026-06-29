@@ -60,3 +60,7 @@
 - Import safe non-forbidden leads into the normal Job Inbox only after Adel action.
 - Keep Gmail OAuth, inbox reading, scraping, browser automation, and automatic applications out until explicitly designed.
 - Consider read-only Gmail OAuth in a later phase after privacy, safety, and audit rules are written.
+- Add env-gated internet discovery with company career pages first, platforms second, Gmail alerts third.
+- Use public ATS APIs such as Greenhouse when detected.
+- Keep Tavily and SerpApi optional and review-only.
+- Add Lever/Ashby/Workday adapters only after public, non-authenticated behavior is understood.

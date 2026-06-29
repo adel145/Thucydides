@@ -78,12 +78,30 @@ model JobDiscoveryLead {
   provider         String?
   gmailAlertId     String?
   gmailAlert       GmailJobAlert? @relation(fields: [gmailAlertId], references: [id], onDelete: Cascade)
+  discoveryRunId   String?
+  discoveryRun     JobDiscoveryRun? @relation(fields: [discoveryRunId], references: [id], onDelete: SetNull)
   title            String
   company          String?
   location         String?
   sourceUrl        String?
   rawSnippet       String
   rawText          String?
+  discoverySource  String?
+  discoveryProvider String?
+  discoveryQuery   String?
+  discoveredUrl    String?
+  canonicalUrl     String?
+  extractedTitle   String?
+  extractedCompany String?
+  extractedLocation String?
+  extractedDescription String?
+  extractedRequirements String?
+  extractedRemotePolicy String?
+  extractedLanguage String?
+  confidence       String?
+  fitScore         Int?
+  fitReasons       Json?
+  lastEnrichedAt   DateTime?
   validationStatus String         @default("UNREVIEWED")
   forbiddenFlags   Json?
   allowedSignals   Json?
@@ -96,8 +114,26 @@ model JobDiscoveryLead {
   updatedAt        DateTime       @updatedAt
 
   @@index([gmailAlertId])
+  @@index([discoveryRunId])
   @@index([status])
   @@index([validationStatus])
+}
+
+model JobDiscoveryRun {
+  id             String             @id @default(cuid())
+  status         String             @default("RUNNING")
+  sourcePriority String?
+  query          String?
+  provider       String?
+  startedAt      DateTime           @default(now())
+  finishedAt     DateTime?
+  resultCount    Int                @default(0)
+  importedCount  Int                @default(0)
+  skippedCount   Int                @default(0)
+  error          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  leads          JobDiscoveryLead[]
 }
 
 model ApplicationEvent {

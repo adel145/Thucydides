@@ -5,6 +5,8 @@ import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { db } from "@/lib/db";
 import { calculateDashboardMission } from "@/lib/dashboard/dashboardMission";
 import { calculateDashboardMetrics } from "@/lib/dashboard/dashboardMetrics";
+import { getDiscoveryProviderStatus } from "@/lib/discovery/discoveryProviders";
+import { countDiscoveryLeads } from "@/lib/discovery/jobDiscoveryCounts";
 import { summarizeProfileEvidence } from "@/lib/profile/profileSourceLinks";
 
 function validationTone(status: string) {
@@ -28,12 +30,12 @@ export default async function DashboardPage() {
     draft: await db.applicationPacket.count({ where: { status: "DRAFT" } }),
     ready: await db.applicationPacket.count({ where: { status: "READY" } })
   };
-  const gmailLeadsAwaitingReview = await db.jobDiscoveryLead.count({
-    where: {
-      importedJobId: null,
-      status: { in: ["NEW", "REVIEW"] }
-    }
+  const discoveryRuns = await db.jobDiscoveryRun.count();
+  const discoveryLeads = await db.jobDiscoveryLead.findMany({
+    select: { status: true, importedJobId: true, validationStatus: true, extractedDescription: true, rawText: true, discoverySource: true }
   });
+  const discoveryCounts = countDiscoveryLeads(discoveryLeads);
+  const providerStatus = getDiscoveryProviderStatus();
   const metrics = calculateDashboardMetrics(jobs);
   const mission = calculateDashboardMission(jobs, sources, profile);
   const evidence = summarizeProfileEvidence(profile?.sourceLinks ?? []);
@@ -67,9 +69,10 @@ export default async function DashboardPage() {
             Start with jobs ready to apply, follow-ups, and source readiness. Local SQLite active; Gmail is not connected.
           </p>
           <p className="mt-3 text-sm text-ink-300">
-            Manual Gmail alert leads awaiting review: <span className="font-semibold text-aqua-400">{gmailLeadsAwaitingReview}</span>. This is pasted alert text only, not inbox scanning.
+            Company career pages first, platforms second, Gmail alerts third. Leads awaiting review: <span className="font-semibold text-aqua-400">{discoveryCounts.needsReview}</span>.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
+            <NeonButton href="/discovery">Find suitable jobs</NeonButton>
             <NeonButton href="/jobs?view=ready">Jobs Ready To Apply</NeonButton>
             <NeonButton href="/resumes" className="border-white/20 text-ink-100">Resume Lab</NeonButton>
             <NeonButton href="/jobs" className="border-white/20 text-ink-100">Paste Job</NeonButton>
@@ -105,8 +108,8 @@ export default async function DashboardPage() {
               <div className="text-xs text-ink-400">Packets</div>
             </div>
             <div>
-              <div className="text-2xl font-semibold text-aqua-400">{gmailLeadsAwaitingReview}</div>
-              <div className="text-xs text-ink-400">Gmail leads</div>
+              <div className="text-2xl font-semibold text-aqua-400">{discoveryCounts.needsReview}</div>
+              <div className="text-xs text-ink-400">Review leads</div>
             </div>
           </div>
         </div>
@@ -122,7 +125,7 @@ export default async function DashboardPage() {
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           {[
-            ["Find jobs automatically — planned", "Career pages first, then LinkedIn, Indeed, Drushim, AllJobs, and other sources after safety design."],
+            ["Find suitable jobs", `Career pages first. Tavily ${providerStatus.tavilyConfigured ? "configured" : "not configured"}, SerpApi ${providerStatus.serpApiConfigured ? "configured" : "not configured"}.`],
             ["Gmail job alerts intake — local paste", "Paste job-alert emails manually. Gmail is not connected and no email is read."],
             ["Export CV/PDF packet — planned", "Future DOCX/PDF/TXT exports with RTL/LTR support. Current packets stay manual text."]
           ].map(([title, note]) => (
@@ -131,6 +134,11 @@ export default async function DashboardPage() {
               <p className="mt-2 text-sm leading-6 text-ink-300">{note}</p>
             </div>
           ))}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <ScoreBadge tone="muted">{discoveryRuns} discovery runs</ScoreBadge>
+          <ScoreBadge tone="aqua">{discoveryCounts.enrichedLeads} enriched leads</ScoreBadge>
+          <ScoreBadge tone="warning">{discoveryCounts.blocked} blocked leads</ScoreBadge>
         </div>
       </GlassCard>
 

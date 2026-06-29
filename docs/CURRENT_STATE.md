@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-29, Thucydides is in Phase 6.0 - Gmail Job Alerts Intake Foundation state.
+As of 2026-06-29, Thucydides is in Phase 6.1 - Internet Job Discovery Engine + Company Career Pages First state.
 
 ## What Exists
 
@@ -21,6 +21,7 @@ As of 2026-06-29, Thucydides is in Phase 6.0 - Gmail Job Alerts Intake Foundatio
   - Settings
 - Dashboard has a Today's Mission first-open view backed by local SQLite data.
 - Dashboard shows manual Gmail alert leads awaiting review. This count comes from pasted local alert leads, not inbox scanning.
+- Dashboard shows internet discovery runs, review leads, enriched leads, and blocked leads. Copy says company career pages first, platforms second, Gmail alerts third.
 - UI reflects the Stitch-inspired dark navy, neon aqua, glass command-center style.
 - Dependencies have been installed into `node_modules/`.
 - The dev server was started on `http://localhost:3000`.
@@ -86,7 +87,14 @@ As of 2026-06-29, Thucydides is in Phase 6.0 - Gmail Job Alerts Intake Foundatio
 - `/gmail` shows validation status, allowed signals, forbidden flags, risk notes, duplicate warnings, source URL, and raw snippets for lead review.
 - Safe non-forbidden leads can be manually imported into the normal Job Inbox.
 - Imported leads become normal local `Job` records and get an `ApplicationEvent`.
-- Forbidden leads remain blocked from normal import in Phase 6.0.
+- Forbidden leads remain blocked from normal import in Phase 6.1.
+- `/discovery` supports env-gated internet job discovery through Tavily and SerpApi.
+- `/discovery` keeps all results as `JobDiscoveryLead` review candidates before import.
+- `JobDiscoveryRun` stores discovery run status, provider/query metadata, counts, and errors.
+- Discovery helpers support company-career queries, platform queries, Greenhouse public board detection/mapping, public page fetch, JSON-LD JobPosting extraction, HTML fallback extraction, deterministic fit scoring, and duplicate checks.
+- Safe non-forbidden discovery leads can be manually imported into the normal Job Inbox.
+- Imported discovery leads create normal local `Job` records and `JOB_IMPORTED_FROM_DISCOVERY` events.
+- Forbidden discovery leads remain blocked from normal import.
 
 ## Latest UX Review Summary
 
@@ -105,6 +113,9 @@ As of 2026-06-29, Thucydides is in Phase 6.0 - Gmail Job Alerts Intake Foundatio
 
 - No Gmail OAuth.
 - No automatic Gmail inbox reading.
+- No applying through provider APIs.
+- No login/captcha bypass.
+- No scraping behind authentication.
 - No Google Calendar.
 - No scraping or browser automation.
 - No real resume generation.
@@ -123,7 +134,7 @@ As of 2026-06-29, Thucydides is in Phase 6.0 - Gmail Job Alerts Intake Foundatio
 
 ## Important Warning
 
-Dashboard, jobs, sources, packets, pasted Gmail alerts, discovery leads, and AI draft runs are local SQLite data. Gmail OAuth, automatic inbox reading, scraping, job discovery automation, resume exports, notifications, and file parsing remain placeholders.
+Dashboard, jobs, sources, packets, pasted Gmail alerts, discovery runs, discovery leads, and AI draft runs are local SQLite data. Gmail OAuth, automatic inbox reading, authenticated scraping, automatic applications, resume exports, notifications, and file parsing remain placeholders.
 
 Profile, Sources, and manual evidence links are the required groundwork for useful AI/resume features. Controlled AI drafting may use only reviewed local packet/profile/source data, and generated text must stay behind Adel review and confirmation.
 

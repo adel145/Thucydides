@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.0 Architecture
+## Phase 6.1 Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -19,6 +19,7 @@ Primary folders:
 - `lib/applications/`: deterministic application packet helpers.
 - `lib/ai/`: controlled OpenAI drafting boundary for Application Packets.
 - `lib/gmail/`: local Gmail alert provider classification, parsing, lead import safety, and lead counts.
+- `lib/discovery/`: env-gated internet discovery providers, queries, Greenhouse support, public page fetching, extraction, scoring, counts, and import shaping.
 - `lib/profile/`: profile validation and source evidence link helpers.
 - `lib/sources/`: source type and readiness models.
 - `lib/agents/`: local future-agent contract types only.
@@ -54,6 +55,8 @@ Phase 1 uses Prisma with SQLite at `prisma/dev.db`. The schema includes:
 - `AiDraftRun`: local audit record for controlled application-packet draft attempts.
 - `GmailJobAlert`: local pasted Gmail job-alert metadata and raw text.
 - `JobDiscoveryLead`: local candidate leads extracted from pasted alerts before manual import.
+- `JobDiscoveryLead`: also stores internet discovery metadata, extracted job fields, fit score, confidence, and source evidence.
+- `JobDiscoveryRun`: local audit/count record for env-gated internet discovery attempts.
 
 Prisma 7 stores the datasource URL in `prisma.config.ts` and uses `@prisma/adapter-better-sqlite3` in runtime code. `.env.example` contains local `DATABASE_URL`, blank `OPENAI_API_KEY`, and blank `OPENAI_MODEL` values. OpenAI is disabled unless both OpenAI values are configured.
 
@@ -138,6 +141,17 @@ Phase 6.0 adds manual Gmail job-alert paste intake:
 - Forbidden leads are blocked from normal import.
 - No Gmail OAuth, Gmail API call, email sending, scraping, browser automation, or OpenAI parsing is introduced.
 
+Phase 6.1 adds internet discovery foundation:
+
+- `/discovery` runs env-gated discovery and lists review candidates.
+- Discovery priority is company career pages first, job platforms second, Gmail fallback third.
+- Tavily web search and SerpApi Google Jobs are optional providers.
+- Greenhouse public job board URLs can be detected and mapped.
+- Public job pages can be fetched with timeouts and parsed via JSON-LD JobPosting or conservative visible-text fallback.
+- Deterministic fit scoring ranks leads for review; it is not AI scoring.
+- Imported discovery leads create normal `Job` records and `JOB_IMPORTED_FROM_DISCOVERY` events only after explicit user action.
+- No provider login, captcha bypass, authenticated scraping, automatic application, automatic email, Gmail OAuth, or OpenAI parsing is introduced.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -158,10 +172,13 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.0
+## Non-Goals in Phase 6.1
 
 - Gmail OAuth
 - Automatic Gmail inbox reading
+- Applying through provider APIs
+- Login/captcha bypass
+- Scraping behind authentication
 - Calendar integration
 - Scraping
 - Authentication

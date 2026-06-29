@@ -34,12 +34,23 @@ export const allowedRoleRules = [
     label: "Junior Developer",
     patterns: [
       "junior developer",
+      "software engineer",
       "junior software engineer",
       "junior software developer",
       "software developer junior",
+      "backend developer",
+      "back end developer",
+      "python developer",
+      "student software engineer",
+      "software engineering student",
+      "software engineer ai training",
+      "ai training engineer",
       "junior frontend",
       "junior backend",
       "junior full-stack",
+      "junior full stack",
+      "full stack software engineer",
+      "fullstack software engineer",
       "full stack developer junior",
       "frontend developer junior",
       "backend developer junior",
@@ -47,7 +58,13 @@ export const allowedRoleRules = [
       "node.js developer junior",
       "python developer junior",
       "junior python",
-      "java developer junior"
+      "java developer junior",
+      "סטודנט/ית תוכנה",
+      "מפתח/ת backend",
+      "מפתח/ת full stack",
+      "מפתח/ת python",
+      "מהנדס/ת תוכנה",
+      "פיתוח תוכנה"
     ]
   },
   {

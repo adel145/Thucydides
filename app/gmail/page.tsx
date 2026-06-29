@@ -54,6 +54,9 @@ export default async function GmailPage({
           </div>
           <ScoreBadge tone="warning">Gmail not connected</ScoreBadge>
         </div>
+        <div className="mt-4">
+          <NeonButton href="/discovery" className="border-white/20 text-ink-100">Open internet discovery first</NeonButton>
+        </div>
         <div className="mt-5 flex flex-wrap gap-2">
           <ScoreBadge tone="muted">Local SQLite only</ScoreBadge>
           <ScoreBadge tone="muted">No scraping</ScoreBadge>

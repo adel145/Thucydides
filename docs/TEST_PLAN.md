@@ -155,6 +155,20 @@ Phase 6.0 coverage:
 - Manual QA should confirm `/gmail` loads, saves pasted alert text, creates local leads, imports a safe lead, blocks forbidden leads, and never claims Gmail is connected.
 - Manual QA should confirm Dashboard copy says "Manual Gmail alert leads awaiting review" and does not imply inbox scanning.
 
+Phase 6.1 coverage:
+
+- Unit tests cover Tavily/SerpApi provider configuration and missing-key behavior.
+- Unit tests cover company-career-first and platform query generation.
+- Unit tests cover Greenhouse board token detection and Greenhouse job mapping.
+- Unit tests cover JSON-LD JobPosting extraction and visible HTML fallback extraction.
+- Unit tests cover expanded role rules for backend, full-stack, Python, software engineer, and AI training titles, including hard-blocker overrides.
+- Unit tests cover deterministic fit scoring for strong AI/ML research leads, forbidden leads, and low-confidence missing-description leads.
+- Unit tests cover discovery lead preparation and import using enriched descriptions over noisy snippets.
+- Unit tests cover discovery dashboard counts.
+- Build/type verification covers `/discovery`, discovery server actions, `JobDiscoveryRun`, expanded `JobDiscoveryLead`, and provider clients.
+- Manual QA should confirm `/discovery` loads, provider status degrades gracefully without keys, runs create review leads when providers are configured, and imports remain manual.
+- Manual QA should confirm no automatic apply, email sending, Gmail OAuth, login bypass, or authenticated scraping exists.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

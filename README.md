@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 6.0 - Gmail Job Alerts Intake Foundation.
+Current state: Phase 6.1 - Internet Job Discovery Engine + Company Career Pages First.
 
 ## What Works Now
 
@@ -18,6 +18,8 @@ Current state: Phase 6.0 - Gmail Job Alerts Intake Foundation.
 - Local candidate profile
 - Manual job intake
 - Manual Gmail job-alert paste intake
+- API-powered internet job discovery foundation
+- Company career pages first, job platforms second, Gmail alerts third
 - Today's Mission dashboard
 - Jobs Ready To Apply deterministic readiness
 - Card-based Job Inbox review
@@ -43,6 +45,9 @@ Current state: Phase 6.0 - Gmail Job Alerts Intake Foundation.
 - Controlled OpenAI drafting for Application Packets when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured
 - Separate local status badges for SQLite, AI drafting, and Gmail connection state
 - Local job-alert lead extraction, review, duplicate detection, and manual import into Job Inbox
+- Env-gated Tavily and SerpApi discovery providers
+- Greenhouse public job board detection/mapping
+- Deterministic discovery fit scoring for review leads
 - Manual evidence review on Application Packets and Resume Lab
 - Manual Resume Lab MVP
 - Vitest coverage for rules, filters, dashboard metrics, priorities, source types, Israeli job fixtures, and Gmail alert intake helpers
@@ -60,6 +65,7 @@ Forbidden roles include Sales, regular customer service, non-technical service c
 The following are intentionally not implemented yet:
 
 - Gmail OAuth and automatic inbox reading
+- Applying through provider APIs
 - Google Calendar
 - Scraping
 - Browser automation
@@ -78,7 +84,7 @@ The desired product is an agent-assisted job-search command center that helps Ad
 
 Future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply. Automated application sending is not part of the plan.
 
-Future discovery sources should prioritize company career pages first, then LinkedIn, Indeed, Drushim, AllJobs, Glassdoor/Google Jobs, and Gmail job-alert intake as a fallback. Phase 6.0 supports manual pasted Gmail alerts only; the app does not scrape, browse, or read Gmail automatically.
+Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.1 adds env-gated Tavily and SerpApi foundations plus Greenhouse public job-board support. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
 
 Future export goals include DOCX/PDF CV and cover-letter outputs, TXT recruiter messages/notes, local per-job folders, and RTL/LTR support. Exports are not implemented yet.
 
@@ -86,7 +92,7 @@ The UI should stay dark, local-first, and sidebar-based. It should remain mostly
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 6.0 uses local SQLite data, deterministic validation, manual job/source intake, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. Gmail OAuth, automatic inbox reading, automatic file or URL parsing, scraping, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, and automatic communication are intentionally not connected.
+Current limitation: Phase 6.1 uses local SQLite data, deterministic validation, manual job/source intake, internet discovery leads, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. Gmail OAuth, automatic inbox reading, login-gated scraping, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
 
 ## Local Setup
 
@@ -124,6 +130,13 @@ npm run lint
 npm run verify
 npm run db:studio
 
+Optional discovery env:
+
+TAVILY_API_KEY=""
+SERPAPI_API_KEY=""
+JOB_DISCOVERY_MAX_RESULTS=20
+JOB_DISCOVERY_COUNTRY=israel
+
 ## Data And Privacy Notes
 
 This project is local-first.
@@ -157,11 +170,12 @@ Future work should read and update these files after each phase.
 
 ## Roadmap
 
-Next planned phase: refine manual Gmail alert review and parser quality after real pasted alerts.
+Next planned phase: refine discovery quality after real provider results and career pages.
 
 Planned work:
 
-- Tune pasted Gmail alert parsing conservatively
+- Tune company-career and platform discovery quality conservatively
+- Add more ATS adapters only after public API behavior is verified
 - Refine saved job-search views if still useful
 - Continue persistence/server-action tests
 
