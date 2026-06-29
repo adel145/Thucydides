@@ -1,4 +1,4 @@
-import { isActiveJob, isReadyToApplyJob, type ReadinessJob } from "../jobs/jobReadiness";
+import { isActiveJob, isCompletedOrClosedJob, isReadyToApplyJob, type ReadinessJob } from "../jobs/jobReadiness";
 import { type ProfileSourceLinkLike, summarizeProfileEvidence } from "../profile/profileSourceLinks";
 import { type SourceReadinessSource, calculateSourceReadiness } from "../sources/sourceReadiness";
 
@@ -32,6 +32,7 @@ export type ApplicationPacketDraft = {
   recruiterMessageDraft?: string | null;
   coverLetterDraft?: string | null;
   followUpPlan?: string | null;
+  applicationDecision?: string | null;
 };
 
 export type PacketChecklistItem = {
@@ -102,7 +103,7 @@ export function sanitizeApplicationPacketStatusForJob(
 ): ApplicationPacketStatus {
   const normalizedRequestedStatus = normalizeApplicationPacketStatus(requestedStatus);
   if (normalizedRequestedStatus !== "READY") return "DRAFT";
-  if (job.validationStatus === "FORBIDDEN" || !isActiveJob(job)) return "DRAFT";
+  if (job.validationStatus === "FORBIDDEN" || isCompletedOrClosedJob(job)) return "DRAFT";
   return canMarkApplicationPacketReady({ applicationDecision, checklist: summary.checklist }) ? "READY" : "DRAFT";
 }
 
@@ -121,7 +122,7 @@ export function getApplicationDecision(
   links: ProfileSourceLinkLike[]
 ): ApplicationDecision {
   if (job.validationStatus === "FORBIDDEN") return "DO_NOT_APPLY";
-  if (!isActiveJob(job)) return "CLOSED";
+  if (isCompletedOrClosedJob(job)) return "CLOSED";
   if (job.validationStatus === "RISKY") return "NEEDS_MANUAL_REVIEW";
 
   const checklist = buildApplicationChecklist(job, profile, sources, links, {});
@@ -184,4 +185,51 @@ export function buildApplicationPacketSummary(
     readyCount: checklist.filter((item) => item.done).length,
     totalCount: checklist.length
   };
+}
+
+export function prepareApplicationPacketSave(
+  job: ApplicationPacketJob,
+  profile: ApplicationPacketProfile | null | undefined,
+  sources: SourceReadinessSource[],
+  links: ProfileSourceLinkLike[],
+  draft: ApplicationPacketDraft,
+  requested: {
+    status?: string | null;
+    applicationDecision?: string | null;
+    cvLanguage?: string | null;
+  }
+) {
+  const summary = buildApplicationPacketSummary(job, profile, sources, links, draft);
+  const cvLanguage = normalizeCvLanguage(requested.cvLanguage ?? summary.cvLanguage);
+  const applicationDecision = sanitizeApplicationDecisionForJob(job, requested.applicationDecision ?? summary.applicationDecision, summary.applicationDecision);
+  const status = sanitizeApplicationPacketStatusForJob(job, requested.status, applicationDecision, summary);
+
+  return {
+    summary,
+    status,
+    cvLanguage,
+    applicationDecision,
+    readyBlocked: normalizeApplicationPacketStatus(requested.status) === "READY" && status !== "READY"
+  };
+}
+
+export function prepareMarkApplicationPacketReady(
+  job: ApplicationPacketJob,
+  profile: ApplicationPacketProfile | null | undefined,
+  sources: SourceReadinessSource[],
+  links: ProfileSourceLinkLike[],
+  packet: ApplicationPacketDraft | null | undefined
+) {
+  if (!packet) {
+    return { ok: false as const, reason: "PACKET_MISSING" as const };
+  }
+
+  const summary = buildApplicationPacketSummary(job, profile, sources, links, packet);
+  const applicationDecision = sanitizeApplicationDecisionForJob(job, packet.applicationDecision ?? summary.applicationDecision, summary.applicationDecision);
+  const status = sanitizeApplicationPacketStatusForJob(job, "READY", applicationDecision, summary);
+  if (status !== "READY") {
+    return { ok: false as const, reason: "READY_BLOCKED" as const, summary, applicationDecision, status };
+  }
+
+  return { ok: true as const, summary, applicationDecision, status };
 }

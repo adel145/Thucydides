@@ -43,7 +43,7 @@ export default async function SourceDetailPage({
       <GlassCard>
         <h3 className="text-xl font-semibold text-white">Link this source to Profile</h3>
         <p className="mt-3 text-sm leading-6 text-ink-200">
-          This is a manual evidence link. No parsing or automatic profile update happens here. Use the link to remember which source supports which profile field.
+          This is a manual evidence link. No parsing or automatic profile update happens here. Recommended fields are only suggestions; Adel chooses what this source supports.
         </p>
         <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-200">
           Source type: <span className="font-semibold text-white">{sourceTypeLabels[source.type as keyof typeof sourceTypeLabels] ?? source.type}</span>

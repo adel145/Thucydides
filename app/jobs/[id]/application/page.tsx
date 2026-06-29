@@ -12,6 +12,7 @@ import { APPLICATION_DECISIONS, APPLICATION_PACKET_STATUSES, CV_LANGUAGES, build
 import { db } from "@/lib/db";
 import { jsonToStringArray } from "@/lib/formParsing";
 import { getProfileSourceTargetField, summarizeProfileEvidence } from "@/lib/profile/profileSourceLinks";
+import { calculateSourceReadiness } from "@/lib/sources/sourceReadiness";
 import { sourceTypeLabels } from "@/lib/sources/sourceTypes";
 
 function validationTone(status: string) {
@@ -57,7 +58,11 @@ export default async function ApplicationPacketPage({
   const latestAiRun = packet?.aiDraftRuns[0];
   const latestAiOutput = validateApplicationDraftOutput(latestAiRun?.output);
   const evidence = summarizeProfileEvidence(profile?.sourceLinks ?? []);
+  const sourceReadiness = calculateSourceReadiness(sources);
   const forbiddenFlags = jsonToStringArray(job.forbiddenFlags);
+  const missingEvidenceFields = summary.profileEvidenceSummary.fieldsMissingEvidence
+    .map((field) => getProfileSourceTargetField(field))
+    .filter((field): field is NonNullable<typeof field> => Boolean(field));
 
   return (
     <div className="grid gap-6">
@@ -220,6 +225,31 @@ export default async function ApplicationPacketPage({
 
       <GlassCard>
         <h3 className="text-xl font-semibold text-white">Profile evidence</h3>
+        <p className="mt-2 text-sm leading-6 text-ink-200">
+          Manual evidence links only. Review CV / קורות חיים, LinkedIn, GitHub, projects, certificates, and academic sources before applying.
+        </p>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+            <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Before applying, add/review these sources</div>
+            <div className="mt-2 grid gap-2 text-sm text-ink-200">
+              {sourceReadiness.missing.length === 0 && missingEvidenceFields.length === 0 ? <p className="text-aqua-400">Core source groups and evidence links are covered.</p> : null}
+              {sourceReadiness.missing.map((item) => <p key={item.label}>{item.note}</p>)}
+              {missingEvidenceFields.slice(0, 6).map((field) => <p key={field.key}>Link evidence for {field.label}.</p>)}
+            </div>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+            <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Available source records</div>
+            <div className="mt-2 grid gap-2 text-sm text-ink-200">
+              {sources.length === 0 ? <p className="text-ink-400">No sources yet.</p> : null}
+              {sources.slice(0, 6).map((source) => (
+                <Link key={source.id} href={`/sources/${source.id}`} className="rounded-lg border border-white/10 bg-navy-950/50 p-2">
+                  {source.filename} | {sourceTypeLabels[source.type as keyof typeof sourceTypeLabels] ?? source.type}
+                </Link>
+              ))}
+              {sources.length > 6 ? <Link href="/sources" className="text-aqua-400">Review all sources</Link> : null}
+            </div>
+          </div>
+        </div>
         <div className="mt-4 grid gap-3">
           {Object.entries(evidence.grouped).map(([targetField, links]) => {
             const field = getProfileSourceTargetField(targetField);

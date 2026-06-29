@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 5.1 Architecture
+## Phase 5.2 Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -106,6 +106,12 @@ Phase 5.1 adds controlled AI drafting:
 - Generated content is stored as `AiDraftRun` output until Adel explicitly copies it into packet fields.
 - Missing OpenAI env values disable the UI and do not create fake output.
 
+Phase 5.2 keeps the same schema and integration boundary, but adds small pure helper surfaces for safer testing:
+
+- Application Packet save and mark-ready persistence decisions are prepared in `lib/applications/applicationPacket.ts`.
+- AI draft audit records and explicit packet draft replacement fields are prepared in `lib/ai/applicationDrafting.ts`.
+- Application Packet and Resume Lab pages expose clearer manual evidence review without parsing, exporting, or automatic profile updates.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -126,7 +132,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 5.1
+## Non-Goals in Phase 5.2
 
 - Gmail OAuth
 - Calendar integration

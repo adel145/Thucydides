@@ -2,7 +2,7 @@ import { buildApplicationPacketSummary, type ApplicationPacketDraft, type Applic
 import { isActiveJob } from "../jobs/jobReadiness";
 import { type ProfileSourceLinkLike } from "../profile/profileSourceLinks";
 import { type SourceReadinessSource } from "../sources/sourceReadiness";
-import { createOpenAiJsonResponse } from "./openaiClient";
+import { createOpenAiJsonResponse, type OpenAiDraftingConfig } from "./openaiClient";
 
 export const APPLICATION_DRAFT_KIND = "APPLICATION_PACKET_DRAFT";
 export const APPLICATION_DRAFT_PROMPT_VERSION = "phase5.1-application-packet-draft-v1";
@@ -101,6 +101,56 @@ export function validateApplicationDraftOutput(value: unknown): ApplicationDraft
 
 export function canRequestApplicationAiDraft(job: Pick<ApplicationPacketJob, "status" | "validationStatus">) {
   return job.validationStatus !== "FORBIDDEN" && isActiveJob(job);
+}
+
+export function getApplicationAiDraftBlockReason(config: OpenAiDraftingConfig, job: Pick<ApplicationPacketJob, "status" | "validationStatus">) {
+  if (!config.enabled) return "AI_DISABLED" as const;
+  if (!canRequestApplicationAiDraft(job)) return "JOB_BLOCKED" as const;
+  return null;
+}
+
+export function buildAiDraftRunSuccessRecord(
+  applicationPacketId: string,
+  result: { model: string; inputSummary: Record<string, unknown>; output: ApplicationDraftOutput }
+) {
+  return {
+    applicationPacketId,
+    kind: APPLICATION_DRAFT_KIND,
+    status: "DRAFT",
+    model: result.model,
+    promptVersion: APPLICATION_DRAFT_PROMPT_VERSION,
+    inputSummary: result.inputSummary,
+    output: result.output
+  };
+}
+
+export function buildAiDraftRunErrorRecord(
+  applicationPacketId: string,
+  model: string | null | undefined,
+  inputSummary: unknown,
+  error: unknown
+) {
+  return {
+    applicationPacketId,
+    kind: APPLICATION_DRAFT_KIND,
+    status: "ERROR",
+    model: model ?? null,
+    promptVersion: APPLICATION_DRAFT_PROMPT_VERSION,
+    inputSummary,
+    error: error instanceof Error ? error.message : "Unknown AI drafting error."
+  };
+}
+
+export function buildPacketDraftReplacement(output: ApplicationDraftOutput) {
+  return {
+    status: "DRAFT",
+    cvTailoringNotes: output.cvTailoringNotes,
+    skillsToHighlight: output.skillsToHighlight.join("\n"),
+    experienceBulletsDraft: output.experienceBulletsDraft.map((item) => `- ${item}`).join("\n"),
+    coverLetterDraft: output.coverLetterDraft,
+    recruiterMessageDraft: output.recruiterMessageDraft,
+    followUpPlan: output.followUpPlan
+  };
 }
 
 export function buildApplicationDraftRequest(

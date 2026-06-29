@@ -1,5 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildApplicationDraftRequest, canRequestApplicationAiDraft, validateApplicationDraftOutput } from "../lib/ai/applicationDrafting";
+import {
+  buildAiDraftRunErrorRecord,
+  buildAiDraftRunSuccessRecord,
+  buildApplicationDraftRequest,
+  buildPacketDraftReplacement,
+  canRequestApplicationAiDraft,
+  getApplicationAiDraftBlockReason,
+  validateApplicationDraftOutput,
+  type ApplicationDraftOutput
+} from "../lib/ai/applicationDrafting";
 import { createOpenAiJsonResponse, extractResponseText, getOpenAiDraftingConfig } from "../lib/ai/openaiClient";
 
 const profile = {
@@ -10,7 +19,7 @@ const profile = {
   education: ["Computer Science"]
 };
 
-const validDraftOutput = {
+const validDraftOutput: ApplicationDraftOutput = {
   cvTailoringNotes: "Tailor the CV to the TypeScript project evidence.",
   skillsToHighlight: ["TypeScript"],
   experienceBulletsDraft: ["Built a small project."],
@@ -32,6 +41,13 @@ describe("controlled AI application drafting", () => {
     expect(getOpenAiDraftingConfig({}).enabled).toBe(false);
     expect(getOpenAiDraftingConfig({ OPENAI_API_KEY: "key" }).enabled).toBe(false);
     expect(getOpenAiDraftingConfig({ OPENAI_API_KEY: "key", OPENAI_MODEL: "model" }).enabled).toBe(true);
+  });
+
+  it("reports disabled and blocked AI draft request reasons without creating fake output", () => {
+    expect(getApplicationAiDraftBlockReason({ enabled: false, reason: "missing", missing: "OPENAI_API_KEY" }, { status: "FOUND", validationStatus: "ALLOWED" })).toBe("AI_DISABLED");
+    expect(getApplicationAiDraftBlockReason({ enabled: true, apiKey: "key", model: "model" }, { status: "FOUND", validationStatus: "FORBIDDEN" })).toBe("JOB_BLOCKED");
+    expect(getApplicationAiDraftBlockReason({ enabled: true, apiKey: "key", model: "model" }, { status: "ARCHIVED", validationStatus: "ALLOWED" })).toBe("JOB_BLOCKED");
+    expect(getApplicationAiDraftBlockReason({ enabled: true, apiKey: "key", model: "model" }, { status: "FOUND", validationStatus: "ALLOWED" })).toBeNull();
   });
 
   it("blocks forbidden, archived, and rejected jobs from AI drafting", () => {
@@ -116,6 +132,47 @@ describe("controlled AI application drafting", () => {
     expect(body.store).toBe(false);
     expect(body.tools).toEqual([]);
     expect(body.tool_choice).toBe("none");
+  });
+
+  it("builds success and error AI draft audit records", () => {
+    const success = buildAiDraftRunSuccessRecord("packet-1", {
+      model: "test-model",
+      inputSummary: { jobTitle: "Junior Developer" },
+      output: validDraftOutput
+    });
+    expect(success).toMatchObject({
+      applicationPacketId: "packet-1",
+      kind: "APPLICATION_PACKET_DRAFT",
+      status: "DRAFT",
+      model: "test-model",
+      promptVersion: "phase5.1-application-packet-draft-v1",
+      output: validDraftOutput
+    });
+
+    const error = buildAiDraftRunErrorRecord("packet-1", "test-model", { jobTitle: "Junior Developer" }, new Error("Invalid JSON"));
+    expect(error).toMatchObject({
+      applicationPacketId: "packet-1",
+      kind: "APPLICATION_PACKET_DRAFT",
+      status: "ERROR",
+      model: "test-model",
+      error: "Invalid JSON"
+    });
+  });
+
+  it("builds explicit packet draft replacement data without job/profile/source fields", () => {
+    const replacement = buildPacketDraftReplacement(validDraftOutput);
+
+    expect(replacement).toEqual({
+      status: "DRAFT",
+      cvTailoringNotes: validDraftOutput.cvTailoringNotes,
+      skillsToHighlight: "TypeScript",
+      experienceBulletsDraft: "- Built a small project.",
+      coverLetterDraft: validDraftOutput.coverLetterDraft,
+      recruiterMessageDraft: validDraftOutput.recruiterMessageDraft,
+      followUpPlan: validDraftOutput.followUpPlan
+    });
+    expect("jobId" in replacement).toBe(false);
+    expect("profileEvidenceSummary" in replacement).toBe(false);
   });
 
   it("extracts output text from Responses API-style response bodies", () => {

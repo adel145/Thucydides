@@ -3,7 +3,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { db } from "@/lib/db";
 import { jsonToStringArray } from "@/lib/formParsing";
-import { summarizeProfileEvidence } from "@/lib/profile/profileSourceLinks";
+import { getProfileSourceTargetField, summarizeProfileEvidence } from "@/lib/profile/profileSourceLinks";
 import { calculateSourceReadiness } from "@/lib/sources/sourceReadiness";
 
 function ValueList({ label, value }: { label: string; value: unknown }) {
@@ -31,6 +31,16 @@ export default async function ResumesPage() {
   });
   const sourceReadiness = calculateSourceReadiness(sources);
   const evidence = summarizeProfileEvidence(profile?.sourceLinks ?? []);
+  const packetStatusCounts = packets.reduce(
+    (counts, packet) => {
+      counts[packet.status] = (counts[packet.status] ?? 0) + 1;
+      return counts;
+    },
+    {} as Record<string, number>
+  );
+  const missingEvidenceLabels = evidence.fieldsMissingEvidence
+    .map((field) => getProfileSourceTargetField(field.key)?.label ?? field.label)
+    .slice(0, 6);
   const missingCvInputs = [
     !profile?.languages || jsonToStringArray(profile.languages).length === 0 ? "Languages" : null,
     !profile?.technicalSkills || jsonToStringArray(profile.technicalSkills).length === 0 ? "Technical skills" : null,
@@ -45,7 +55,7 @@ export default async function ResumesPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Resume Lab</p>
         <h2 className="mt-3 text-3xl font-semibold text-white">Manual CV preparation workspace</h2>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-          Resume Lab is manual in Phase 5.1. Controlled drafting lives inside Application Packets; DOCX, PDF, and export are not connected yet.
+          Resume Lab is manual in Phase 5.2. Controlled drafting lives inside Application Packets; DOCX, PDF, and export are not connected yet.
         </p>
       </GlassCard>
 
@@ -59,11 +69,21 @@ export default async function ResumesPage() {
           <h3 className="text-lg font-semibold text-white">Source readiness</h3>
           <div className="mt-3 text-3xl font-semibold text-white">{sourceReadiness.readyCount} / {sourceReadiness.totalCount}</div>
           <p className="mt-2 text-sm text-ink-300">CV, LinkedIn, GitHub/projects, and certificates/academic source groups.</p>
+          <div className="mt-4 grid gap-2 text-sm text-ink-200">
+            {sourceReadiness.items.map((item) => (
+              <div key={item.label} className={item.ready ? "text-aqua-400" : "text-ink-300"}>
+                {item.ready ? "Ready" : "Missing"}: {item.label}
+              </div>
+            ))}
+          </div>
         </GlassCard>
         <GlassCard>
           <h3 className="text-lg font-semibold text-white">Evidence readiness</h3>
           <div className="mt-3 text-3xl font-semibold text-white">{evidence.readyCount} / {evidence.totalCount}</div>
           <p className="mt-2 text-sm text-ink-300">Manual source links supporting profile fields.</p>
+          <div className="mt-4 text-sm text-ink-200">
+            {missingEvidenceLabels.length === 0 ? <p className="text-aqua-400">All profile evidence fields have links.</p> : <p>Missing links: {missingEvidenceLabels.join(", ")}</p>}
+          </div>
         </GlassCard>
       </div>
 
@@ -84,6 +104,13 @@ export default async function ResumesPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-xl font-semibold text-white">Recent application packets</h3>
           <Link href="/jobs?view=ready" className="text-sm font-semibold text-aqua-400">Find ready jobs</Link>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {["READY", "DRAFT"].map((status) => (
+            <ScoreBadge key={status} tone={status === "READY" ? "aqua" : "muted"}>
+              {status}: {packetStatusCounts[status] ?? 0}
+            </ScoreBadge>
+          ))}
         </div>
         <div className="mt-5 grid gap-3">
           {packets.length === 0 ? <p className="text-sm text-ink-400">No application packets yet. Open a job and choose Prepare.</p> : null}

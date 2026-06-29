@@ -3,13 +3,19 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { APPLICATION_DRAFT_KIND, generateApplicationDraft, validateApplicationDraftOutput } from "@/lib/ai/applicationDrafting";
+import {
+  buildAiDraftRunErrorRecord,
+  buildAiDraftRunSuccessRecord,
+  buildPacketDraftReplacement,
+  generateApplicationDraft,
+  getApplicationAiDraftBlockReason,
+  validateApplicationDraftOutput
+} from "@/lib/ai/applicationDrafting";
 import { getOpenAiDraftingConfig } from "@/lib/ai/openaiClient";
 import {
   buildApplicationPacketSummary,
-  sanitizeApplicationDecisionForJob,
-  sanitizeApplicationPacketStatusForJob,
-  normalizeCvLanguage
+  prepareApplicationPacketSave,
+  prepareMarkApplicationPacketReady
 } from "@/lib/applications/applicationPacket";
 import { db } from "@/lib/db";
 import { optionalString, requiredString } from "@/lib/formParsing";
@@ -30,20 +36,21 @@ export async function saveApplicationPacket(formData: FormData) {
     coverLetterDraft: optionalString(formData.get("coverLetterDraft")),
     followUpPlan: optionalString(formData.get("followUpPlan"))
   };
-  const summary = buildApplicationPacketSummary(job, profile, sources, profile?.sourceLinks ?? [], draft);
-  const cvLanguage = normalizeCvLanguage(optionalString(formData.get("cvLanguage")) ?? summary.cvLanguage);
-  const applicationDecision = sanitizeApplicationDecisionForJob(job, optionalString(formData.get("applicationDecision")) ?? summary.applicationDecision, summary.applicationDecision);
-  const status = sanitizeApplicationPacketStatusForJob(job, optionalString(formData.get("status")), applicationDecision, summary);
+  const prepared = prepareApplicationPacketSave(job, profile, sources, profile?.sourceLinks ?? [], draft, {
+    status: optionalString(formData.get("status")),
+    applicationDecision: optionalString(formData.get("applicationDecision")),
+    cvLanguage: optionalString(formData.get("cvLanguage"))
+  });
 
   await db.applicationPacket.upsert({
     where: { jobId },
     update: {
-      status,
-      cvLanguage,
-      applicationDecision,
-      checklist: summary.checklist as unknown as Prisma.InputJsonValue,
-      missingItems: summary.missingItems as unknown as Prisma.InputJsonValue,
-      profileEvidenceSummary: summary.profileEvidenceSummary as unknown as Prisma.InputJsonValue,
+      status: prepared.status,
+      cvLanguage: prepared.cvLanguage,
+      applicationDecision: prepared.applicationDecision,
+      checklist: prepared.summary.checklist as unknown as Prisma.InputJsonValue,
+      missingItems: prepared.summary.missingItems as unknown as Prisma.InputJsonValue,
+      profileEvidenceSummary: prepared.summary.profileEvidenceSummary as unknown as Prisma.InputJsonValue,
       cvTailoringNotes: draft.cvTailoringNotes,
       skillsToHighlight: optionalString(formData.get("skillsToHighlight")),
       experienceBulletsDraft: optionalString(formData.get("experienceBulletsDraft")),
@@ -53,12 +60,12 @@ export async function saveApplicationPacket(formData: FormData) {
     },
     create: {
       jobId,
-      status,
-      cvLanguage,
-      applicationDecision,
-      checklist: summary.checklist as unknown as Prisma.InputJsonValue,
-      missingItems: summary.missingItems as unknown as Prisma.InputJsonValue,
-      profileEvidenceSummary: summary.profileEvidenceSummary as unknown as Prisma.InputJsonValue,
+      status: prepared.status,
+      cvLanguage: prepared.cvLanguage,
+      applicationDecision: prepared.applicationDecision,
+      checklist: prepared.summary.checklist as unknown as Prisma.InputJsonValue,
+      missingItems: prepared.summary.missingItems as unknown as Prisma.InputJsonValue,
+      profileEvidenceSummary: prepared.summary.profileEvidenceSummary as unknown as Prisma.InputJsonValue,
       cvTailoringNotes: draft.cvTailoringNotes,
       skillsToHighlight: optionalString(formData.get("skillsToHighlight")),
       experienceBulletsDraft: optionalString(formData.get("experienceBulletsDraft")),
@@ -74,8 +81,7 @@ export async function saveApplicationPacket(formData: FormData) {
   revalidatePath(`/jobs/${jobId}/application`);
   revalidatePath("/pipeline");
   revalidatePath("/resumes");
-  const readyBlocked = optionalString(formData.get("status")) === "READY" && status !== "READY";
-  redirect(`/jobs/${jobId}/application?saved=1${readyBlocked ? "&readyBlocked=1" : ""}`);
+  redirect(`/jobs/${jobId}/application?saved=1${prepared.readyBlocked ? "&readyBlocked=1" : ""}`);
 }
 
 export async function markApplicationPacketReady(formData: FormData) {
@@ -89,22 +95,20 @@ export async function markApplicationPacketReady(formData: FormData) {
     include: { sourceLinks: true }
   });
   const sources = await db.sourceFile.findMany();
-  const summary = buildApplicationPacketSummary(job, profile, sources, profile?.sourceLinks ?? [], job.applicationPacket);
-  const applicationDecision = sanitizeApplicationDecisionForJob(job, job.applicationPacket.applicationDecision ?? summary.applicationDecision, summary.applicationDecision);
-  const status = sanitizeApplicationPacketStatusForJob(job, "READY", applicationDecision, summary);
+  const prepared = prepareMarkApplicationPacketReady(job, profile, sources, profile?.sourceLinks ?? [], job.applicationPacket);
 
-  if (status !== "READY") {
+  if (!prepared.ok) {
     redirect(`/jobs/${jobId}/application?readyBlocked=1`);
   }
 
   await db.applicationPacket.update({
     where: { jobId },
     data: {
-      status,
-      applicationDecision,
-      checklist: summary.checklist as unknown as Prisma.InputJsonValue,
-      missingItems: summary.missingItems as unknown as Prisma.InputJsonValue,
-      profileEvidenceSummary: summary.profileEvidenceSummary as unknown as Prisma.InputJsonValue
+      status: prepared.status,
+      applicationDecision: prepared.applicationDecision,
+      checklist: prepared.summary.checklist as unknown as Prisma.InputJsonValue,
+      missingItems: prepared.summary.missingItems as unknown as Prisma.InputJsonValue,
+      profileEvidenceSummary: prepared.summary.profileEvidenceSummary as unknown as Prisma.InputJsonValue
     }
   });
 
@@ -122,10 +126,9 @@ export async function generateApplicationAiDraft(formData: FormData) {
   if (!job) redirect("/jobs");
 
   const config = getOpenAiDraftingConfig();
-  if (!config.enabled) redirect(`/jobs/${jobId}/application?aiDisabled=1`);
-  if (job.validationStatus === "FORBIDDEN" || job.status === "ARCHIVED" || job.status === "REJECTED") {
-    redirect(`/jobs/${jobId}/application?aiBlocked=1`);
-  }
+  const blockReason = getApplicationAiDraftBlockReason(config, job);
+  if (blockReason === "AI_DISABLED") redirect(`/jobs/${jobId}/application?aiDisabled=1`);
+  if (blockReason === "JOB_BLOCKED") redirect(`/jobs/${jobId}/application?aiBlocked=1`);
 
   const profile = await db.candidateProfile.findFirst({
     orderBy: { createdAt: "asc" },
@@ -156,27 +159,11 @@ export async function generateApplicationAiDraft(formData: FormData) {
   try {
     const result = await generateApplicationDraft(job, profile, sources, profile?.sourceLinks ?? [], draft);
     await db.aiDraftRun.create({
-      data: {
-        applicationPacketId: packet.id,
-        kind: APPLICATION_DRAFT_KIND,
-        status: "DRAFT",
-        model: result.model,
-        promptVersion: "phase5.1-application-packet-draft-v1",
-        inputSummary: result.inputSummary as Prisma.InputJsonValue,
-        output: result.output as unknown as Prisma.InputJsonValue
-      }
+      data: buildAiDraftRunSuccessRecord(packet.id, result) as Prisma.AiDraftRunUncheckedCreateInput
     });
   } catch (error) {
     await db.aiDraftRun.create({
-      data: {
-        applicationPacketId: packet.id,
-        kind: APPLICATION_DRAFT_KIND,
-        status: "ERROR",
-        model: config.model,
-        promptVersion: "phase5.1-application-packet-draft-v1",
-        inputSummary: summary as unknown as Prisma.InputJsonValue,
-        error: error instanceof Error ? error.message : "Unknown AI drafting error."
-      }
+      data: buildAiDraftRunErrorRecord(packet.id, config.enabled ? config.model : null, summary, error) as Prisma.AiDraftRunUncheckedCreateInput
     });
     aiRedirect = "aiError=1";
   }
@@ -197,15 +184,7 @@ export async function saveAiDraftToPacket(formData: FormData) {
 
   await db.applicationPacket.update({
     where: { id: run.applicationPacketId },
-    data: {
-      status: "DRAFT",
-      cvTailoringNotes: output.cvTailoringNotes,
-      skillsToHighlight: output.skillsToHighlight.join("\n"),
-      experienceBulletsDraft: output.experienceBulletsDraft.map((item) => `- ${item}`).join("\n"),
-      coverLetterDraft: output.coverLetterDraft,
-      recruiterMessageDraft: output.recruiterMessageDraft,
-      followUpPlan: output.followUpPlan
-    }
+    data: buildPacketDraftReplacement(output)
   });
 
   revalidatePath(`/jobs/${run.applicationPacket.jobId}/application`);

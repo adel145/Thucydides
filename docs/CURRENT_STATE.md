@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-28, Thucydides is in Phase 5.1 Controlled AI Drafting + Application Packet safety gate state.
+As of 2026-06-29, Thucydides is in Phase 5.2 Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement state.
 
 ## What Exists
 
@@ -57,12 +57,14 @@ As of 2026-06-28, Thucydides is in Phase 5.1 Controlled AI Drafting + Applicatio
 - Controlled OpenAI requests use `store: false`, `tools: []`, and `tool_choice: "none"`.
 - AI draft output is review-only and must be explicitly copied into packet fields by Adel; that copy action replaces current packet draft fields.
 - AI draft output validation rejects non-string values in generated array fields.
+- Application Packet save/mark-ready behavior has pure helper coverage for persistence safety, READY blocking, packet-missing handling, and checklist snapshots.
+- Application Packet evidence review now shows manual source availability, missing source groups, and missing profile-evidence links before applying.
 - Job detail and Job Inbox link to application packet preparation.
-- `/resumes` is a manual Resume Lab MVP showing profile/source/evidence readiness, base CV data, and recent application packets.
+- `/resumes` is a manual Resume Lab workspace showing profile/source/evidence readiness, source group status, missing evidence links, base CV data, and recent application packet status counts.
 - Dashboard includes a Resume Lab button and application packet counts.
 - Dashboard includes jobs ready to apply, due follow-ups, overdue follow-ups, high-priority jobs, recent jobs, and profile/source readiness warnings.
 - Pure helpers exist for deterministic job readiness, dashboard mission grouping, and source readiness.
-- Vitest tests exist for role validation with Israeli fixtures, job statuses, lifecycle validation helpers, dashboard metrics, profile validation, filters, priority, and source types.
+- Vitest tests exist for role validation with Israeli fixtures, job statuses, lifecycle validation helpers, dashboard metrics, profile validation, filters, priority, source types, application packet persistence safety, and controlled AI draft audit helpers.
 - Completed-degree requirements are risk/manual-check notes rather than hard forbidden blockers.
 - Top-bar and placeholder page copy reflects local SQLite status, controlled packet drafting, and planned later-phase Gmail/agent work.
 

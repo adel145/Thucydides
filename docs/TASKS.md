@@ -94,9 +94,16 @@
 - Added review-only AI draft preview and explicit copy-to-packet action.
 - Added tests for packet readiness safety and controlled AI drafting helpers.
 
+## Completed In Phase 5.2
+
+- Added helper-level persistence safety coverage for Application Packet save and mark-ready behavior.
+- Added helper-level AI draft audit coverage for disabled config, blocked jobs, success records, error records, and explicit packet draft replacement.
+- Refined Application Packet evidence review with available sources, missing source groups, and missing evidence links.
+- Refined Resume Lab manual readiness with source group status, missing evidence links, and recent packet status counts.
+- Clarified Source detail copy around manual evidence links.
+
 ## Next Tasks
 
-- Phase 5.2 controlled drafting refinements and stronger persistence/server-action tests.
 - Refine manual source-to-profile linking after Adel adds real sources.
 - Add saved job-search views.
 - Add persistence/server-action integration tests.

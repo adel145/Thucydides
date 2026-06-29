@@ -105,6 +105,13 @@ Remaining Phase 5 follow-up tests:
 - Persistence tests for packet save and mark-ready server actions.
 - Persistence tests for AI draft run creation, error storage, and copy-to-packet action.
 
+Phase 5.2 completed coverage:
+
+- Helper-level tests for Application Packet save preparation, safe READY blocking, checklist snapshots, and missing items.
+- Helper-level tests for mark-ready success, packet-missing behavior, forbidden/archived/rejected/application-progress blocking, and incomplete packet blocking.
+- Helper-level tests for AI draft disabled/blocked reasons, success audit records, error audit records, and explicit packet draft replacement fields.
+- Manual UI refinement remains browser QA: Application Packet evidence review, Resume Lab readiness summaries, and Source detail manual evidence copy.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

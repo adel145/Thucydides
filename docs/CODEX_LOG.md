@@ -281,3 +281,22 @@ Verified:
 Not implemented:
 
 - No Gmail, Calendar, scraping, browser automation, upload parsing, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, or new AI features outside controlled Application Packet drafting.
+
+## 2026-06-29 Phase 5.2
+
+Created:
+
+- Helper-level tests for Application Packet save preparation, READY blocking, packet-missing handling, checklist snapshots, and missing items.
+- Helper-level tests for AI draft disabled/blocked reasons, success audit records, error audit records, and explicit packet draft replacement fields.
+
+Updated:
+
+- Application Packet actions now use shared preparation helpers for save and mark-ready persistence data.
+- AI draft actions now use shared helpers for audit records and explicit packet draft field replacement.
+- Application Packet page now shows source availability, missing source groups, and missing evidence links before applying.
+- Resume Lab now shows source group readiness, missing evidence links, and recent packet status counts.
+- Source detail copy clarifies that recommended profile fields are suggestions only.
+
+Not implemented:
+
+- No Gmail, Calendar, scraping, browser automation, upload parsing, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, fake AI output, or new AI scope outside controlled Application Packet drafting.
