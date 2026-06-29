@@ -426,3 +426,28 @@ Updated:
 Not implemented:
 
 - No automatic applications, automatic emails, Gmail OAuth, automatic inbox reading, provider login, captcha bypass, authenticated scraping, OpenAI discovery scoring/parsing, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.
+
+## 2026-06-29 Phase 6.1A - Discovery Quality Gate + Source Candidate Funnel
+
+Created:
+
+- Additive `DiscoverySourceCandidate` model related to `JobDiscoveryRun` and optional `JobDiscoveryLead`.
+- `lib/discovery/pageClassifier.ts` for source classification and importability rules.
+- `lib/discovery/discoveryRunSafety.ts` for skip-non-imported lead safety coverage.
+
+Updated:
+
+- Internet discovery now stores Tavily/search/career-page results as source candidates before creating leads.
+- Importable leads are limited to verified single job postings, exact ATS job postings, or structured SerpApi Google Jobs results with meaningful descriptions.
+- Greenhouse exact job URLs map one job; Greenhouse boards are enumerated and filtered for Israel/remote target roles.
+- Public page fetch rejects unsafe schemes, localhost/private/internal IPs, and unsupported content types.
+- `/discovery` now shows Source candidates separately from Job leads and disables import for non-importable/low-confidence leads.
+- Discovery run review can skip non-imported leads without touching already imported leads.
+
+Verified:
+
+- Added tests for source classification, JSON-LD importability, Greenhouse exact/board behavior, unsafe URLs, import quality gates, hard-forbidden verified postings, and skip safety.
+
+Not implemented:
+
+- No Gmail OAuth, automatic inbox reading, Calendar, scraping behind authentication, browser automation, OpenAI discovery scoring/parsing, automatic applications, automatic emails, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.

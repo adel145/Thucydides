@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { detectGreenhouseBoardToken, mapGreenhouseJobToLead } from "../lib/discovery/companyCareerDiscovery";
+import { detectGreenhouseBoardToken, detectGreenhouseJobId, filterGreenhouseBoardJobs, mapGreenhouseJobToLead } from "../lib/discovery/companyCareerDiscovery";
+import { isSkippableNonImportedDiscoveryLead } from "../lib/discovery/discoveryRunSafety";
 import { getDiscoveryProviderStatus } from "../lib/discovery/discoveryProviders";
 import { buildCompanyCareerQueries, buildPlatformDiscoveryQueries } from "../lib/discovery/discoveryQueries";
 import { countDiscoveryLeads } from "../lib/discovery/jobDiscoveryCounts";
 import { prepareDiscoveryLeadForCreate } from "../lib/discovery/jobDiscoveryEngine";
 import { prepareJobCreateFromDiscoveryLead } from "../lib/discovery/jobDiscoveryImport";
 import { scoreDiscoveryLead } from "../lib/discovery/jobDiscoveryScoring";
+import { isSafePublicHttpUrl } from "../lib/discovery/jobPageFetcher";
 import { extractJobDescriptionFromHtml, extractJsonLdJobPosting } from "../lib/discovery/jobDescriptionExtractor";
+import { classifyDiscoverySource, SOURCE_CLASSIFICATIONS } from "../lib/discovery/pageClassifier";
 import { validateJob } from "../lib/rules/validateJob";
 
 describe("discovery provider config", () => {
@@ -41,6 +44,11 @@ describe("company career discovery", () => {
     expect(detectGreenhouseBoardToken("https://example.com/careers")).toBeNull();
   });
 
+  it("detects exact Greenhouse job ids", () => {
+    expect(detectGreenhouseJobId("https://boards.greenhouse.io/acme/jobs/1234567")).toBe("1234567");
+    expect(detectGreenhouseJobId("https://boards.greenhouse.io/acme")).toBeNull();
+  });
+
   it("maps Greenhouse jobs with content into review leads", () => {
     const lead = mapGreenhouseJobToLead("acme", {
       title: "Backend Developer",
@@ -55,6 +63,103 @@ describe("company career discovery", () => {
       discoveryProvider: "GREENHOUSE"
     });
     expect(lead?.rawSnippet).toContain("Python backend developer");
+  });
+
+  it("maps exact Greenhouse job URLs to one job only", () => {
+    const leads = filterGreenhouseBoardJobs("acme", [
+      {
+        id: 111,
+        title: "Customer Success Manager",
+        absolute_url: "https://boards.greenhouse.io/acme/jobs/111",
+        content: "<p>Sales and customer success role.</p>",
+        location: { name: "New York" }
+      },
+      {
+        id: 222,
+        title: "Backend Developer",
+        absolute_url: "https://boards.greenhouse.io/acme/jobs/222",
+        content: "<p>Python backend developer role in Israel.</p>",
+        location: { name: "Tel Aviv" }
+      }
+    ], { exactJobId: "222" });
+    expect(leads).toHaveLength(1);
+    expect(leads[0]?.title).toBe("Backend Developer");
+  });
+
+  it("filters Greenhouse boards for matching target jobs instead of taking the first listing", () => {
+    const leads = filterGreenhouseBoardJobs("acme", [
+      {
+        id: 111,
+        title: "Customer Service Representative",
+        absolute_url: "https://boards.greenhouse.io/acme/jobs/111",
+        content: "<p>Call center and regular customer service.</p>",
+        location: { name: "New York" }
+      },
+      {
+        id: 222,
+        title: "QA Automation Junior",
+        absolute_url: "https://boards.greenhouse.io/acme/jobs/222",
+        content: "<p>QA automation junior role for Python tests in Israel.</p>",
+        location: { name: "Israel" }
+      }
+    ]);
+    expect(leads).toHaveLength(1);
+    expect(leads[0]?.title).toBe("QA Automation Junior");
+  });
+});
+
+describe("source candidate classification and safety", () => {
+  it("keeps broad search and generic company titles non-importable", () => {
+    for (const title of ["Search Jobs", "Search for Jobs", "Open Positions", "Jobs & Careers", "Careers at Acme", "this page", "Glassdoor"]) {
+      const result = classifyDiscoverySource({ title, snippet: "Browse many open roles." });
+      expect(result.importable).toBe(false);
+      expect(result.classification).not.toBe(SOURCE_CLASSIFICATIONS.ACTUAL_JOB_POSTING);
+    }
+
+    const company = classifyDiscoverySource({ title: "Applied Materials", url: "https://www.appliedmaterials.com" });
+    expect(company.classification).toBe(SOURCE_CLASSIFICATIONS.GENERIC_COMPANY_PAGE);
+    expect(company.importable).toBe(false);
+  });
+
+  it("classifies JSON-LD job postings as importable actual jobs", () => {
+    const result = classifyDiscoverySource({
+      title: "Backend Developer",
+      hasJsonLdJobPosting: true,
+      rawText: "JobPosting JSON-LD includes a backend software role."
+    });
+    expect(result).toMatchObject({
+      classification: SOURCE_CLASSIFICATIONS.ACTUAL_JOB_POSTING,
+      confidence: "HIGH",
+      importable: true
+    });
+  });
+
+  it("keeps listing-page customer service text as a source candidate, not a forbidden lead", () => {
+    const result = classifyDiscoverySource({
+      title: "Open Positions",
+      url: "https://example.com/careers",
+      rawText: "Customer service representative, sales associate, and call center jobs."
+    });
+    expect(result.importable).toBe(false);
+    expect(result.classification).toBe(SOURCE_CLASSIFICATIONS.SEARCH_RESULTS_PAGE);
+  });
+
+  it("rejects unsafe or unsupported URLs before fetching", () => {
+    for (const url of [
+      "file:///C:/secret.html",
+      "data:text/html,hello",
+      "ftp://example.com/job",
+      "http://localhost:3000/job",
+      "http://127.0.0.1/job",
+      "http://10.0.0.5/job",
+      "http://192.168.1.5/job",
+      "http://172.16.0.2/job",
+      "http://169.254.1.1/job",
+      "javascript:alert(1)"
+    ]) {
+      expect(isSafePublicHttpUrl(url)).toBe(false);
+    }
+    expect(isSafePublicHttpUrl("https://boards.greenhouse.io/acme/jobs/123")).toBe(true);
   });
 });
 
@@ -149,9 +254,11 @@ describe("discovery lead preparation and import", () => {
       location: "Israel",
       sourceUrl: "https://example.com/job",
       rawSnippet: "Click here and unsubscribe footer",
-      extractedDescription: "Backend Developer role using Python, APIs, and databases.",
+      extractedDescription: "Backend Developer role using Python, APIs, and databases for production software systems in Israel.",
       discoveryProvider: "GREENHOUSE",
-      discoverySource: "COMPANY_CAREERS"
+      discoverySource: "COMPANY_CAREERS",
+      sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+      confidence: "HIGH"
     });
     expect(prepared.ok).toBe(true);
     if (prepared.ok) {
@@ -159,6 +266,42 @@ describe("discovery lead preparation and import", () => {
       expect(prepared.data.rawDescription).toContain("Backend Developer role using Python");
       expect(prepared.data.rawDescription).not.toContain("Click here and unsubscribe footer");
     }
+  });
+
+  it("refuses low-confidence or non-actual discovery sources during import", () => {
+    const low = prepareJobCreateFromDiscoveryLead({
+      title: "Backend Developer",
+      company: "Acme",
+      rawSnippet: "Backend role",
+      extractedDescription: "Backend Developer role using Python, APIs, and databases for production software systems in Israel.",
+      sourceClassification: SOURCE_CLASSIFICATIONS.ACTUAL_JOB_POSTING,
+      confidence: "LOW"
+    });
+    expect(low).toMatchObject({ ok: false, reason: "NOT_IMPORTABLE" });
+
+    const listing = prepareJobCreateFromDiscoveryLead({
+      title: "Open Positions",
+      company: "Acme",
+      rawSnippet: "Browse jobs",
+      extractedDescription: "Backend Developer role using Python, APIs, and databases for production software systems in Israel.",
+      sourceClassification: SOURCE_CLASSIFICATIONS.CAREERS_LISTING,
+      confidence: "HIGH"
+    });
+    expect(listing).toMatchObject({ ok: false, reason: "NOT_IMPORTABLE" });
+  });
+
+  it("still blocks verified technical postings with hard forbidden requirements", () => {
+    const prepared = prepareJobCreateFromDiscoveryLead({
+      title: "Backend Developer",
+      company: "Defense Acme",
+      location: "Israel",
+      sourceUrl: "https://example.com/backend",
+      rawSnippet: "Backend developer",
+      extractedDescription: "Backend Developer role using Python, APIs, and distributed systems. Mandatory security clearance is required before starting this role.",
+      sourceClassification: SOURCE_CLASSIFICATIONS.ACTUAL_JOB_POSTING,
+      confidence: "HIGH"
+    });
+    expect(prepared).toMatchObject({ ok: false, reason: "FORBIDDEN" });
   });
 });
 
@@ -177,5 +320,14 @@ describe("discovery dashboard counts", () => {
       blocked: 1,
       imported: 1
     });
+  });
+});
+
+describe("discovery run bulk safety", () => {
+  it("skips only non-imported leads from a run", () => {
+    expect(isSkippableNonImportedDiscoveryLead({ status: "NEW", importedJobId: null })).toBe(true);
+    expect(isSkippableNonImportedDiscoveryLead({ status: "SKIPPED", importedJobId: null })).toBe(true);
+    expect(isSkippableNonImportedDiscoveryLead({ status: "IMPORTED", importedJobId: "job-1" })).toBe(false);
+    expect(isSkippableNonImportedDiscoveryLead({ status: "NEW", importedJobId: "job-1" })).toBe(false);
   });
 });

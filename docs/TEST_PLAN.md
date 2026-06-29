@@ -166,8 +166,19 @@ Phase 6.1 coverage:
 - Unit tests cover discovery lead preparation and import using enriched descriptions over noisy snippets.
 - Unit tests cover discovery dashboard counts.
 - Build/type verification covers `/discovery`, discovery server actions, `JobDiscoveryRun`, expanded `JobDiscoveryLead`, and provider clients.
-- Manual QA should confirm `/discovery` loads, provider status degrades gracefully without keys, runs create review leads when providers are configured, and imports remain manual.
+- Manual QA should confirm `/discovery` loads, provider status degrades gracefully without keys, runs create source candidates and only verified review leads when providers are configured, and imports remain manual.
 - Manual QA should confirm no automatic apply, email sending, Gmail OAuth, login bypass, or authenticated scraping exists.
+
+Phase 6.1A coverage:
+
+- Unit tests cover source classification for broad search titles, aggregator/listing pages, generic company pages, and JSON-LD JobPosting pages.
+- Unit tests cover URL safety rejection for unsafe schemes, localhost, and private/internal IP ranges.
+- Unit tests cover Greenhouse exact job-id mapping and board filtering so discovery does not blindly pick the first listing.
+- Unit tests cover import refusal for low-confidence and non-posting source classifications.
+- Unit tests cover verified technical postings with mandatory security clearance still being blocked as FORBIDDEN.
+- Unit tests cover skip-non-imported discovery run behavior without touching imported leads.
+- Build/type verification covers additive `DiscoverySourceCandidate`, source-candidate UI, source classification, and the import quality gate.
+- Manual QA should confirm `/discovery` separates Source candidates from Job leads and disables import for non-importable candidates.
 
 ## Future Automated Tests
 

@@ -258,9 +258,9 @@ Decision: Phase 6.1 job discovery prioritizes company career pages and public AT
 
 Reason: manual Gmail alerts proved the local lead pipeline, but Adel needs real discovery that starts closer to source-of-truth employer postings while still keeping every result behind review.
 
-## 2026-06-29: Web Discovery Produces Leads, Not Applications
+## 2026-06-29: Web Discovery Produces Review Records, Not Applications
 
-Decision: Tavily, SerpApi, Greenhouse, and page extraction outputs must create `JobDiscoveryLead` records before any normal `Job` exists.
+Decision: Tavily, SerpApi, Greenhouse, and page extraction outputs must create local review records before any normal `Job` exists. After Phase 6.1A, broad search/career-page results become `DiscoverySourceCandidate` records first, and only verified single postings become `JobDiscoveryLead` records.
 
 Reason: external results can be incomplete, duplicated, stale, or risky. Adel must manually import selected non-forbidden leads; no provider API may submit applications or send communication.
 
@@ -269,3 +269,9 @@ Reason: external results can be incomplete, duplicated, stale, or risky. Adel mu
 Decision: Tavily and SerpApi are optional providers controlled by `TAVILY_API_KEY`, `SERPAPI_API_KEY`, `JOB_DISCOVERY_MAX_RESULTS`, and `JOB_DISCOVERY_COUNTRY`.
 
 Reason: missing provider keys should degrade gracefully in local development and tests, without blocking build or creating fake data.
+
+## 2026-06-29: Search Results Are Source Candidates, Not Jobs
+
+Decision: Tavily/search/career-page results must first become `DiscoverySourceCandidate` records. Only verified single job postings, exact ATS job postings, or structured Google Jobs results can become importable `JobDiscoveryLead` records.
+
+Reason: search results, career home pages, ATS boards, generic company pages, and aggregator lists are often broad or stale. Treating them as jobs creates noisy or falsely forbidden leads. The safe workflow is candidate -> classify -> verify -> lead -> manual import.

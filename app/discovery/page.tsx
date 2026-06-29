@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { enrichDiscoveryLead, importDiscoveryLeadToInbox, markDiscoveryLeadDuplicate, runJobDiscovery, skipDiscoveryLead } from "@/app/discovery/actions";
+import { enrichDiscoveryLead, importDiscoveryLeadToInbox, markDiscoveryLeadDuplicate, runJobDiscovery, skipDiscoveryLead, skipNonImportedLeadsFromRun } from "@/app/discovery/actions";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonButton } from "@/components/ui/NeonButton";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { db } from "@/lib/db";
 import { getDiscoveryProviderStatus, getDiscoveryProviderLabel } from "@/lib/discovery/discoveryProviders";
 import { countDiscoveryLeads } from "@/lib/discovery/jobDiscoveryCounts";
+import { isImportableSourceClassification } from "@/lib/discovery/pageClassifier";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
 import { jsonToStringArray } from "@/lib/formParsing";
 
@@ -23,17 +24,18 @@ function formatDate(value: Date | string | null | undefined) {
 export default async function DiscoveryPage({
   searchParams
 }: {
-  searchParams?: Promise<{ run?: string; blocked?: string; duplicate?: string; enriched?: string; missingLead?: string; noUrl?: string }>;
+  searchParams?: Promise<{ run?: string; blocked?: string; duplicate?: string; enriched?: string; missingLead?: string; noUrl?: string; notImportable?: string }>;
 }) {
   const notices = await searchParams;
   const providerStatus = getDiscoveryProviderStatus();
-  const [runs, leads, existingJobs] = await Promise.all([
+  const [runs, candidates, leads, existingJobs] = await Promise.all([
     db.jobDiscoveryRun.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
+    db.discoverySourceCandidate.findMany({ orderBy: { createdAt: "desc" }, take: 40, include: { discoveryRun: true } }),
     db.jobDiscoveryLead.findMany({
       where: { sourceType: { not: "GMAIL_ALERT" } },
       orderBy: { createdAt: "desc" },
       take: 40,
-      include: { discoveryRun: true }
+      include: { discoveryRun: true, sourceCandidate: true }
     }),
     db.job.findMany({ select: { id: true, title: true, company: true, sourceUrl: true } })
   ]);
@@ -62,6 +64,7 @@ export default async function DiscoveryPage({
         {notices?.run ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Discovery run saved locally.</div> : null}
         {notices?.blocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Import blocked: this lead is FORBIDDEN by deterministic rules.</div> : null}
         {notices?.duplicate ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Import blocked: this lead looks like an existing local job.</div> : null}
+        {notices?.notImportable ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Not importable: source is a listing/search/career page, not a single job posting.</div> : null}
         {notices?.enriched ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Lead enrichment retried from the public source URL.</div> : null}
         {notices?.missingLead ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Lead not found.</div> : null}
         {notices?.noUrl ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">This lead has no source URL to enrich.</div> : null}
@@ -144,6 +147,39 @@ export default async function DiscoveryPage({
                   <ScoreBadge tone="aqua">{run.resultCount} leads</ScoreBadge>
                 </div>
               </div>
+              <form action={skipNonImportedLeadsFromRun} className="mt-4">
+                <input type="hidden" name="runId" value={run.id} />
+                <NeonButton className="border-white/20 text-ink-100">Skip non-imported leads from this run</NeonButton>
+              </form>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      <GlassCard>
+        <h3 className="text-xl font-semibold text-white">Source candidates</h3>
+        <p className="mt-2 text-sm leading-6 text-ink-200">
+          Search results are source candidates, not jobs. Listing, search, career-home, and broad aggregator pages must be enumerated or ignored before import.
+        </p>
+        <div className="mt-5 grid gap-3">
+          {candidates.length === 0 ? <p className="text-sm text-ink-400">No source candidates yet.</p> : null}
+          {candidates.map((candidate) => (
+            <div key={candidate.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="font-semibold text-white">{candidate.title ?? candidate.url ?? "Untitled source"}</div>
+                  <p className="mt-1 text-sm text-ink-300">{candidate.reason ?? "No classification reason saved."}</p>
+                  {candidate.url ? <Link href={candidate.url} className="mt-2 inline-flex text-sm font-semibold text-aqua-400">Open source</Link> : null}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <ScoreBadge tone={isImportableSourceClassification(candidate.classification) ? "aqua" : "muted"}>{candidate.classification}</ScoreBadge>
+                  <ScoreBadge tone="muted">{candidate.confidence ?? "LOW"}</ScoreBadge>
+                  <ScoreBadge tone="aqua">{candidate.createdLeadCount} leads</ScoreBadge>
+                  {candidate.error ? <ScoreBadge tone="warning">Fetch issue</ScoreBadge> : null}
+                </div>
+              </div>
+              {candidate.snippet ? <p className="mt-3 line-clamp-3 text-sm leading-6 text-ink-300">{candidate.snippet}</p> : null}
+              {candidate.error ? <p className="mt-2 text-sm text-signal-red">{candidate.error}</p> : null}
             </div>
           ))}
         </div>
@@ -159,6 +195,16 @@ export default async function DiscoveryPage({
             const fitReasons = jsonToStringArray(lead.fitReasons);
             const duplicate = findDuplicateJobForLead(lead, existingJobs);
             const blocked = lead.validationStatus === "FORBIDDEN";
+            const meaningfulDescription = lead.extractedDescription ?? lead.rawText;
+            const verifiedPosting = isImportableSourceClassification(lead.sourceClassification);
+            const enoughConfidence = lead.confidence === "MEDIUM" || lead.confidence === "HIGH";
+            const importBlockedReason = !verifiedPosting
+              ? "Not importable: source is a listing/search/career page, not a single job posting."
+              : !enoughConfidence
+                ? "Not importable: confidence is too low."
+                : !meaningfulDescription || meaningfulDescription.trim().length < 80
+                  ? "Not importable: meaningful job description is missing."
+                  : null;
             const imported = lead.status === "IMPORTED" && lead.importedJobId;
             const inactive = imported || lead.status === "SKIPPED" || lead.status === "DUPLICATE";
             return (
@@ -173,6 +219,7 @@ export default async function DiscoveryPage({
                     <ScoreBadge tone={validationTone(lead.validationStatus)}>{lead.validationStatus}</ScoreBadge>
                     <ScoreBadge tone={lead.fitScore && lead.fitScore >= 70 ? "aqua" : "muted"}>{lead.fitScore ?? 0}/100</ScoreBadge>
                     <ScoreBadge tone="muted">{lead.confidence ?? "LOW"}</ScoreBadge>
+                    <ScoreBadge tone={verifiedPosting ? "aqua" : "muted"}>{lead.sourceClassification ?? "UNCLASSIFIED"}</ScoreBadge>
                     <ScoreBadge tone="muted">{lead.status}</ScoreBadge>
                   </div>
                 </div>
@@ -184,6 +231,7 @@ export default async function DiscoveryPage({
                 </div>
                 {lead.riskNotes ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink-200">{lead.riskNotes}</p> : null}
                 {fitReasons.length > 0 ? <p className="mt-3 text-sm leading-6 text-ink-300">{fitReasons.slice(0, 3).join(" ")}</p> : null}
+                {importBlockedReason ? <p className="mt-3 text-sm text-signal-red">{importBlockedReason}</p> : null}
                 {duplicate && !imported ? <p className="mt-3 text-sm text-signal-red">Looks like existing job: {duplicate.title}{duplicate.company ? ` at ${duplicate.company}` : ""}.</p> : null}
                 <p className="mt-4 line-clamp-5 whitespace-pre-wrap rounded-lg border border-white/10 bg-navy-950/40 p-3 text-sm leading-6 text-ink-200">
                   {lead.extractedDescription ?? lead.rawText ?? lead.rawSnippet}
@@ -193,7 +241,7 @@ export default async function DiscoveryPage({
                   {!inactive ? (
                     <form action={importDiscoveryLeadToInbox}>
                       <input type="hidden" name="leadId" value={lead.id} />
-                      <NeonButton disabled={blocked || Boolean(duplicate)}>Import to Job Inbox</NeonButton>
+                      <NeonButton disabled={blocked || Boolean(duplicate) || Boolean(importBlockedReason)}>Import to Job Inbox</NeonButton>
                     </form>
                   ) : null}
                   {!inactive ? (

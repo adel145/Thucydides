@@ -63,4 +63,5 @@
 - Add env-gated internet discovery with company career pages first, platforms second, Gmail alerts third.
 - Use public ATS APIs such as Greenhouse when detected.
 - Keep Tavily and SerpApi optional and review-only.
+- Treat search/career results as source candidates first; only verified single job postings should become importable leads.
 - Add Lever/Ashby/Workday adapters only after public, non-authenticated behavior is understood.

@@ -80,6 +80,8 @@ model JobDiscoveryLead {
   gmailAlert       GmailJobAlert? @relation(fields: [gmailAlertId], references: [id], onDelete: Cascade)
   discoveryRunId   String?
   discoveryRun     JobDiscoveryRun? @relation(fields: [discoveryRunId], references: [id], onDelete: SetNull)
+  sourceCandidateId String?
+  sourceCandidate   DiscoverySourceCandidate? @relation(fields: [sourceCandidateId], references: [id], onDelete: SetNull)
   title            String
   company          String?
   location         String?
@@ -101,6 +103,7 @@ model JobDiscoveryLead {
   confidence       String?
   fitScore         Int?
   fitReasons       Json?
+  sourceClassification String?
   lastEnrichedAt   DateTime?
   validationStatus String         @default("UNREVIEWED")
   forbiddenFlags   Json?
@@ -115,6 +118,7 @@ model JobDiscoveryLead {
 
   @@index([gmailAlertId])
   @@index([discoveryRunId])
+  @@index([sourceCandidateId])
   @@index([status])
   @@index([validationStatus])
 }
@@ -134,6 +138,35 @@ model JobDiscoveryRun {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   leads          JobDiscoveryLead[]
+  sourceCandidates DiscoverySourceCandidate[]
+}
+
+model DiscoverySourceCandidate {
+  id               String           @id @default(cuid())
+  discoveryRunId   String?
+  discoveryRun     JobDiscoveryRun? @relation(fields: [discoveryRunId], references: [id], onDelete: SetNull)
+  provider         String?
+  source           String?
+  query            String?
+  url              String?
+  title            String?
+  snippet          String?
+  rawText          String?
+  classification   String           @default("UNCLASSIFIED")
+  confidence       String?
+  reason           String?
+  extractedCompany String?
+  extractedJobCount Int?
+  status           String           @default("REVIEW")
+  createdLeadCount Int              @default(0)
+  error            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  leads            JobDiscoveryLead[]
+
+  @@index([discoveryRunId])
+  @@index([classification])
+  @@index([status])
 }
 
 model ApplicationEvent {

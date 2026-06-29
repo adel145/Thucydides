@@ -1,4 +1,5 @@
 import { getDiscoveryProviderLabel } from "./discoveryProviders";
+import { isImportableSourceClassification } from "./pageClassifier";
 import { validateJob } from "../rules/validateJob";
 
 export type DiscoveryLeadForImport = {
@@ -15,6 +16,8 @@ export type DiscoveryLeadForImport = {
   extractedRequirements?: string | null;
   extractedRemotePolicy?: string | null;
   extractedLanguage?: string | null;
+  confidence?: string | null;
+  sourceClassification?: string | null;
 };
 
 function sourceLabel(lead: DiscoveryLeadForImport) {
@@ -45,6 +48,20 @@ export function buildDiscoveryLeadRawDescription(lead: DiscoveryLeadForImport) {
 }
 
 export function prepareJobCreateFromDiscoveryLead(lead: DiscoveryLeadForImport) {
+  const meaningfulDescription = lead.extractedDescription ?? lead.rawText;
+  if (!isImportableSourceClassification(lead.sourceClassification) || lead.confidence === "LOW" || !meaningfulDescription || meaningfulDescription.trim().length < 80) {
+    return {
+      ok: false as const,
+      reason: "NOT_IMPORTABLE" as const,
+      validation: validateJob({
+        title: lead.title,
+        company: lead.company,
+        location: lead.location,
+        rawDescription: meaningfulDescription ?? lead.rawSnippet
+      })
+    };
+  }
+
   const rawDescription = buildDiscoveryLeadRawDescription(lead);
   const validation = validateJob({
     title: lead.title,

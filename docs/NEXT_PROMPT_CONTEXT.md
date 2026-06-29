@@ -2,7 +2,7 @@
 
 Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. The repo and docs are the official project memory.
 
-As of Phase 6.1, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery.
+As of Phase 6.1A, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with a source-candidate quality gate.
 
 ## Product Mission
 
@@ -16,9 +16,11 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 
 - Dashboard first view is Today's Mission and now links to `/discovery` with "Find suitable jobs".
 - Discovery priority is company career pages first, job platforms second, Gmail alerts third.
-- `/discovery` shows Tavily/SerpApi/Gmail provider status, discovery run form, run history, counts, and lead review board.
+- `/discovery` shows Tavily/SerpApi/Gmail provider status, discovery run form, run history, source candidates, counts, and lead review board.
 - `JobDiscoveryRun` stores discovery run status, provider/query metadata, counts, and errors.
-- `JobDiscoveryLead` stores both Gmail/manual leads and internet discovery leads, including source/evidence fields, extracted content, confidence, fit score, and reasons.
+- `DiscoverySourceCandidate` stores Tavily/search/career-page results before they become jobs. Generic company pages, search result pages, ATS boards, career listings, blocked pages, and noisy pages stay candidates.
+- `JobDiscoveryLead` stores both Gmail/manual leads and verified internet discovery leads, including source/evidence fields, extracted content, confidence, fit score, and reasons.
+- Only verified single job postings, exact ATS job postings, or structured SerpApi Google Jobs results can become importable discovery leads.
 - Safe non-forbidden discovery leads can be manually imported into normal local `Job` records.
 - Imported discovery leads create `JOB_IMPORTED_FROM_DISCOVERY` events.
 - Forbidden discovery leads stay blocked from normal import.
@@ -37,10 +39,11 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 - `lib/discovery/discoveryQueries.ts`: target companies and default role/platform queries.
 - `lib/discovery/tavilySearchClient.ts`: Tavily search client with timeout and result caps.
 - `lib/discovery/serpApiJobsClient.ts`: SerpApi Google Jobs client with timeout and result caps.
-- `lib/discovery/companyCareerDiscovery.ts`: Greenhouse board token detection, public board fetch, and mapping.
-- `lib/discovery/jobPageFetcher.ts`: public page fetch with timeout.
+- `lib/discovery/companyCareerDiscovery.ts`: Greenhouse board token/job-id detection, public board fetch, target-role filtering, and mapping.
+- `lib/discovery/jobPageFetcher.ts`: safe public HTTP(S) page fetch with timeout and content-type checks.
 - `lib/discovery/jobDescriptionExtractor.ts`: JSON-LD JobPosting extraction and visible HTML fallback.
-- `lib/discovery/jobDiscoveryEngine.ts`: provider orchestration and lead preparation.
+- `lib/discovery/pageClassifier.ts`: source candidate classification and importability rules.
+- `lib/discovery/jobDiscoveryEngine.ts`: provider orchestration, source-candidate creation, and verified lead preparation.
 - `lib/discovery/jobDiscoveryScoring.ts`: deterministic fit scoring.
 - `lib/discovery/jobDiscoveryCounts.ts`: dashboard/review counts.
 - `lib/discovery/jobDiscoveryImport.ts`: safe import shaping that prefers enriched/extracted descriptions over noisy snippets.
@@ -82,9 +85,9 @@ OPENAI_MODEL=
 ## Known Limitations
 
 - Tavily and SerpApi are optional and missing keys produce no provider results.
-- Search can miss jobs, return stale jobs, or return duplicate/platform wrapper pages.
+- Search can miss jobs, return stale jobs, or return duplicate/platform wrapper pages; these should remain source candidates unless verified as single job postings.
 - Public career pages may block fetches or omit useful JSON-LD.
-- Greenhouse support is limited to public board URLs/tokens.
+- Greenhouse support is limited to public board URLs/tokens and exact public job ids.
 - HTML fallback extraction is conservative and may produce low-confidence leads.
 - Manual review remains required before any lead becomes a Job.
 

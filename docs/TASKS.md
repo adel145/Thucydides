@@ -166,9 +166,20 @@
 - Expanded deterministic role rules for backend, full-stack, Python, software engineer, AI training, and software-student titles.
 - Added tests for provider config, query generation, Greenhouse, extraction, scoring, role rules, import behavior, and counts.
 
+## Completed In Phase 6.1A
+
+- Added `DiscoverySourceCandidate` so Tavily/search/career-page results are stored before any job lead is created.
+- Added source classification for actual job postings, ATS job postings, ATS boards, career listings, search pages, aggregator lists, generic company pages, noisy pages, and blocked pages.
+- Tightened discovery import so only verified single postings or structured Google Jobs results can become importable leads.
+- Hardened public page fetching with URL scheme, localhost/private-IP, and content-type safety checks.
+- Tightened Greenhouse handling so exact job URLs map one job and boards are filtered for Israel/remote target roles.
+- Split `/discovery` into source candidates and job leads, with import disabled for low-confidence or non-posting sources.
+- Added skip-non-imported-leads action for discovery runs without touching imported leads.
+- Added tests for broad/generic titles, JSON-LD importability, Greenhouse exact/board behavior, unsafe URLs, non-importable sources, hard forbidden verified postings, and skip safety.
+
 ## Next Tasks
 
-- Tune internet discovery results conservatively after real Tavily/SerpApi/career-page runs.
+- Manually QA internet discovery with real Tavily/SerpApi/career-page runs and tune classifications conservatively.
 - Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.
 - Improve packet quality review before exports.

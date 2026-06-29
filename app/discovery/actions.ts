@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { optionalString, requiredString } from "@/lib/formParsing";
-import { enrichDiscoveryLeadFromUrl, prepareDiscoveryLeadForCreate, runInternetJobDiscovery, asPrismaDiscoveryLeadCreate } from "@/lib/discovery/jobDiscoveryEngine";
+import { enrichDiscoveryLeadFromUrl, prepareDiscoveryLeadForCreate, runInternetJobDiscovery, asPrismaDiscoveryLeadCreate, asPrismaSourceCandidateCreate } from "@/lib/discovery/jobDiscoveryEngine";
 import { prepareJobCreateFromDiscoveryLead } from "@/lib/discovery/jobDiscoveryImport";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
 
@@ -28,16 +28,28 @@ export async function runJobDiscovery(formData: FormData) {
 
   try {
     const result = await runInternetJobDiscovery({ maxResults, locationScope });
-    await db.jobDiscoveryLead.createMany({
-      data: result.leads.map((lead) => asPrismaDiscoveryLeadCreate(lead, run.id))
-    });
+    let createdLeadCount = 0;
+    for (const candidate of result.sourceCandidates) {
+      const createdCandidate = await db.discoverySourceCandidate.create({
+        data: asPrismaSourceCandidateCreate(candidate, run.id)
+      });
+      if (candidate.leads.length > 0) {
+        await db.jobDiscoveryLead.createMany({
+          data: candidate.leads.map((lead) => ({
+            ...asPrismaDiscoveryLeadCreate(lead, run.id),
+            sourceCandidateId: createdCandidate.id
+          }))
+        });
+        createdLeadCount += candidate.leads.length;
+      }
+    }
     const missingProviders = !result.providersConfigured.tavily && !result.providersConfigured.serpApi;
     await db.jobDiscoveryRun.update({
       where: { id: run.id },
       data: {
         status: "FINISHED",
         finishedAt: new Date(),
-        resultCount: result.leads.length,
+        resultCount: createdLeadCount,
         error: missingProviders ? "No Tavily or SerpApi key configured; discovery run created no web/API leads." : result.errors.join("\n") || null
       }
     });
@@ -122,11 +134,13 @@ export async function importDiscoveryLeadToInbox(formData: FormData) {
         forbiddenFlags: prepared.validation.forbiddenFlags as Prisma.InputJsonValue,
         allowedSignals: prepared.validation.allowedSignals as Prisma.InputJsonValue,
         riskNotes: prepared.validation.riskNotes.join("\n"),
-        notes: "Import blocked because deterministic validation marked this lead FORBIDDEN."
+        notes: prepared.reason === "FORBIDDEN"
+          ? "Import blocked because deterministic validation marked this lead FORBIDDEN."
+          : "Import blocked because this source is not verified as a medium/high-confidence single job posting."
       }
     });
     revalidatePath("/discovery");
-    redirect("/discovery?blocked=1");
+    redirect(prepared.reason === "FORBIDDEN" ? "/discovery?blocked=1" : "/discovery?notImportable=1");
   }
 
   const existingJobs = await db.job.findMany({ select: { id: true, title: true, company: true, sourceUrl: true } });
@@ -182,6 +196,28 @@ export async function importDiscoveryLeadToInbox(formData: FormData) {
   revalidatePath("/jobs");
   revalidatePath("/pipeline");
   redirect(`/jobs/${job.id}?importedLead=1`);
+}
+
+export async function skipNonImportedLeadsFromRun(formData: FormData) {
+  const runId = requiredString(formData.get("runId"));
+  // Keep this bulk update aligned with isSkippableNonImportedDiscoveryLead.
+  const result = await db.jobDiscoveryLead.updateMany({
+    where: {
+      discoveryRunId: runId,
+      importedJobId: null,
+      status: { not: "IMPORTED" }
+    },
+    data: {
+      status: "SKIPPED",
+      notes: "Skipped non-imported leads from this discovery run."
+    }
+  });
+  await db.jobDiscoveryRun.update({
+    where: { id: runId },
+    data: { skippedCount: { increment: result.count } }
+  });
+  revalidatePath("/");
+  revalidatePath("/discovery");
 }
 
 export async function skipDiscoveryLead(formData: FormData) {

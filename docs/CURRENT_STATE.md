@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-29, Thucydides is in Phase 6.1 - Internet Job Discovery Engine + Company Career Pages First state.
+As of 2026-06-29, Thucydides is in Phase 6.1A - Discovery Quality Gate + Source Candidate Funnel state.
 
 ## What Exists
 
@@ -82,19 +82,23 @@ As of 2026-06-29, Thucydides is in Phase 6.1 - Internet Job Discovery Engine + C
 - Source readiness can be 4/4 while profile text or evidence links remain incomplete; Resume Lab now separates those concepts.
 - `/gmail` supports local/manual Gmail job-alert paste intake.
 - `GmailJobAlert` stores pasted alert metadata and raw text locally.
-- `JobDiscoveryLead` stores extracted local review candidates.
+- `JobDiscoveryLead` stores extracted local review candidates and verified internet job leads.
+- `DiscoverySourceCandidate` stores Tavily/search/career-page candidates before they are allowed to become job leads.
 - `/gmail` extracts conservative candidate leads from pasted LinkedIn, Indeed, Drushim, AllJobs, Glassdoor, Google Jobs, or other alert text.
 - `/gmail` shows validation status, allowed signals, forbidden flags, risk notes, duplicate warnings, source URL, and raw snippets for lead review.
 - Safe non-forbidden leads can be manually imported into the normal Job Inbox.
 - Imported leads become normal local `Job` records and get an `ApplicationEvent`.
-- Forbidden leads remain blocked from normal import in Phase 6.1.
+- Forbidden leads remain blocked from normal import in Phase 6.1A.
 - `/discovery` supports env-gated internet job discovery through Tavily and SerpApi.
-- `/discovery` keeps all results as `JobDiscoveryLead` review candidates before import.
+- `/discovery` separates source candidates from job leads. Search/listing/generic/company pages stay as source candidates; only verified single job postings become importable leads.
 - `JobDiscoveryRun` stores discovery run status, provider/query metadata, counts, and errors.
-- Discovery helpers support company-career queries, platform queries, Greenhouse public board detection/mapping, public page fetch, JSON-LD JobPosting extraction, HTML fallback extraction, deterministic fit scoring, and duplicate checks.
+- Discovery helpers support company-career queries, platform queries, Greenhouse public board detection/mapping, safe public page fetch, source classification, JSON-LD JobPosting extraction, HTML fallback extraction, deterministic fit scoring, and duplicate checks.
+- Greenhouse exact job URLs map only that job; Greenhouse boards are enumerated and filtered for Israel/remote target roles instead of blindly taking the first listing.
+- Unsafe URLs, generic company pages, search result pages, ATS boards, career listings, and noisy pages are not directly importable.
 - Safe non-forbidden discovery leads can be manually imported into the normal Job Inbox.
 - Imported discovery leads create normal local `Job` records and `JOB_IMPORTED_FROM_DISCOVERY` events.
 - Forbidden discovery leads remain blocked from normal import.
+- The run action can skip non-imported leads from a run without touching already imported leads.
 
 ## Latest UX Review Summary
 
