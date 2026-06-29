@@ -17,7 +17,7 @@ export function TopBar() {
             Local SQLite active
           </ScoreBadge>
           <ScoreBadge tone={aiConfig.enabled ? "aqua" : "warning"} icon={aiConfig.enabled ? <Sparkles className="h-3.5 w-3.5" /> : <CircleAlert className="h-3.5 w-3.5" />}>
-            {aiConfig.enabled ? "AI drafting active" : "AI drafting not configured"}
+            {aiConfig.enabled ? "AI drafting configured" : "AI drafting not configured"}
           </ScoreBadge>
           <ScoreBadge tone="warning" icon={<Mail className="h-3.5 w-3.5" />}>
             Gmail not connected

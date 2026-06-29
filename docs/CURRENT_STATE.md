@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-29, Thucydides is in Phase 5.5 - Product Direction Lock + Real Application Quality Patch state.
+As of 2026-06-29, Thucydides is in Phase 6.0 - Gmail Job Alerts Intake Foundation state.
 
 ## What Exists
 
@@ -20,6 +20,7 @@ As of 2026-06-29, Thucydides is in Phase 5.5 - Product Direction Lock + Real App
   - Gmail
   - Settings
 - Dashboard has a Today's Mission first-open view backed by local SQLite data.
+- Dashboard shows manual Gmail alert leads awaiting review. This count comes from pasted local alert leads, not inbox scanning.
 - UI reflects the Stitch-inspired dark navy, neon aqua, glass command-center style.
 - Dependencies have been installed into `node_modules/`.
 - The dev server was started on `http://localhost:3000`.
@@ -58,7 +59,7 @@ As of 2026-06-29, Thucydides is in Phase 5.5 - Product Direction Lock + Real App
 - `/jobs/[id]/application` prevents READY status for forbidden, archived, rejected, or critically incomplete packets.
 - `/jobs/[id]/application` can request controlled OpenAI drafting only when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured.
 - Controlled OpenAI requests use `store: false`, `tools: []`, and `tool_choice: "none"`.
-- Top-bar status separates local SQLite, AI drafting configuration, and Gmail connection state. If OpenAI env values are configured, it says "AI drafting active"; Gmail remains "Gmail not connected."
+- Top-bar status separates local SQLite, AI drafting configuration, and Gmail connection state. If OpenAI env values are configured, it says "AI drafting configured"; Gmail remains "Gmail not connected."
 - AI draft output is review-only and must be explicitly copied into packet fields by Adel; that copy action replaces current packet draft fields.
 - AI draft output validation rejects non-string values in generated array fields.
 - Application Packet save/mark-ready behavior has pure helper coverage for persistence safety, READY blocking, packet-missing handling, and checklist snapshots.
@@ -73,11 +74,19 @@ As of 2026-06-29, Thucydides is in Phase 5.5 - Product Direction Lock + Real App
 - AI/ML and research-student roles are positive deterministic technical signals, including Deep Learning, Machine Learning, AI Research, Research Student, Student Researcher, Computer Vision, Data Science Student, Algorithm Student, AI/ML Intern, and Research Intern wording.
 - Hard forbidden role logic still overrides positive technical signals for sales, regular customer service, non-technical service center, mandatory security clearance, and mandatory army experience.
 - Top-bar and placeholder page copy reflects local SQLite status, controlled packet drafting, and planned later-phase Gmail/agent work.
-- Dashboard shows honest planned cards for future job discovery, Gmail job-alert intake, and CV/PDF packet export without enabling those features.
+- Dashboard shows honest planned/local cards for future job discovery, manual Gmail job-alert paste intake, and future CV/PDF packet export.
 - Application Packet explains that READY means packet/checklist completeness, while NEEDS_MANUAL_REVIEW means Adel still reviews job fit before applying.
 - Application Packet and Resume Lab mention DOCX/PDF export as planned only; current packet content remains manual text.
 - Job Inbox, Application Packet, Resume Lab, Sources, Source Detail, and Profile now use clearer surfaces, stronger borders/actions, and short Arabic/Hebrew helper labels where useful.
 - Source readiness can be 4/4 while profile text or evidence links remain incomplete; Resume Lab now separates those concepts.
+- `/gmail` supports local/manual Gmail job-alert paste intake.
+- `GmailJobAlert` stores pasted alert metadata and raw text locally.
+- `JobDiscoveryLead` stores extracted local review candidates.
+- `/gmail` extracts conservative candidate leads from pasted LinkedIn, Indeed, Drushim, AllJobs, Glassdoor, Google Jobs, or other alert text.
+- `/gmail` shows validation status, allowed signals, forbidden flags, risk notes, duplicate warnings, source URL, and raw snippets for lead review.
+- Safe non-forbidden leads can be manually imported into the normal Job Inbox.
+- Imported leads become normal local `Job` records and get an `ApplicationEvent`.
+- Forbidden leads remain blocked from normal import in Phase 6.0.
 
 ## Latest UX Review Summary
 
@@ -95,6 +104,7 @@ As of 2026-06-29, Thucydides is in Phase 5.5 - Product Direction Lock + Real App
 ## What Does Not Exist Yet
 
 - No Gmail OAuth.
+- No automatic Gmail inbox reading.
 - No Google Calendar.
 - No scraping or browser automation.
 - No real resume generation.
@@ -113,7 +123,7 @@ As of 2026-06-29, Thucydides is in Phase 5.5 - Product Direction Lock + Real App
 
 ## Important Warning
 
-Dashboard, jobs, sources, packets, and AI draft runs are local SQLite data. Gmail, scraping, job discovery automation, resume exports, notifications, and file parsing remain placeholders.
+Dashboard, jobs, sources, packets, pasted Gmail alerts, discovery leads, and AI draft runs are local SQLite data. Gmail OAuth, automatic inbox reading, scraping, job discovery automation, resume exports, notifications, and file parsing remain placeholders.
 
 Profile, Sources, and manual evidence links are the required groundwork for useful AI/resume features. Controlled AI drafting may use only reviewed local packet/profile/source data, and generated text must stay behind Adel review and confirmation.
 

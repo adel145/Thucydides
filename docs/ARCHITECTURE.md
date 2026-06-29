@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 5.5 Architecture
+## Phase 6.0 Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -18,6 +18,7 @@ Primary folders:
 - `lib/dashboard/`: pure dashboard metric and mission calculation.
 - `lib/applications/`: deterministic application packet helpers.
 - `lib/ai/`: controlled OpenAI drafting boundary for Application Packets.
+- `lib/gmail/`: local Gmail alert provider classification, parsing, lead import safety, and lead counts.
 - `lib/profile/`: profile validation and source evidence link helpers.
 - `lib/sources/`: source type and readiness models.
 - `lib/agents/`: local future-agent contract types only.
@@ -51,6 +52,8 @@ Phase 1 uses Prisma with SQLite at `prisma/dev.db`. The schema includes:
 - `ProfileSourceLink`: manual evidence/audit links from a source to a profile field.
 - `ApplicationPacket`: one manual job-specific application workspace per job.
 - `AiDraftRun`: local audit record for controlled application-packet draft attempts.
+- `GmailJobAlert`: local pasted Gmail job-alert metadata and raw text.
+- `JobDiscoveryLead`: local candidate leads extracted from pasted alerts before manual import.
 
 Prisma 7 stores the datasource URL in `prisma.config.ts` and uses `@prisma/adapter-better-sqlite3` in runtime code. `.env.example` contains local `DATABASE_URL`, blank `OPENAI_API_KEY`, and blank `OPENAI_MODEL` values. OpenAI is disabled unless both OpenAI values are configured.
 
@@ -126,6 +129,15 @@ Phase 5.5 keeps the same schema and integration boundary, but locks product dire
 - Dashboard, Application Packet, and Resume Lab expose future discovery/Gmail/export goals as planned-only copy.
 - Future application flow is Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply.
 
+Phase 6.0 adds manual Gmail job-alert paste intake:
+
+- `GmailJobAlert` and `JobDiscoveryLead` are additive local SQLite models.
+- `/gmail` stores pasted alert text locally and extracts conservative lead candidates.
+- `app/gmail/actions.ts` handles local alert save, lead import, skip, and duplicate marking.
+- Imports use existing deterministic validation rules and create normal `Job` records plus `ApplicationEvent`.
+- Forbidden leads are blocked from normal import.
+- No Gmail OAuth, Gmail API call, email sending, scraping, browser automation, or OpenAI parsing is introduced.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -146,9 +158,10 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 5.5
+## Non-Goals in Phase 6.0
 
 - Gmail OAuth
+- Automatic Gmail inbox reading
 - Calendar integration
 - Scraping
 - Authentication

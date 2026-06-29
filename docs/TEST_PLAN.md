@@ -140,9 +140,20 @@ Phase 5.5 coverage:
 
 - Unit fixtures confirm Deep Learning / AI / ML / Research Student wording is a positive deterministic role signal.
 - Unit fixtures confirm mandatory security clearance, mandatory army experience, sales, and regular customer service still force FORBIDDEN even when AI/ML wording is present.
-- Manual QA should confirm the top bar separates "AI drafting active" or "AI drafting not configured" from "Gmail not connected."
+- Manual QA should confirm the top bar separates "AI drafting configured" or "AI drafting not configured" from "Gmail not connected."
 - Manual QA should confirm `/jobs/[id]/application` explains READY versus NEEDS_MANUAL_REVIEW and still blocks unsafe READY states.
 - Manual QA should confirm Dashboard, Resume Lab, and Application Packet mention future discovery/export only as planned work.
+
+Phase 6.0 coverage:
+
+- Unit tests cover Gmail alert provider classification for LinkedIn, Indeed, Drushim, AllJobs, and unknown senders.
+- Unit tests cover conservative pasted-alert parsing, URL extraction, raw snippet preservation, and noisy/empty text avoidance.
+- Unit tests cover role safety for AI/ML research student leads and hard forbidden blockers.
+- Unit tests cover safe Job create shaping, forbidden import blocking, and duplicate detection.
+- Unit tests cover dashboard count logic for local Gmail alert leads awaiting review.
+- Build/type verification covers additive `GmailJobAlert` and `JobDiscoveryLead` models, `/gmail`, and dashboard count integration.
+- Manual QA should confirm `/gmail` loads, saves pasted alert text, creates local leads, imports a safe lead, blocks forbidden leads, and never claims Gmail is connected.
+- Manual QA should confirm Dashboard copy says "Manual Gmail alert leads awaiting review" and does not imply inbox scanning.
 
 ## Future Automated Tests
 

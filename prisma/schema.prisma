@@ -58,6 +58,48 @@ model Job {
   applicationPacket ApplicationPacket?
 }
 
+model GmailJobAlert {
+  id         String             @id @default(cuid())
+  provider   String?
+  sender     String?
+  subject    String?
+  receivedAt DateTime?
+  rawText    String
+  notes      String?
+  status     String             @default("REVIEW")
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  leads      JobDiscoveryLead[]
+}
+
+model JobDiscoveryLead {
+  id               String         @id @default(cuid())
+  sourceType       String         @default("GMAIL_ALERT")
+  provider         String?
+  gmailAlertId     String?
+  gmailAlert       GmailJobAlert? @relation(fields: [gmailAlertId], references: [id], onDelete: Cascade)
+  title            String
+  company          String?
+  location         String?
+  sourceUrl        String?
+  rawSnippet       String
+  rawText          String?
+  validationStatus String         @default("UNREVIEWED")
+  forbiddenFlags   Json?
+  allowedSignals   Json?
+  riskNotes        String?
+  status           String         @default("NEW")
+  importedJobId    String?
+  duplicateOfJobId String?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([gmailAlertId])
+  @@index([status])
+  @@index([validationStatus])
+}
+
 model ApplicationEvent {
   id        String   @id @default(cuid())
   jobId     String

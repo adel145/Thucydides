@@ -138,8 +138,22 @@
 - Clarified Application Packet READY versus NEEDS_MANUAL_REVIEW copy.
 - Added planned-only dashboard/export/Gmail-intake copy without enabling those features.
 
+## Completed In Phase 6.0
+
+- Added additive `GmailJobAlert` and `JobDiscoveryLead` schema models and migration.
+- Added local/manual Gmail job-alert paste intake on `/gmail`.
+- Added provider classification for LinkedIn, Indeed, Drushim, AllJobs, Glassdoor, Google Jobs, and Other.
+- Added conservative local parser for pasted job-alert text.
+- Added lead review cards with validation status, allowed signals, forbidden flags, risk notes, duplicate warnings, URLs, and snippets.
+- Added manual import from safe non-forbidden leads into normal local Job records.
+- Added skip and duplicate actions for local lead review.
+- Added dashboard count for manual Gmail alert leads awaiting review.
+- Added `npm run verify`.
+- Added tests for provider classification, parser behavior, role safety, import helper behavior, duplicate detection, and lead counts.
+
 ## Next Tasks
 
+- Tune pasted Gmail alert parsing conservatively after real copied alerts.
 - Improve packet quality review before exports.
 - Refine manual source-to-profile linking after Adel adds more real sources.
 - Add saved job-search views if still useful.

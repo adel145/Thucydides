@@ -52,3 +52,11 @@
 - Preserve the safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply.
 - Plan discovery around company career pages first, then LinkedIn, Indeed, Drushim, AllJobs, Glassdoor/Google Jobs, and Gmail job-alert intake after safety design.
 - Plan exports as DOCX/PDF for CV and cover letters, TXT recruiter messages/notes, local per-job folders, and RTL/LTR support.
+
+## Phase 6: Manual Discovery Intake
+
+- Start with local/manual Gmail job-alert paste intake.
+- Extract conservative `JobDiscoveryLead` records for review before import.
+- Import safe non-forbidden leads into the normal Job Inbox only after Adel action.
+- Keep Gmail OAuth, inbox reading, scraping, browser automation, and automatic applications out until explicitly designed.
+- Consider read-only Gmail OAuth in a later phase after privacy, safety, and audit rules are written.

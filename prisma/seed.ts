@@ -118,6 +118,8 @@ async function main() {
   await prisma.applicationEvent.deleteMany();
   await prisma.aiDraftRun.deleteMany();
   await prisma.applicationPacket.deleteMany();
+  await prisma.jobDiscoveryLead.deleteMany();
+  await prisma.gmailJobAlert.deleteMany();
   await prisma.profileSourceLink.deleteMany();
   await prisma.job.deleteMany();
   await prisma.sourceFile.deleteMany();

@@ -28,6 +28,12 @@ export default async function DashboardPage() {
     draft: await db.applicationPacket.count({ where: { status: "DRAFT" } }),
     ready: await db.applicationPacket.count({ where: { status: "READY" } })
   };
+  const gmailLeadsAwaitingReview = await db.jobDiscoveryLead.count({
+    where: {
+      importedJobId: null,
+      status: { in: ["NEW", "REVIEW"] }
+    }
+  });
   const metrics = calculateDashboardMetrics(jobs);
   const mission = calculateDashboardMission(jobs, sources, profile);
   const evidence = summarizeProfileEvidence(profile?.sourceLinks ?? []);
@@ -60,10 +66,14 @@ export default async function DashboardPage() {
           <p className="mt-4 max-w-2xl text-base leading-7 text-ink-200">
             Start with jobs ready to apply, follow-ups, and source readiness. Local SQLite active; Gmail is not connected.
           </p>
+          <p className="mt-3 text-sm text-ink-300">
+            Manual Gmail alert leads awaiting review: <span className="font-semibold text-aqua-400">{gmailLeadsAwaitingReview}</span>. This is pasted alert text only, not inbox scanning.
+          </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <NeonButton href="/jobs?view=ready">Jobs Ready To Apply</NeonButton>
             <NeonButton href="/resumes" className="border-white/20 text-ink-100">Resume Lab</NeonButton>
             <NeonButton href="/jobs" className="border-white/20 text-ink-100">Paste Job</NeonButton>
+            <NeonButton href="/gmail" className="border-white/20 text-ink-100">Review Gmail Leads</NeonButton>
             <NeonButton href="/pipeline" className="border-white/20 text-ink-100">Pipeline</NeonButton>
           </div>
         </div>
@@ -94,6 +104,10 @@ export default async function DashboardPage() {
               <div className="text-2xl font-semibold text-aqua-400">{packetCounts.ready}/{packetCounts.draft + packetCounts.ready}</div>
               <div className="text-xs text-ink-400">Packets</div>
             </div>
+            <div>
+              <div className="text-2xl font-semibold text-aqua-400">{gmailLeadsAwaitingReview}</div>
+              <div className="text-xs text-ink-400">Gmail leads</div>
+            </div>
           </div>
         </div>
       </GlassCard>
@@ -109,7 +123,7 @@ export default async function DashboardPage() {
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           {[
             ["Find jobs automatically — planned", "Career pages first, then LinkedIn, Indeed, Drushim, AllJobs, and other sources after safety design."],
-            ["Gmail job alerts intake — planned", "Future fallback for saved job alerts. Gmail is not connected and no email is read."],
+            ["Gmail job alerts intake — local paste", "Paste job-alert emails manually. Gmail is not connected and no email is read."],
             ["Export CV/PDF packet — planned", "Future DOCX/PDF/TXT exports with RTL/LTR support. Current packets stay manual text."]
           ].map(([title, note]) => (
             <div key={title} className="rounded-lg border border-white/10 bg-white/[0.03] p-4 opacity-85">

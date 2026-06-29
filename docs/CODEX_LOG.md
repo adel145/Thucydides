@@ -379,3 +379,26 @@ Updated:
 Not implemented:
 
 - No Gmail OAuth/reading, Calendar, scraping, browser automation, upload parsing, DOCX/PDF export implementation, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, remote logos, OpenAI file processing, or fake AI output.
+
+## 2026-06-29 Phase 6.0 - Gmail Job Alerts Intake Foundation
+
+Created:
+
+- Additive `GmailJobAlert` and `JobDiscoveryLead` local SQLite models.
+- Migration `20260629184838_phase6_gmail_job_alerts_intake`.
+- `/gmail` manual paste intake, saved-alert list, and lead review cards.
+- Server actions for saving pasted alerts, extracting leads, importing safe leads, skipping leads, and marking duplicates.
+- `lib/gmail/` helpers for provider classification, conservative parsing, safe import shaping, duplicate detection, and dashboard lead counts.
+- Tests for provider classification, parser behavior, role safety, import helpers, duplicates, and lead counts.
+
+Updated:
+
+- Dashboard now shows manual Gmail alert leads awaiting review and links to `/gmail`.
+- Top-bar copy now says "AI drafting configured" instead of "AI drafting active."
+- `package.json` now has `npm run verify`.
+- Seed reset order handles the new local alert/lead tables.
+- Docs now record Phase 6.0 as manual/local Gmail alert intake, not Gmail OAuth.
+
+Not implemented:
+
+- No Gmail OAuth, automatic Gmail reading, email sending, Calendar, scraping, browser automation, OpenAI parsing, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, or fake AI output.

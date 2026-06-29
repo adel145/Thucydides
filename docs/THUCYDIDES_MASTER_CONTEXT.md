@@ -114,10 +114,12 @@ Future degree logic should treat "student welcome", "final-year student", and "n
 - Future OpenAI API integration for analysis and drafting
 - Future Gmail and Calendar integrations only after explicit design, OAuth, and safety planning
 
-## Phase 5.5 Status
+## Phase 6.0 Status
 
-Phase 5.5 has a mandatory Application Packet safety gate, controlled OpenAI drafting for packet text only, manual source/profile evidence workflows, and clearer product direction for real applications. The app currently has local SQLite data for profile, jobs, sources, source evidence links, application packets, AI draft runs, pipeline, deterministic validation, and audit events.
+Phase 6.0 has a mandatory Application Packet safety gate, controlled OpenAI drafting for packet text only, manual source/profile evidence workflows, local/manual Gmail job-alert paste intake, and clearer product direction for real applications. The app currently has local SQLite data for profile, jobs, sources, source evidence links, pasted Gmail alerts, discovery leads, application packets, AI draft runs, pipeline, deterministic validation, and audit events.
 
-OpenAI is available only from the Application Packet page when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured. It uses review-only drafting, stores local draft-run audit records, and never applies to jobs or sends email. Gmail OAuth, Google Calendar, scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, deployment, automatic applications, and automatic emails are not implemented.
+OpenAI is available only from the Application Packet page when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured. It uses review-only drafting, stores local draft-run audit records, and never applies to jobs or sends email. Gmail alert intake is manual pasted text only. Gmail OAuth, automatic Gmail reading, Google Calendar, scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, deployment, automatic applications, and automatic emails are not implemented.
 
 AI/ML research student roles are target role signals, including Deep Learning, Machine Learning, AI Research, Research Student, Student Researcher, Computer Vision, Data Science Student, Algorithm Student, AI/ML Intern, and Research Intern. Sales, regular customer service, non-technical service center, mandatory security clearance, and mandatory army experience remain hard forbidden blockers.
+
+Phase 6.0 leads are review candidates. A `JobDiscoveryLead` becomes a normal `Job` only after Adel explicitly imports it, and forbidden leads are blocked from normal import.

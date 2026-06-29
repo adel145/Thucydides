@@ -233,3 +233,21 @@ Reason: controlled AI drafting can be active while Gmail is still not connected;
 Decision: treat Deep Learning, Machine Learning, AI Research, Research Student, Student Researcher, Computer Vision, Data Science Student, Algorithm Student, AI/ML Intern, and Research Intern wording as positive technical role signals.
 
 Reason: these roles are relevant to Adel's CS degree path, but hard blockers such as sales, customer service, mandatory security clearance, and mandatory army experience must still override them.
+
+## 2026-06-29: Gmail Alerts Start As Manual Paste Intake
+
+Decision: implement Gmail job-alert intake as local pasted text records, not Gmail OAuth.
+
+Reason: pasted alerts let Adel use LinkedIn, Indeed, Drushim, AllJobs, Glassdoor, and Google Jobs alert emails without introducing OAuth, inbox reading, email sending, scraping, browser automation, or automatic applications.
+
+## 2026-06-29: Discovery Leads Are Review Candidates
+
+Decision: store extracted alert items as `JobDiscoveryLead` review candidates before they can become normal `Job` records.
+
+Reason: parser output is imperfect and must remain behind Adel review. Forbidden leads stay blocked from normal import, and safe leads become jobs only after explicit manual action.
+
+## 2026-06-29: AI Drafting Status Is Configuration Status
+
+Decision: top-bar copy says "AI drafting configured" rather than "AI drafting active."
+
+Reason: env variables prove configuration, not a live health check or successful model call.
