@@ -7,6 +7,7 @@ import { NeonButton } from "@/components/ui/NeonButton";
 import { db } from "@/lib/db";
 import { getProfileSourceTargetField, getRecommendedTargetFields, PROFILE_SOURCE_TARGET_FIELDS } from "@/lib/profile/profileSourceLinks";
 import { SOURCE_TYPES, sourceTypeLabels } from "@/lib/sources/sourceTypes";
+import { formatFileSize } from "@/lib/sources/sourceUploads";
 
 export default async function SourceDetailPage({
   params,
@@ -31,7 +32,7 @@ export default async function SourceDetailPage({
         <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Source Detail</p>
         <h2 className="mt-3 text-3xl font-semibold text-white">{source.filename}</h2>
         <p className="mt-3 text-sm leading-6 text-ink-200">
-          Edit manual source data only. No file upload parsing or automatic profile linking happens here.
+          Edit manual source data only. Uploaded files stay local; no parsing or automatic profile linking happens here.
         </p>
         {notices?.saved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Source saved.</div> : null}
         {notices?.linked ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Evidence link saved.</div> : null}
@@ -39,6 +40,27 @@ export default async function SourceDetailPage({
         {notices?.linkError ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-signal-red">Choose a valid profile field.</div> : null}
         {notices?.deleteError ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-signal-red">Type DELETE to remove this source.</div> : null}
       </GlassCard>
+
+      {source.path ? (
+        <GlassCard>
+          <h3 className="text-xl font-semibold text-white">Local file</h3>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+              <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Stored path</div>
+              <div className="mt-2 break-all text-sm text-white">{source.path}</div>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+              <div className="text-xs uppercase tracking-[0.16em] text-ink-400">File size</div>
+              <div className="mt-2 text-sm text-white">{formatFileSize(source.uploadSizeBytes)}</div>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+              <div className="text-xs uppercase tracking-[0.16em] text-ink-400">MIME type</div>
+              <div className="mt-2 text-sm text-white">{source.uploadMimeType ?? "Unknown"}</div>
+            </div>
+          </div>
+          <p className="mt-3 text-sm text-ink-300">This file is only stored locally. Text content is not extracted automatically.</p>
+        </GlassCard>
+      ) : null}
 
       <GlassCard>
         <h3 className="text-xl font-semibold text-white">Link this source to Profile</h3>

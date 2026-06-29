@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-29, Thucydides is in Phase 5.2 Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement state.
+As of 2026-06-29, Thucydides is in Phase 5.3 UX Clarity Refresh + Manual File Upload Intake state.
 
 ## What Exists
 
@@ -29,7 +29,7 @@ As of 2026-06-29, Thucydides is in Phase 5.2 Controlled Drafting Refinement + Pe
 - Seed profile exists for Adel Mohsen.
 - Ten seed jobs exist with deterministic validation statuses.
 - `/profile` loads and saves the local candidate profile.
-- `/jobs` lists local jobs as review cards and can create manually entered jobs from pasted descriptions.
+- `/jobs` lists local jobs as clearer LinkedIn-style review cards and can create manually entered jobs from pasted descriptions.
 - `/jobs` supports text search, validation/status/facet filters, sorting, visible active-filter state, and clear filters.
 - `/jobs` supports quick review filters for ready-to-apply, high-priority, due follow-up, risky review, and forbidden/archive review views.
 - Job cards show metadata, validation status, pipeline status, priority, next action date, signal/flag counts, risk/blocker preview, and quick links for details, edit, and archive.
@@ -43,7 +43,8 @@ As of 2026-06-29, Thucydides is in Phase 5.2 Controlled Drafting Refinement + Pe
 - `ApplicationEvent` records are created for new job creation, job updates, validation reruns, status changes, and archives.
 - `/profile` validates required fields, salary consistency, and honest degree wording; it shows save feedback and preserves submitted values on validation errors.
 - `/profile` shows source records and manual evidence links without upload parsing.
-- `/sources` manages local manual source records, pasted text intake, source readiness, and source edit/detail workflow.
+- `/sources` manages local manual source records, local file upload intake, pasted text intake, source readiness, and source edit/detail workflow.
+- Uploaded source files are stored under `local_uploads/sources/` with local metadata and are gitignored.
 - `/sources/[id]` can manually link a source to allowed profile fields as evidence.
 - `/profile` shows profile source evidence grouped by target field.
 - Dashboard source readiness includes manual profile evidence link counts.
@@ -51,7 +52,7 @@ As of 2026-06-29, Thucydides is in Phase 5.2 Controlled Drafting Refinement + Pe
 - Local agent contract types exist for future evidence-based agent output, with no execution.
 - `ApplicationPacket` stores one manual job-specific application workspace per job.
 - `AiDraftRun` stores controlled application-packet draft attempts, generated output, errors, model, prompt version, and input summary.
-- `/jobs/[id]/application` shows application decision, recommended CV language, checklist, evidence summary, risks, and manual draft fields.
+- `/jobs/[id]/application` shows a workflow-oriented application packet with job summary, recommendation, readiness blockers, evidence review, risks, and manual draft fields.
 - `/jobs/[id]/application` prevents READY status for forbidden, archived, rejected, or critically incomplete packets.
 - `/jobs/[id]/application` can request controlled OpenAI drafting only when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured.
 - Controlled OpenAI requests use `store: false`, `tools: []`, and `tool_choice: "none"`.
@@ -60,7 +61,7 @@ As of 2026-06-29, Thucydides is in Phase 5.2 Controlled Drafting Refinement + Pe
 - Application Packet save/mark-ready behavior has pure helper coverage for persistence safety, READY blocking, packet-missing handling, and checklist snapshots.
 - Application Packet evidence review now shows manual source availability, missing source groups, and missing profile-evidence links before applying.
 - Job detail and Job Inbox link to application packet preparation.
-- `/resumes` is a manual Resume Lab workspace showing profile/source/evidence readiness, source group status, missing evidence links, base CV data, and recent application packet status counts.
+- `/resumes` is a less dense manual Resume Lab workspace showing profile/source/evidence readiness, missing-data tasks, source group status, base CV data, and recent application packet status counts.
 - Dashboard includes a Resume Lab button and application packet counts.
 - Dashboard includes jobs ready to apply, due follow-ups, overdue follow-ups, high-priority jobs, recent jobs, and profile/source readiness warnings.
 - Pure helpers exist for deterministic job readiness, dashboard mission grouping, and source readiness.
@@ -88,7 +89,7 @@ As of 2026-06-29, Thucydides is in Phase 5.2 Controlled Drafting Refinement + Pe
 - No real agent execution.
 - No authentication.
 - No deployment setup.
-- No real upload parsing for source files.
+- No automatic parsing for uploaded source files.
 - No notification system for due follow-ups.
 - No automatic source-to-profile linking.
 - No AI/agent execution from the contract types.

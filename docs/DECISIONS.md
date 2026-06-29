@@ -173,3 +173,9 @@ Reason: Phase 5.0 should support real application preparation while avoiding fak
 Decision: allow OpenAI only for review-only Application Packet drafting, gated by `OPENAI_API_KEY`, `OPENAI_MODEL`, deterministic job safety, local audit storage, and explicit user copy into packet fields.
 
 Reason: Adel can benefit from draft support after packet/profile/source groundwork exists, but the product must not fake output, silently apply, send emails, browse, scrape, or behave like an autonomous agent.
+
+## 2026-06-29: Manual Local Uploads Without Parsing
+
+Decision: support local source-file upload by storing files under `local_uploads/sources/` and recording additive upload metadata on `SourceFile`.
+
+Reason: Adel needs a practical way to keep CV, certificate, academic, and project files near the source inventory, but Phase 5.3 must not parse files, extract text automatically, send files to OpenAI, or auto-link profile evidence.

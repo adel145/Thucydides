@@ -25,6 +25,20 @@ function validationTone(status: string) {
   return "muted";
 }
 
+function companyInitials(company: string | null) {
+  const words = (company ?? "Unknown").split(/\s+/).filter(Boolean);
+  return words.slice(0, 2).map((word) => word[0]?.toUpperCase()).join("") || "U";
+}
+
+function readinessContext(validationStatus: string, status: string) {
+  if (status === "ARCHIVED") return "Archived";
+  if (status === "REJECTED") return "Rejected";
+  if (validationStatus === "ALLOWED") return "Ready to review";
+  if (validationStatus === "RISKY") return "Manual check";
+  if (validationStatus === "FORBIDDEN") return "Archive review";
+  return "Needs validation";
+}
+
 function uniqueOptions(values: Array<string | null>) {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value)))).sort((a, b) => a.localeCompare(b));
 }
@@ -64,9 +78,9 @@ export default async function JobsPage({
     <div className="grid gap-6">
       <GlassCard>
         <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Job Inbox</p>
-        <h2 className="mt-3 text-3xl font-semibold text-white">Paste jobs and review cards</h2>
+        <h2 className="mt-3 text-3xl font-semibold text-white">Review jobs and prepare applications</h2>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-          Paste job descriptions for deterministic validation. Use the cards below to decide what is ready, risky, or blocked.
+          Scan saved roles, open the best matches, and prepare application packets. Paste descriptions below when adding new jobs manually.
         </p>
         {params.deleted ? (
           <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Job deleted locally.</div>
@@ -183,42 +197,54 @@ export default async function JobsPage({
           <h3 className="text-xl font-semibold text-white">Local jobs</h3>
           <span className="text-sm text-ink-400">{jobs.length} shown / {allJobs.length} stored</span>
         </div>
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="mt-5 grid gap-4">
           {jobs.map((job) => {
             const allowedCount = jsonToStringArray(job.allowedSignals).length;
             const forbiddenCount = jsonToStringArray(job.forbiddenFlags).length;
             const riskPreview = forbiddenCount > 0 ? jsonToStringArray(job.forbiddenFlags)[0] : job.riskNotes?.split(/\r?\n/)[0];
             return (
-              <article key={job.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <Link href={`/jobs/${job.id}`} className="font-semibold text-white hover:text-aqua-400">{job.title}</Link>
-                    <div className="mt-1 text-sm text-ink-200">{[job.company, job.location, job.source].filter(Boolean).join(" | ") || "No metadata"}</div>
+              <article key={job.id} className="rounded-lg border border-white/10 bg-white/[0.07] p-5 shadow-sm transition hover:border-aqua-400/40 hover:bg-white/[0.09]">
+                <div className="flex flex-wrap items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-aqua-400/30 bg-aqua-400/10 text-sm font-bold text-aqua-400">
+                    {companyInitials(job.company)}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <StatusBadge status={job.status} />
-                    <PriorityBadge priority={job.priority} />
-                    <ScoreBadge tone={validationTone(job.validationStatus)}>{job.validationStatus}</ScoreBadge>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <Link href={`/jobs/${job.id}`} className="text-lg font-semibold text-white hover:text-aqua-400">{job.title}</Link>
+                        <div className="mt-1 text-sm font-medium text-ink-100">{job.company ?? "Unknown company"}</div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <ScoreBadge tone={validationTone(job.validationStatus)}>{job.validationStatus}</ScoreBadge>
+                        <StatusBadge status={job.status} />
+                        <PriorityBadge priority={job.priority} />
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-ink-200">
+                      <span>{job.location ?? "Location not listed"}</span>
+                      <span>{job.source}</span>
+                      <span>{readinessContext(job.validationStatus, job.status)}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="mt-4 grid gap-2 text-sm text-ink-200 sm:grid-cols-2">
-                  <div>Signals: <span className="text-white">{allowedCount}</span></div>
-                  <div>Flags: <span className={forbiddenCount > 0 ? "text-signal-red" : "text-white"}>{forbiddenCount}</span></div>
-                  <div>Next: <span className="text-white">{job.nextActionAt ? job.nextActionAt.toLocaleDateString() : "not set"}</span></div>
-                  <div>Updated: <span className="text-white">{job.updatedAt.toLocaleDateString()}</span></div>
+                <div className="mt-4 grid gap-2 rounded-lg border border-white/10 bg-navy-950/40 p-3 text-sm text-ink-200 sm:grid-cols-4">
+                  <div><span className="text-ink-400">Signals</span><div className="mt-1 text-white">{allowedCount}</div></div>
+                  <div><span className="text-ink-400">Flags</span><div className={forbiddenCount > 0 ? "mt-1 text-signal-red" : "mt-1 text-white"}>{forbiddenCount}</div></div>
+                  <div><span className="text-ink-400">Next action</span><div className="mt-1 text-white">{job.nextActionAt ? job.nextActionAt.toLocaleDateString() : "Not set"}</div></div>
+                  <div><span className="text-ink-400">Updated</span><div className="mt-1 text-white">{job.updatedAt.toLocaleDateString()}</div></div>
                 </div>
                 {riskPreview ? (
                   <p className={`mt-3 line-clamp-2 rounded-lg border p-3 text-sm ${forbiddenCount > 0 ? "border-signal-red/30 bg-signal-red/10 text-signal-red" : "border-white/10 bg-navy-950/50 text-ink-200"}`}>
                     {forbiddenCount > 0 ? "Blocker חסם: " : "Risk דורש בדיקה: "}{riskPreview}
                   </p>
                 ) : null}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link href={`/jobs/${job.id}/application`} className="rounded-lg border border-aqua-400/40 px-3 py-2 text-xs font-semibold text-aqua-400">Prepare</Link>
-                  <Link href={`/jobs/${job.id}`} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-ink-200">Details</Link>
-                  <Link href={`/jobs/${job.id}/edit`} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-ink-200">Edit</Link>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <Link href={`/jobs/${job.id}/application`} className="rounded-lg border border-aqua-400/60 bg-aqua-400/10 px-4 py-2 text-sm font-semibold text-aqua-400">Prepare application</Link>
+                  <Link href={`/jobs/${job.id}`} className="rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-ink-200">Details</Link>
+                  <Link href={`/jobs/${job.id}/edit`} className="rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-ink-200">Edit</Link>
                   <form action={archiveJob}>
                     <input type="hidden" name="id" value={job.id} />
-                    <button className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-ink-200">Archive</button>
+                    <button className="rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-ink-200">Archive</button>
                   </form>
                 </div>
               </article>

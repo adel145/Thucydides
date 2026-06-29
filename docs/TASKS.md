@@ -102,6 +102,15 @@
 - Refined Resume Lab manual readiness with source group status, missing evidence links, and recent packet status counts.
 - Clarified Source detail copy around manual evidence links.
 
+## Completed In Phase 5.3
+
+- Refreshed Job Inbox cards with clearer hierarchy, company fallback initials, metadata rows, and stronger Prepare application action.
+- Refreshed Application Packet workflow summary, recommendation/status cards, and READY blocker section.
+- Refreshed Resume Lab with clearer missing-data tasks and less dense base CV summaries.
+- Added manual local source-file upload intake with additive upload metadata.
+- Stored uploaded files under gitignored `local_uploads/sources/`.
+- Added source upload helper tests.
+
 ## Next Tasks
 
 - Refine manual source-to-profile linking after Adel adds real sources.

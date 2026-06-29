@@ -68,16 +68,19 @@ model ApplicationEvent {
 }
 
 model SourceFile {
-  id            String   @id @default(cuid())
-  filename      String
-  type          String
-  path          String?
-  url           String?
-  extractedText String?
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  profileLinks  ProfileSourceLink[]
+  id              String   @id @default(cuid())
+  filename        String
+  type            String
+  path            String?
+  uploadMimeType  String?
+  uploadSizeBytes Int?
+  uploadedAt      DateTime?
+  url             String?
+  extractedText   String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  profileLinks    ProfileSourceLink[]
 }
 
 model ProfileSourceLink {

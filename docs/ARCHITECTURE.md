@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 5.2 Architecture
+## Phase 5.3 Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -47,7 +47,7 @@ Phase 1 uses Prisma with SQLite at `prisma/dev.db`. The schema includes:
 - `Job`: also tracks priority, next action date/note, and last contacted date.
 - `ApplicationEvent`: future pipeline event log linked to jobs.
 - `SourceFile`: future local source-file tracking.
-- `SourceFile`: manual source records with title/filename, type, optional path/URL, pasted text, notes, and timestamps.
+- `SourceFile`: manual source records with title/filename, type, optional path/URL, optional upload metadata, pasted text, notes, and timestamps.
 - `ProfileSourceLink`: manual evidence/audit links from a source to a profile field.
 - `ApplicationPacket`: one manual job-specific application workspace per job.
 - `AiDraftRun`: local audit record for controlled application-packet draft attempts.
@@ -112,6 +112,13 @@ Phase 5.2 keeps the same schema and integration boundary, but adds small pure he
 - AI draft audit records and explicit packet draft replacement fields are prepared in `lib/ai/applicationDrafting.ts`.
 - Application Packet and Resume Lab pages expose clearer manual evidence review without parsing, exporting, or automatic profile updates.
 
+Phase 5.3 adds manual local upload intake:
+
+- `SourceFile` has additive upload metadata fields for MIME type, size, and upload timestamp.
+- Uploaded files are written under `local_uploads/sources/`, which is gitignored.
+- Uploads are local source records only. The app does not parse files, extract text, send files to OpenAI, or auto-link profile evidence.
+- Job Inbox, Application Packet, Resume Lab, and Sources receive clarity-focused UI refinements without changing safety gates or integrations.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -132,7 +139,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 5.2
+## Non-Goals in Phase 5.3
 
 - Gmail OAuth
 - Calendar integration

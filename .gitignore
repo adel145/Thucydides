@@ -15,3 +15,4 @@ prisma/dev.db-journal
 *.sqlite3
 .DS_Store
 stitch_mission_matrix_web_design.zip
+local_uploads/

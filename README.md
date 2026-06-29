@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 5.2 - Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement.
+Current state: Phase 5.3 - UX Clarity Refresh + Manual File Upload Intake.
 
 ## What Works Now
 
@@ -28,6 +28,7 @@ Current state: Phase 5.2 - Controlled Drafting Refinement + Persistence Safety T
 - Priority and follow-up tracking
 - Application event history
 - Manual source records and pasted text intake
+- Manual local source-file upload intake without parsing
 - Manual source detail/edit workflow
 - Source readiness indicators
 - Manual source-to-profile evidence links
@@ -72,7 +73,7 @@ The UI should stay dark, local-first, and sidebar-based. It should remain mostly
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 5.2 uses local SQLite data, deterministic validation, manual job/source intake, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. Gmail, upload parsing, real agents, resume generation, DOCX/PDF export, and automatic communication are intentionally not connected.
+Current limitation: Phase 5.3 uses local SQLite data, deterministic validation, manual job/source intake, local file upload storage, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. Gmail, automatic file parsing, real agents, resume generation, DOCX/PDF export, and automatic communication are intentionally not connected.
 
 ## Local Setup
 
@@ -121,6 +122,7 @@ Do not commit:
 - prisma/dev.db
 - real private CV files
 - sensitive personal documents
+- local_uploads/
 
 The repository tracks schema, migrations, source code, tests, and documentation. Local data stays local.
 

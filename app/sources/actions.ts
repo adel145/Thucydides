@@ -1,11 +1,15 @@
 "use server";
 
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { optionalString, requiredString } from "@/lib/formParsing";
 import { isProfileSourceTargetField } from "@/lib/profile/profileSourceLinks";
 import { normalizeSourceType } from "@/lib/sources/sourceTypes";
+import { buildStoredUploadPath, isUsableUploadFile } from "@/lib/sources/sourceUploads";
 
 export async function createSourceRecord(formData: FormData) {
   await db.sourceFile.create({
@@ -22,6 +26,37 @@ export async function createSourceRecord(formData: FormData) {
   revalidatePath("/sources");
   revalidatePath("/profile");
   revalidatePath("/");
+}
+
+export async function uploadSourceFile(formData: FormData) {
+  const file = formData.get("file");
+  if (!isUsableUploadFile(file)) {
+    redirect("/sources?uploadError=1");
+  }
+
+  const uploadId = randomUUID();
+  const storedPath = buildStoredUploadPath(uploadId, file.name);
+  const absolutePath = path.join(process.cwd(), storedPath);
+  await mkdir(path.dirname(absolutePath), { recursive: true });
+  await writeFile(absolutePath, Buffer.from(await file.arrayBuffer()));
+
+  await db.sourceFile.create({
+    data: {
+      filename: optionalString(formData.get("filename")) ?? file.name,
+      type: normalizeSourceType(optionalString(formData.get("type"))),
+      path: storedPath,
+      uploadMimeType: file.type || null,
+      uploadSizeBytes: file.size,
+      uploadedAt: new Date(),
+      notes: optionalString(formData.get("notes"))
+    }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/sources");
+  revalidatePath("/profile");
+  revalidatePath("/resumes");
+  redirect("/sources?uploaded=1");
 }
 
 export async function updateSourceRecord(formData: FormData) {

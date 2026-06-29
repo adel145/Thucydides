@@ -9,10 +9,11 @@ import { calculateSourceReadiness } from "@/lib/sources/sourceReadiness";
 function ValueList({ label, value }: { label: string; value: unknown }) {
   const items = jsonToStringArray(value);
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+    <div className="rounded-lg border border-white/10 bg-white/[0.06] p-4">
       <div className="text-xs uppercase tracking-[0.16em] text-ink-400">{label}</div>
       <div className="mt-3 grid gap-2 text-sm text-ink-200">
-        {items.length === 0 ? <p className="text-ink-400">Missing</p> : items.map((item) => <div key={item}>{item}</div>)}
+        {items.length === 0 ? <p className="text-signal-red">Missing</p> : items.slice(0, 5).map((item) => <div key={item}>{item}</div>)}
+        {items.length > 5 ? <p className="text-ink-400">+ {items.length - 5} more</p> : null}
       </div>
     </div>
   );
@@ -55,7 +56,7 @@ export default async function ResumesPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Resume Lab</p>
         <h2 className="mt-3 text-3xl font-semibold text-white">Manual CV preparation workspace</h2>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-          Resume Lab is manual in Phase 5.2. Controlled drafting lives inside Application Packets; DOCX, PDF, and export are not connected yet.
+          Resume Lab is manual in Phase 5.3. Use it to review profile data, sources, and application packets before drafting. DOCX, PDF, and export are not connected.
         </p>
       </GlassCard>
 
@@ -86,6 +87,24 @@ export default async function ResumesPage() {
           </div>
         </GlassCard>
       </div>
+
+      <GlassCard>
+        <h3 className="text-xl font-semibold text-white">What to complete next</h3>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-lg border border-white/10 bg-white/[0.06] p-4">
+            <div className="font-semibold text-white">Profile data</div>
+            <div className="mt-2 grid gap-2 text-sm text-ink-200">
+              {missingCvInputs.length === 0 ? <p className="text-aqua-400">Core CV fields are filled.</p> : missingCvInputs.map((item) => <p key={item}>Add {item.toLowerCase()}.</p>)}
+            </div>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/[0.06] p-4">
+            <div className="font-semibold text-white">Evidence links</div>
+            <div className="mt-2 grid gap-2 text-sm text-ink-200">
+              {missingEvidenceLabels.length === 0 ? <p className="text-aqua-400">Evidence links are covered.</p> : missingEvidenceLabels.map((item) => <p key={item}>Link a source for {item}.</p>)}
+            </div>
+          </div>
+        </div>
+      </GlassCard>
 
       <GlassCard>
         <h3 className="text-xl font-semibold text-white">Base CV data from Profile</h3>

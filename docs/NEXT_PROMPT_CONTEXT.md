@@ -1,6 +1,6 @@
 # Next Prompt Context
 
-Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.2 has added Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation, Phase 5.0 Application Packet + Resume Lab MVP, and Phase 5.1 Controlled AI Drafting + Application Packet safety gate.
+Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.3 has added UX Clarity Refresh + Manual File Upload Intake. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation, Phase 5.0 Application Packet + Resume Lab MVP, Phase 5.1 Controlled AI Drafting + Application Packet safety gate, and Phase 5.2 Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement.
 
 The product mission is to help Adel reach 10 interviews in the Israeli job market. Adel lives in Beersheba, prefers the South, wants above 10,000 NIS gross if staying in Beersheba, can temporarily accept 8,000 NIS gross, and expects to complete remaining degree requirements around September.
 
@@ -25,7 +25,7 @@ Current Phase 4.1 behavior:
 - `lib/profile/profileSourceLinks.ts` defines allowed target fields, source-type recommendations, grouping, and readiness summary.
 - `lib/agents/agentContracts.ts` defines future agent output contracts only. No agent runs, model call, fake score, automatic application, or email exists.
 
-Current Phase 5.2 behavior:
+Current Phase 5.3 behavior:
 
 - `ApplicationPacket` stores one manual local application workspace per job.
 - `/jobs/[id]/application` shows deterministic application decision, recommended CV language, checklist, missing items, evidence summary, risks, and manual draft fields.
@@ -38,9 +38,11 @@ Current Phase 5.2 behavior:
 - Mark ready requires a saved packet; direct attempts without one redirect to `packetMissing=1`.
 - Application Packet save/mark-ready behavior is covered by pure helper tests for safe upsert data, READY blocking, packet-missing handling, and checklist/missing-item snapshots.
 - AI draft audit behavior is covered by helper tests for disabled config, blocked jobs, success records, error records, and explicit packet draft replacement.
-- Application Packet evidence review shows linked evidence by profile field, available source records, missing source groups, and missing evidence links.
+- Job Inbox cards have clearer LinkedIn-style hierarchy with company fallback initials, stronger metadata rows, and a clearer Prepare application action.
+- Application Packet evidence review shows linked evidence by profile field, available source records, missing source groups, and missing evidence links in a clearer workflow layout.
 - Job detail and Job Inbox link to packet preparation.
-- `/resumes` is a manual Resume Lab workspace with profile/source/evidence readiness, source group status, missing evidence links, base CV data, and recent packet status counts.
+- `/resumes` is a less dense manual Resume Lab workspace with profile/source/evidence readiness, actionable missing-data tasks, source group status, base CV data, and recent packet status counts.
+- `/sources` supports manual local file upload intake. Files are stored under `local_uploads/sources/`, metadata is stored on `SourceFile`, files are not parsed, and files are not sent to OpenAI.
 - Dashboard links to Resume Lab and shows packet counts.
 
 Allowed roles include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Full-Stack, Frontend, Backend, Python, Java, junior software engineering/development, QA automation, software testing, data analyst, BI, junior data engineering, ML/AI/computer vision junior, application/product/API/technical support engineering, system administrator junior, junior DevOps, SOC Tier 1, Implementation Engineer, Technical Integration, Solutions Engineer Junior, real technical Support Engineer roles, and safe technical infrastructure/state-project roles.
@@ -66,5 +68,6 @@ Recommended next work:
 2. Refine source-to-profile evidence workflows after Adel adds real sources.
 3. Improve Resume Lab and source evidence review before export/generation.
 4. Keep OpenAI limited to controlled Application Packet drafting until broader confirmation/audit flows are stronger.
+5. Do not parse uploaded files automatically; parsing remains a later explicit phase.
 
-Do not add Gmail, Calendar, scraping, browser automation, upload parsing, real agents, autonomous applications, automatic emails, resume generation, exports, auth, or deployment unless a later phase explicitly asks for them.
+Do not add Gmail, Calendar, scraping, browser automation, automatic upload parsing, real agents, autonomous applications, automatic emails, resume generation, exports, auth, or deployment unless a later phase explicitly asks for them.

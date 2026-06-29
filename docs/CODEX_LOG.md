@@ -300,3 +300,24 @@ Updated:
 Not implemented:
 
 - No Gmail, Calendar, scraping, browser automation, upload parsing, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, fake AI output, or new AI scope outside controlled Application Packet drafting.
+
+## 2026-06-29 Phase 5.3
+
+Created:
+
+- Additive `SourceFile` upload metadata migration.
+- `lib/sources/sourceUploads.ts` for safe local upload filename/path/size helpers.
+- Manual local upload form on `/sources`.
+- Upload metadata display on `/sources/[id]`.
+- Tests for source upload helper behavior.
+
+Updated:
+
+- Job Inbox cards now use clearer hierarchy, company fallback initials, metadata rows, lighter surfaces, and a stronger Prepare application action.
+- Application Packet page now leads with a workflow summary, recommendation/status cards, and a focused READY blocker section.
+- Resume Lab now has clearer missing-data tasks and less dense base CV summaries.
+- `local_uploads/` is gitignored so private uploaded files stay out of git.
+
+Not implemented:
+
+- No Gmail, Calendar, scraping, browser automation, automatic parsing, OpenAI file processing, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, or fake AI output.

@@ -112,6 +112,13 @@ Phase 5.2 completed coverage:
 - Helper-level tests for AI draft disabled/blocked reasons, success audit records, error audit records, and explicit packet draft replacement fields.
 - Manual UI refinement remains browser QA: Application Packet evidence review, Resume Lab readiness summaries, and Source detail manual evidence copy.
 
+Phase 5.3 completed coverage:
+
+- Unit tests for source upload filename sanitization, relative stored upload path generation, and file-size formatting.
+- Build/type verification covers additive `SourceFile` upload metadata in Sources list/detail pages.
+- Manual QA should smoke-check `/jobs`, `/jobs/[id]/application`, `/resumes`, `/sources`, and `/sources/[id]`.
+- Confirm uploaded files stay under `local_uploads/sources/` and no extracted text is generated automatically.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

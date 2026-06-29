@@ -63,15 +63,19 @@ export default async function ApplicationPacketPage({
   const missingEvidenceFields = summary.profileEvidenceSummary.fieldsMissingEvidence
     .map((field) => getProfileSourceTargetField(field))
     .filter((field): field is NonNullable<typeof field> => Boolean(field));
+  const blockingItems = summary.checklist.filter((item) => item.critical && !item.done);
+  const savedDecision = packet?.applicationDecision ?? summary.applicationDecision;
+  const savedLanguage = packet?.cvLanguage ?? summary.cvLanguage;
 
   return (
     <div className="grid gap-6">
       <GlassCard>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Application Packet</p>
-            <h2 className="mt-3 text-3xl font-semibold text-white">{job.title}</h2>
-            <p className="mt-2 text-sm text-ink-200">{[job.company, job.location].filter(Boolean).join(" | ") || "No metadata"}</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Application prep workflow</p>
+            <h2 className="mt-3 text-3xl font-semibold text-white">Prepare application packet</h2>
+            <p className="mt-2 text-lg font-semibold text-ink-100">{job.title}</p>
+            <p className="mt-1 text-sm text-ink-200">{[job.company, job.location].filter(Boolean).join(" | ") || "No metadata"}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <StatusBadge status={job.status} />
@@ -82,6 +86,20 @@ export default async function ApplicationPacketPage({
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
           Manual workspace with an optional controlled draft helper. Nothing is sent automatically. Use this page to prepare before applying.
         </p>
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-4">
+            <div className="text-xs uppercase tracking-[0.16em] text-aqua-400">Recommendation</div>
+            <div className="mt-2 text-lg font-semibold text-white">{savedDecision}</div>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/[0.06] p-4">
+            <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Packet status</div>
+            <div className="mt-2 text-lg font-semibold text-white">{packet?.status ?? "DRAFT"}</div>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/[0.06] p-4">
+            <div className="text-xs uppercase tracking-[0.16em] text-ink-400">CV language</div>
+            <div className="mt-2 text-lg font-semibold text-white">{savedLanguage}</div>
+          </div>
+        </div>
         {notices?.saved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Application packet saved locally.</div> : null}
         {notices?.ready ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Application packet marked ready.</div> : null}
         {notices?.readyBlocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Ready was blocked by the safety gate. Fix critical checklist items or review the job decision first.</div> : null}
@@ -96,18 +114,26 @@ export default async function ApplicationPacketPage({
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <GlassCard>
           <h3 className="text-xl font-semibold text-white">Packet readiness</h3>
+          <p className="mt-2 text-sm leading-6 text-ink-200">READY is blocked until the required items below are complete. Evidence links help review quality but do not all block READY.</p>
           <div className="mt-4 grid gap-3">
             <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
               <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Decision</div>
-              <div className="mt-2 font-semibold text-white">{packet?.applicationDecision ?? summary.applicationDecision}</div>
+              <div className="mt-2 font-semibold text-white">{savedDecision}</div>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
               <div className="text-xs uppercase tracking-[0.16em] text-ink-400">CV language</div>
-              <div className="mt-2 font-semibold text-white">{packet?.cvLanguage ?? summary.cvLanguage}</div>
+              <div className="mt-2 font-semibold text-white">{savedLanguage}</div>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
               <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Checklist</div>
               <div className="mt-2 font-semibold text-white">{summary.readyCount} / {summary.totalCount}</div>
+            </div>
+          </div>
+          <div className="mt-5 rounded-lg border border-white/10 bg-navy-950/40 p-4">
+            <h4 className="font-semibold text-white">What is blocking READY</h4>
+            <div className="mt-3 grid gap-2 text-sm text-ink-200">
+              {blockingItems.length === 0 ? <p className="text-aqua-400">No critical blockers. Review evidence and save the packet before applying.</p> : null}
+              {blockingItems.map((item) => <p key={item.label}>{item.missingText}</p>)}
             </div>
           </div>
           <div className="mt-5 grid gap-2">
@@ -120,7 +146,8 @@ export default async function ApplicationPacketPage({
         </GlassCard>
 
         <GlassCard>
-          <h3 className="text-xl font-semibold text-white">Save packet fields</h3>
+          <h3 className="text-xl font-semibold text-white">Packet editing fields</h3>
+          <p className="mt-2 text-sm leading-6 text-ink-200">Write the draft material Adel will review. Saving here does not send anything.</p>
           <form action={saveApplicationPacket} className="mt-5 grid gap-4">
             <input type="hidden" name="jobId" value={job.id} />
             <div className="grid gap-4 md:grid-cols-3">
