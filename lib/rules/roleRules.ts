@@ -61,6 +61,36 @@ export const allowedRoleRules = [
     patterns: ["data analyst junior", "bi developer junior", "junior data engineer", "machine learning junior", "ai junior", "computer vision junior"]
   },
   {
+    id: "ai-ml-research-student",
+    label: "AI/ML Research Student",
+    patterns: [
+      "deep learning",
+      "machine learning",
+      "ai research",
+      "research student",
+      "student researcher",
+      "computer vision",
+      "data science student",
+      "algorithm student",
+      "algorithms student",
+      "machine learning student",
+      "ai student",
+      "computer vision student",
+      "final-year machine learning",
+      "final year machine learning",
+      "near graduate machine learning",
+      "ai/ml intern",
+      "ai ml intern",
+      "research intern",
+      "סטודנט למחקר",
+      "למידת מכונה",
+      "למידה עמוקה",
+      "ראייה ממוחשבת",
+      "מדען נתונים סטודנט",
+      "אלגוריתמים"
+    ]
+  },
+  {
     id: "support-engineering",
     label: "Support Engineering",
     patterns: ["application support engineer", "technical support engineer", "product support engineer", "api support engineer", "technical customer engineer"]

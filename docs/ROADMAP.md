@@ -49,3 +49,6 @@
 
 - Generate targeted English/Hebrew resume drafts after source data is reliable.
 - Add DOCX/PDF export only after templates and checks are stable.
+- Preserve the safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply.
+- Plan discovery around company career pages first, then LinkedIn, Indeed, Drushim, AllJobs, Glassdoor/Google Jobs, and Gmail job-alert intake after safety design.
+- Plan exports as DOCX/PDF for CV and cover letters, TXT recruiter messages/notes, local per-job folders, and RTL/LTR support.

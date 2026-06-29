@@ -63,7 +63,7 @@ export default async function ResumesPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Resume Lab / CV / קורות חיים</p>
         <h2 className="mt-3 text-3xl font-semibold text-white">Complete profile text and evidence</h2>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-100">
-          Resume Lab is still manual. Profile text is what CV/application drafts can use. Evidence links show which source supports each field. Adding a source is not enough by itself.
+          Resume Lab is still manual. Profile text is what CV/application drafts can use. Evidence links show which source supports each field. DOCX/PDF export is planned; this page currently reviews manual packet text only.
         </p>
       </GlassCard>
 

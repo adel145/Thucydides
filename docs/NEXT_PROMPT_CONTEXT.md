@@ -1,6 +1,6 @@
 # Next Prompt Context
 
-Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.4 has added Real Profile Data Workflow + Evidence Linking UX + Comfort Theme. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation, Phase 5.0 Application Packet + Resume Lab MVP, Phase 5.1 Controlled AI Drafting + Application Packet safety gate, Phase 5.2 Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement, and Phase 5.3 UX Clarity Refresh + Manual File/Link Source Intake.
+Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.5 has added Product Direction Lock + Real Application Quality Patch. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation, Phase 5.0 Application Packet + Resume Lab MVP, Phase 5.1 Controlled AI Drafting + Application Packet safety gate, Phase 5.2 Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement, Phase 5.3 UX Clarity Refresh + Manual File/Link Source Intake, and Phase 5.4 Real Profile Data Workflow + Evidence Linking UX + Comfort Theme.
 
 The product mission is to help Adel reach 10 interviews in the Israeli job market. Adel lives in Beersheba, prefers the South, wants above 10,000 NIS gross if staying in Beersheba, can temporarily accept 8,000 NIS gross, and expects to complete remaining degree requirements around September.
 
@@ -25,7 +25,7 @@ Current Phase 4.1 behavior:
 - `lib/profile/profileSourceLinks.ts` defines allowed target fields, source-type recommendations, grouping, and readiness summary.
 - `lib/agents/agentContracts.ts` defines future agent output contracts only. No agent runs, model call, fake score, automatic application, or email exists.
 
-Current Phase 5.3 behavior:
+Current Phase 5.5 behavior:
 
 - `ApplicationPacket` stores one manual local application workspace per job.
 - `/jobs/[id]/application` shows deterministic application decision, recommended CV language, checklist, missing items, evidence summary, risks, and manual draft fields.
@@ -52,12 +52,18 @@ Current Phase 5.3 behavior:
 - `/profile` highlights missing real profile fields and gives examples for technical skills, GitHub projects, portfolio links, field experience, and certificates.
 - Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail have stronger contrast, clearer cards/actions, and short Arabic/Hebrew helper labels where useful.
 - Dashboard links to Resume Lab and shows packet counts.
+- Top-bar status separates local SQLite, AI drafting configuration, and Gmail. When `OPENAI_API_KEY` and `OPENAI_MODEL` are present, the UI says "AI drafting active"; Gmail remains not connected.
+- Application Packet copy explains that READY means packet/checklist completeness, while NEEDS_MANUAL_REVIEW means Adel still reviews job fit before applying.
+- Dashboard shows planned-only cards for automatic job discovery, Gmail job-alert intake, and CV/PDF packet export.
+- Resume Lab and Application Packet mention DOCX/PDF export as planned only; current packet content is manual text.
 
-Allowed roles include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Full-Stack, Frontend, Backend, Python, Java, junior software engineering/development, QA automation, software testing, data analyst, BI, junior data engineering, ML/AI/computer vision junior, application/product/API/technical support engineering, system administrator junior, junior DevOps, SOC Tier 1, Implementation Engineer, Technical Integration, Solutions Engineer Junior, real technical Support Engineer roles, and safe technical infrastructure/state-project roles.
+Allowed roles include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Full-Stack, Frontend, Backend, Python, Java, junior software engineering/development, QA automation, software testing, data analyst, BI, junior data engineering, ML/AI/computer vision junior, AI/ML research student roles, Deep Learning, Machine Learning, AI Research, Research Student, Student Researcher, Computer Vision, Data Science Student, Algorithm Student, AI/ML Intern, Research Intern, application/product/API/technical support engineering, system administrator junior, junior DevOps, SOC Tier 1, Implementation Engineer, Technical Integration, Solutions Engineer Junior, real technical Support Engineer roles, and safe technical infrastructure/state-project roles.
 
-Future degree logic should treat "student welcome", "final-year student", and "near graduate" as favorable signals. Hebrew wording such as "תואר חובה" or "זכאות לתואר חובה", and completed-degree requirements before September, are risk/manual-check notes, not hard forbidden blockers.
+Student/final-year/near-graduate wording should remain favorable when paired with technical roles. Hebrew wording such as "תואר חובה" or "זכאות לתואר חובה", and completed-degree requirements before September, are risk/manual-check notes, not hard forbidden blockers.
 
 Forbidden roles include sales, regular customer service, non-technical service center, regular מוקד שירות, security-clearance-mandatory roles, and army-experience-mandatory roles.
+
+Locked future workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply. Discovery should eventually prioritize company career pages first, then LinkedIn, Indeed, Drushim, AllJobs, Glassdoor/Google Jobs, and Gmail job-alert fallback/intake. Export goals are DOCX/PDF for CV/cover letter, TXT for recruiter messages/notes, local per-job folders, and RTL/LTR support. These are future goals only; no scraping, Gmail reading, exports, or automatic applications exist now.
 
 Agent vision to preserve: Adel wants a council-based system with Career Strategy Agent, Israeli Job Market Agent, ATS Optimization Agent, CV Tailoring Agent, Hebrew Language Agent, English Language Agent, Job Fit Scoring Agent, Hidden Market / Sourcing Agent, Risk & Compliance Agent, and Final Decision Chief Agent. These agents should eventually work together or individually to find suitable jobs, evaluate fit, respect constraints, prepare CV/application material, track applications, suggest next actions, and support reaching 10 interviews. Agents must not silently apply or send emails; Adel must review and confirm, with audit trail and uncertainty labels.
 
@@ -79,3 +85,173 @@ Recommended next work:
 5. Do not parse uploaded files or URL sources automatically, and do not auto-fill profile fields from sources; parsing/scraping remains a later explicit phase.
 
 Do not add Gmail, Calendar, scraping, browser automation, automatic upload parsing, real agents, autonomous applications, automatic emails, resume generation, exports, auth, or deployment unless a later phase explicitly asks for them.
+
+## Conversation Handoff — 2026-06-29
+
+We are continuing the Thucydides project.
+
+Official source of truth:
+
+- Repo: https://github.com/adel145/Thucydides.git
+- Local path: C:\Users\adelm\Documents\Thucydides
+- The repo/docs are the official project memory, not old uploaded project files.
+
+Latest confirmed commit:
+
+- 4f5ca6d
+- Message: Phase 5.4: Real Profile Data Workflow + Evidence Linking UX + Comfort Theme.
+
+Current confirmed product state:
+
+- Phase 5.4 is completed, committed, pushed, tested, built, linted, and git status is clean.
+- Verification after Phase 5.4:
+  - 16 test files passed
+  - 74 tests passed
+  - npm run build passed
+  - npm run lint passed with only known next lint deprecation notice
+  - dev server runs on localhost:3000
+
+What exists now:
+
+- Local-first Next.js / TypeScript / Tailwind / Prisma / SQLite job-search command center.
+- Dashboard with Today’s Mission.
+- Job Inbox with job cards and filters.
+- Manual job intake by pasted job descriptions.
+- Deterministic job validation and role safety rules.
+- Job detail, edit, archive, delete.
+- Pipeline and follow-up tracking.
+- Sources page with:
+  - local file upload
+  - URL/link source intake
+  - pasted text/notes
+
+- Source files are stored locally under local_uploads/sources and are gitignored.
+- Sources are not parsed automatically.
+- Source URLs are not scraped.
+- No source data is sent to OpenAI.
+- Source detail supports manual bulk evidence linking from one source to multiple profile fields.
+- Duplicate evidence links are skipped.
+- Resume Lab separates:
+  - profile text
+  - source records
+  - evidence links
+
+- Profile page now highlights missing real profile data and provides examples.
+- Application Packet exists per job.
+- Controlled AI drafting works inside Application Packet only when OPENAI_API_KEY and OPENAI_MODEL are configured.
+- OpenAI drafting uses Responses API with:
+  - store:false
+  - tools:[]
+  - tool_choice:"none"
+  - review-only output
+
+- AI draft output is not sent anywhere.
+- AI drafts must be explicitly copied into packet fields by Adel.
+- No automatic applications.
+- No automatic emails.
+- No Gmail integration yet.
+- No DOCX/PDF export yet.
+- No real autonomous agents yet.
+
+Real data added by Adel:
+
+- CV file.
+- LinkedIn URL.
+- GitHub URL.
+- Portfolio URL.
+- Certificate/course URL.
+- Certificate image/file.
+- Academic document.
+- Profile fields were filled from Adel’s CV:
+  - technical skills
+  - soft skills
+  - field experience
+  - education
+  - certificates
+  - GitHub projects
+  - portfolio links
+
+- Evidence links were improved; dashboard/resume readiness showed strong progress.
+- A real job was tested:
+  - Deep Learning Research Student at Applied Materials.
+  - Application Packet reached READY.
+  - Checklist reached 11/11.
+  - AI draft was generated for review.
+  - Decision remained NEEDS_MANUAL_REVIEW, which is valid but needs clearer UI explanation.
+
+Important current UX finding:
+
+- READY + NEEDS_MANUAL_REVIEW is valid but confusing.
+- READY means packet fields/checklist are complete.
+- NEEDS_MANUAL_REVIEW means Adel should manually review job fit before applying.
+- UI should explain this clearly.
+- Current top status can still confuse AI and Gmail status; if AI works but Gmail is not connected, UI should show these separately.
+
+Final product goal clarified by Adel:
+Adel wants Thucydides to become a safe job-search operating system:
+
+1. Open Dashboard.
+2. Click a button to find suitable jobs.
+3. The app searches suitable roles from:
+   - company career pages first where possible
+   - LinkedIn
+   - Indeed
+   - Drushim
+   - AllJobs
+   - Glassdoor / Google Jobs where useful
+   - Gmail job-alert emails as fallback/intake when direct sites are hard
+
+4. The app ranks/imports suitable jobs based on Adel’s profile, sources, evidence, location, salary, degree status, and role fit.
+5. Adel reviews and selects jobs.
+6. The app generates one application packet per selected job:
+   - tailored CV
+   - cover letter / cover note
+   - recruiter message
+   - follow-up plan
+   - application notes
+
+7. The app exports files locally:
+   - DOCX and PDF for CV / cover letter
+   - TXT for recruiter messages and notes
+   - preserve RTL/LTR formatting correctly
+
+8. Adel manually opens the job site and applies.
+9. No automatic applications and no automatic emails.
+
+Adel’s target scope:
+
+- All Israel jobs are acceptable.
+- Remote jobs outside Israel are acceptable if Adel can work from Israel.
+- Role priority is flexible; all strong technical opportunities are valid:
+  - Junior Software Developer
+  - Full-stack
+  - QA Automation
+  - Technical Support Engineer
+  - NOC / IT
+  - AI / ML / Computer Vision
+  - Data / BI
+  - Implementation / Integration Engineer
+  - AI/ML Research Student roles
+
+- AI/ML Research Student roles are strong targets.
+- CV language should be detected from job language automatically, default English.
+- Export should support DOCX + PDF and TXT for messages.
+- Use base CV template + tailored sections, not generating from nothing.
+- Workflow must stay safe:
+  Find jobs → Review jobs → Select jobs → Generate packets → Review → Export → Manual apply.
+
+Current in-progress instruction:
+A Phase 5.5 prompt was prepared for Codex:
+Phase 5.5 — Product Direction Lock + Real Application Quality Patch
+
+Phase 5.5 goals:
+
+- Lock clarified final product direction in docs.
+- Fix AI/Gmail status confusion.
+- Improve AI/ML/Research Student role rules.
+- Clarify READY + NEEDS_MANUAL_REVIEW UX.
+- Add honest future placeholders for job discovery and export.
+- No Gmail integration yet.
+- No scraping.
+- No export implementation yet.
+- No automatic sending/applying.

@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 5.4 - Real Profile Data Workflow + Evidence Linking UX + Comfort Theme.
+Current state: Phase 5.5 - Product Direction Lock + Real Application Quality Patch.
 
 ## What Works Now
 
@@ -40,6 +40,7 @@ Current state: Phase 5.4 - Real Profile Data Workflow + Evidence Linking UX + Co
 - Job-specific Application Packet workspace
 - Application Packet safety gate for READY status
 - Controlled OpenAI drafting for Application Packets when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured
+- Separate local status badges for SQLite, AI drafting, and Gmail connection state
 - Manual evidence review on Application Packets and Resume Lab
 - Manual Resume Lab MVP
 - Vitest coverage for rules, filters, dashboard metrics, priorities, source types, and Israeli job fixtures
@@ -48,7 +49,7 @@ Current state: Phase 5.4 - Real Profile Data Workflow + Evidence Linking UX + Co
 
 The main goal is to help Adel reach 10 interviews.
 
-Target role families include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Software Engineer/Developer roles, QA Automation, Data Analyst, BI, Junior Data Engineer, ML/AI junior roles, Application/Product/API Support Engineer, Junior DevOps, SOC Tier 1, Implementation Engineer, Technical Integration, and safe technical infrastructure roles.
+Target role families include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Software Engineer/Developer roles, QA Automation, Data Analyst, BI, Junior Data Engineer, ML/AI junior roles, AI/ML research student roles, Deep Learning, Machine Learning, Computer Vision, Data Science student roles, Application/Product/API Support Engineer, Junior DevOps, SOC Tier 1, Implementation Engineer, Technical Integration, and safe technical infrastructure roles.
 
 Forbidden roles include Sales, regular customer service, non-technical service center, regular מוקד שירות, security-clearance-mandatory roles, and army-experience-mandatory roles. Completed-degree requirements before September are risk/manual-check notes, not hard forbidden blockers.
 
@@ -73,11 +74,17 @@ The following are intentionally not implemented yet:
 
 The desired product is an agent-assisted job-search command center that helps Adel find suitable Israeli jobs, evaluate fit, prepare CV/application material, track applications, and reach 10 interviews.
 
+Future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply. Automated application sending is not part of the plan.
+
+Future discovery sources should prioritize company career pages first, then LinkedIn, Indeed, Drushim, AllJobs, Glassdoor/Google Jobs, and Gmail job-alert intake as a fallback. These are planned directions only; the app does not scrape, browse, or read Gmail today.
+
+Future export goals include DOCX/PDF CV and cover-letter outputs, TXT recruiter messages/notes, local per-job folders, and RTL/LTR support. Exports are not implemented yet.
+
 The UI should stay dark, local-first, and sidebar-based. It should remain mostly English, but use helpful Hebrew job-market terms and simple explanations. The first-open flow should increasingly focus on Today's Mission and Jobs Ready To Apply.
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 5.4 uses local SQLite data, deterministic validation, manual job/source intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. Gmail, automatic file or URL parsing, scraping, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, and automatic communication are intentionally not connected.
+Current limitation: Phase 5.5 uses local SQLite data, deterministic validation, manual job/source intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. Gmail, automatic file or URL parsing, scraping, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, and automatic communication are intentionally not connected.
 
 ## Local Setup
 
@@ -147,12 +154,12 @@ Future work should read and update these files after each phase.
 
 ## Roadmap
 
-Next planned phase: continue cautious evidence workflow and persistence-test refinements.
+Next planned phase: continue cautious application quality and evidence workflow refinements.
 
 Planned work:
 
-- Source-to-profile linking refinements
-- Saved job-search views if still useful
-- More persistence/server-action tests
+- Improve packet quality review before exports
+- Refine saved job-search views if still useful
+- Continue persistence/server-action tests
 
 Later phases include stronger Resume Lab generation, English/Hebrew CV drafts, cover letters, recruiter messages, DOCX/PDF export, OpenAI-backed Agent Council, and Gmail integration.

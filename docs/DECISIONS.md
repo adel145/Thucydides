@@ -203,3 +203,33 @@ Reason: source readiness can be complete while the actual CV/application text is
 Decision: allow one source to be manually linked to multiple profile fields in one save, while skipping duplicates and preserving the existing unique database constraint.
 
 Reason: Adel has real sources now, and linking one field at a time is too slow, but the product must still avoid parsing or automatic profile updates.
+
+## 2026-06-29: Safe Application Workflow Direction
+
+Decision: lock the future application workflow as Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply.
+
+Reason: Adel wants stronger automation later, but applications and emails must remain behind explicit review and confirmation.
+
+## 2026-06-29: Discovery Source Priority
+
+Decision: plan future job discovery around company career pages first, then LinkedIn, Indeed, Drushim, AllJobs, Glassdoor/Google Jobs, and Gmail job-alert fallback/intake.
+
+Reason: this records Adel's preferred source strategy while keeping Phase 5.5 free of scraping, browser automation, and Gmail reading.
+
+## 2026-06-29: Export Goals Are Future Work
+
+Decision: plan future DOCX/PDF CV and cover-letter exports, TXT recruiter messages/notes, local per-job folders, and RTL/LTR support.
+
+Reason: exports are important for real applications, but Phase 5.5 should only clarify direction and must not implement DOCX/PDF generation.
+
+## 2026-06-29: AI And Gmail Status Must Be Separate
+
+Decision: show AI drafting status from OpenAI env configuration separately from Gmail connection status.
+
+Reason: controlled AI drafting can be active while Gmail is still not connected; combining them makes the app look more broken than it is.
+
+## 2026-06-29: AI/ML Research Student Roles Are Target Roles
+
+Decision: treat Deep Learning, Machine Learning, AI Research, Research Student, Student Researcher, Computer Vision, Data Science Student, Algorithm Student, AI/ML Intern, and Research Intern wording as positive technical role signals.
+
+Reason: these roles are relevant to Adel's CS degree path, but hard blockers such as sales, customer service, mandatory security clearance, and mandatory army experience must still override them.

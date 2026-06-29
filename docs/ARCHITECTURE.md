@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 5.3 Architecture
+## Phase 5.5 Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -119,6 +119,13 @@ Phase 5.3 adds manual local upload intake:
 - Uploads are local source records only. The app does not parse files, extract text, send files to OpenAI, or auto-link profile evidence.
 - Job Inbox, Application Packet, Resume Lab, and Sources receive clarity-focused UI refinements without changing safety gates or integrations.
 
+Phase 5.5 keeps the same schema and integration boundary, but locks product direction and improves deterministic rule/UI clarity:
+
+- Top-bar status separates SQLite, OpenAI drafting configuration, and Gmail connection state.
+- `lib/rules/roleRules.ts` treats AI/ML research student wording as positive technical signals while preserving hard-forbidden overrides.
+- Dashboard, Application Packet, and Resume Lab expose future discovery/Gmail/export goals as planned-only copy.
+- Future application flow is Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -139,7 +146,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 5.3
+## Non-Goals in Phase 5.5
 
 - Gmail OAuth
 - Calendar integration

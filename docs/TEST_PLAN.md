@@ -136,6 +136,14 @@ Phase 5.4 coverage:
 - Manual QA should confirm `/profile` highlights missing real data and shows examples for technical skills, GitHub projects, portfolio links, field experience, and certificates.
 - Manual QA should confirm `/jobs` and `/jobs/[id]/application` remain easier to read after the comfort theme pass.
 
+Phase 5.5 coverage:
+
+- Unit fixtures confirm Deep Learning / AI / ML / Research Student wording is a positive deterministic role signal.
+- Unit fixtures confirm mandatory security clearance, mandatory army experience, sales, and regular customer service still force FORBIDDEN even when AI/ML wording is present.
+- Manual QA should confirm the top bar separates "AI drafting active" or "AI drafting not configured" from "Gmail not connected."
+- Manual QA should confirm `/jobs/[id]/application` explains READY versus NEEDS_MANUAL_REVIEW and still blocks unsafe READY states.
+- Manual QA should confirm Dashboard, Resume Lab, and Application Packet mention future discovery/export only as planned work.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

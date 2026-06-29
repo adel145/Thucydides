@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-29, Thucydides is in Phase 5.4 - Real Profile Data Workflow + Evidence Linking UX + Comfort Theme state.
+As of 2026-06-29, Thucydides is in Phase 5.5 - Product Direction Lock + Real Application Quality Patch state.
 
 ## What Exists
 
@@ -58,6 +58,7 @@ As of 2026-06-29, Thucydides is in Phase 5.4 - Real Profile Data Workflow + Evid
 - `/jobs/[id]/application` prevents READY status for forbidden, archived, rejected, or critically incomplete packets.
 - `/jobs/[id]/application` can request controlled OpenAI drafting only when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured.
 - Controlled OpenAI requests use `store: false`, `tools: []`, and `tool_choice: "none"`.
+- Top-bar status separates local SQLite, AI drafting configuration, and Gmail connection state. If OpenAI env values are configured, it says "AI drafting active"; Gmail remains "Gmail not connected."
 - AI draft output is review-only and must be explicitly copied into packet fields by Adel; that copy action replaces current packet draft fields.
 - AI draft output validation rejects non-string values in generated array fields.
 - Application Packet save/mark-ready behavior has pure helper coverage for persistence safety, READY blocking, packet-missing handling, and checklist snapshots.
@@ -69,7 +70,12 @@ As of 2026-06-29, Thucydides is in Phase 5.4 - Real Profile Data Workflow + Evid
 - Pure helpers exist for deterministic job readiness, dashboard mission grouping, and source readiness.
 - Vitest tests exist for role validation with Israeli fixtures, job statuses, lifecycle validation helpers, dashboard metrics, profile validation, filters, priority, source types, application packet persistence safety, and controlled AI draft audit helpers.
 - Completed-degree requirements are risk/manual-check notes rather than hard forbidden blockers.
+- AI/ML and research-student roles are positive deterministic technical signals, including Deep Learning, Machine Learning, AI Research, Research Student, Student Researcher, Computer Vision, Data Science Student, Algorithm Student, AI/ML Intern, and Research Intern wording.
+- Hard forbidden role logic still overrides positive technical signals for sales, regular customer service, non-technical service center, mandatory security clearance, and mandatory army experience.
 - Top-bar and placeholder page copy reflects local SQLite status, controlled packet drafting, and planned later-phase Gmail/agent work.
+- Dashboard shows honest planned cards for future job discovery, Gmail job-alert intake, and CV/PDF packet export without enabling those features.
+- Application Packet explains that READY means packet/checklist completeness, while NEEDS_MANUAL_REVIEW means Adel still reviews job fit before applying.
+- Application Packet and Resume Lab mention DOCX/PDF export as planned only; current packet content remains manual text.
 - Job Inbox, Application Packet, Resume Lab, Sources, Source Detail, and Profile now use clearer surfaces, stronger borders/actions, and short Arabic/Hebrew helper labels where useful.
 - Source readiness can be 4/4 while profile text or evidence links remain incomplete; Resume Lab now separates those concepts.
 
@@ -82,6 +88,9 @@ As of 2026-06-29, Thucydides is in Phase 5.4 - Real Profile Data Workflow + Evid
 - Profile and Sources must be filled with real Adel data before serious AI, CV tailoring, or resume work.
 - Adding a source is not enough for CV readiness; Adel must manually fill profile text and manually link source evidence.
 - Resume Lab, Agent Council, Gmail, and Settings should remain visible as roadmap pages with honest copy.
+- The locked future workflow is: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply.
+- Planned discovery sources are company career pages first, then LinkedIn, Indeed, Drushim, AllJobs, Glassdoor/Google Jobs, and Gmail job alerts as fallback/intake.
+- Planned exports are DOCX/PDF for CV and cover letters, TXT for recruiter messages/notes, local per-job folders, and RTL/LTR support.
 
 ## What Does Not Exist Yet
 
@@ -104,7 +113,7 @@ As of 2026-06-29, Thucydides is in Phase 5.4 - Real Profile Data Workflow + Evid
 
 ## Important Warning
 
-Dashboard, jobs, sources, packets, and AI draft runs are local SQLite data. Gmail, scraping, resume exports, notifications, and file parsing remain placeholders.
+Dashboard, jobs, sources, packets, and AI draft runs are local SQLite data. Gmail, scraping, job discovery automation, resume exports, notifications, and file parsing remain placeholders.
 
 Profile, Sources, and manual evidence links are the required groundwork for useful AI/resume features. Controlled AI drafting may use only reviewed local packet/profile/source data, and generated text must stay behind Adel review and confirmation.
 

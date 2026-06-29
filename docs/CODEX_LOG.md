@@ -359,3 +359,23 @@ Updated:
 Not implemented:
 
 - No Gmail, Calendar, scraping, browser automation, automatic parsing, OpenAI file processing, automatic profile updates from sources, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, remote logo fetching, or fake AI output.
+
+## 2026-06-29 Phase 5.5 - Product Direction Lock + Real Application Quality Patch
+
+Created:
+
+- Dashboard planned-only cards for future automatic job discovery, Gmail job-alert intake, and CV/PDF packet export.
+- Deterministic allowed-role signal for AI/ML research student roles.
+- Role-rule fixtures for AI/ML research student roles and hard-blocker overrides.
+
+Updated:
+
+- Product docs now lock the future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply.
+- Docs now record planned discovery source priority and future export goals without claiming they exist.
+- Top-bar status now separates Local SQLite, AI drafting configuration, and Gmail connection state.
+- Application Packet copy now explains READY versus NEEDS_MANUAL_REVIEW and keeps DOCX/PDF export marked as planned only.
+- Resume Lab now states that DOCX/PDF export is planned and current packets remain manual text.
+
+Not implemented:
+
+- No Gmail OAuth/reading, Calendar, scraping, browser automation, upload parsing, DOCX/PDF export implementation, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, remote logos, OpenAI file processing, or fake AI output.

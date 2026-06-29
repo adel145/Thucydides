@@ -70,6 +70,20 @@ export const israeliJobFixtures: IsraeliJobFixture[] = [
     expectedSignal: "Support Engineering"
   },
   {
+    name: "allowed Deep Learning Research Student role",
+    title: "Deep Learning Research Student",
+    rawDescription: "Research student role for deep learning, machine learning, and computer vision. Final-year student welcome.",
+    expectedStatus: "ALLOWED",
+    expectedSignal: "AI/ML Research Student"
+  },
+  {
+    name: "allowed AI ML research internship",
+    title: "Research Intern",
+    rawDescription: "AI research internship for a student researcher working on machine learning experiments and algorithms.",
+    expectedStatus: "ALLOWED",
+    expectedSignal: "AI/ML Research Student"
+  },
+  {
     name: "risky junior developer degree advantage",
     title: "Junior Developer",
     location: "Tel Aviv",
@@ -126,5 +140,35 @@ export const israeliJobFixtures: IsraeliJobFixture[] = [
     expectedStatus: "FORBIDDEN",
     expectedSignal: "NOC",
     expectedFlag: "Security clearance mandatory"
+  },
+  {
+    name: "forbidden AI research role with security clearance hard blocker",
+    title: "AI Research Student",
+    rawDescription: "Deep learning and computer vision role. Mandatory security clearance is required before start.",
+    expectedStatus: "FORBIDDEN",
+    expectedSignal: "AI/ML Research Student",
+    expectedFlag: "Security clearance mandatory"
+  },
+  {
+    name: "forbidden AI ML role with army hard blocker",
+    title: "Machine Learning Junior",
+    rawDescription: "Machine learning junior role. IDF experience required and military experience mandatory.",
+    expectedStatus: "FORBIDDEN",
+    expectedSignal: "Data Analyst Junior",
+    expectedFlag: "Army experience mandatory"
+  },
+  {
+    name: "forbidden AI product sales role",
+    title: "AI Product Sales Representative",
+    rawDescription: "Sales representative for AI products with targets and commissions.",
+    expectedStatus: "FORBIDDEN",
+    expectedFlag: "Sales role"
+  },
+  {
+    name: "forbidden AI customer service role",
+    title: "AI Customer Service Representative",
+    rawDescription: "Regular customer service call center for AI product customers.",
+    expectedStatus: "FORBIDDEN",
+    expectedFlag: "Regular customer service"
   }
 ];

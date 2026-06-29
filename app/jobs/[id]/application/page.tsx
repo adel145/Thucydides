@@ -66,6 +66,7 @@ export default async function ApplicationPacketPage({
   const blockingItems = summary.checklist.filter((item) => item.critical && !item.done);
   const savedDecision = packet?.applicationDecision ?? summary.applicationDecision;
   const savedLanguage = packet?.cvLanguage ?? summary.cvLanguage;
+  const readyNeedsManualReview = packet?.status === "READY" && savedDecision === "NEEDS_MANUAL_REVIEW";
 
   return (
     <div className="grid gap-6">
@@ -99,6 +100,10 @@ export default async function ApplicationPacketPage({
             <div className="text-xs uppercase tracking-[0.16em] text-ink-400">CV language</div>
             <div className="mt-2 text-lg font-semibold text-white">{savedLanguage}</div>
           </div>
+        </div>
+        <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm leading-6 text-ink-200">
+          READY means packet fields and required checklist items are complete. NEEDS_MANUAL_REVIEW means Adel still reviews job fit before applying.
+          {readyNeedsManualReview ? <div className="mt-2 font-semibold text-aqua-400">Ready after manual review / جاهز بعد مراجعتك</div> : null}
         </div>
         {notices?.saved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Application packet saved locally.</div> : null}
         {notices?.ready ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Application packet marked ready.</div> : null}
@@ -147,7 +152,7 @@ export default async function ApplicationPacketPage({
 
         <GlassCard>
           <h3 className="text-xl font-semibold text-white">Packet editing fields</h3>
-          <p className="mt-2 text-sm leading-6 text-ink-200">Write draft material for Adel to review. Saving here does not send or apply anything.</p>
+          <p className="mt-2 text-sm leading-6 text-ink-200">Write draft material for Adel to review. Saving here does not send or apply anything. DOCX/PDF export is planned; this page currently keeps manual packet text only.</p>
           <form action={saveApplicationPacket} className="mt-5 grid gap-4">
             <input type="hidden" name="jobId" value={job.id} />
             <div className="grid gap-4 md:grid-cols-3">
@@ -202,7 +207,7 @@ export default async function ApplicationPacketPage({
         </div>
         {!aiConfig.enabled ? (
           <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-200">
-            AI/Gmail not connected. Set `OPENAI_API_KEY` and `OPENAI_MODEL` to enable controlled drafting.
+            AI drafting is not configured. Set `OPENAI_API_KEY` and `OPENAI_MODEL` to enable controlled drafting. Gmail is separate and not connected.
           </div>
         ) : null}
         {aiConfig.enabled && !canRequestApplicationAiDraft(job) ? (

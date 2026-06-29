@@ -100,6 +100,9 @@ Future degree logic should treat "student welcome", "final-year student", and "n
 - Sources should support CV, LinkedIn, GitHub, project, certificate, and academic intake before upload parsing.
 - Resume Lab, Agent Council, Gmail, and Settings should remain visible as planned roadmap pages with honest copy.
 - The final agent system should be a specialist council with a Final Decision Chief, human confirmation, audit trail, and uncertainty labels.
+- Future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply.
+- Future discovery sources: company career pages first, then LinkedIn, Indeed, Drushim, AllJobs, Glassdoor/Google Jobs, and Gmail job alerts as fallback/intake.
+- Future export goals: DOCX/PDF for CV and cover letters, TXT for recruiter messages/notes, local per-job folders, and RTL/LTR support.
 
 ## Planned Stack
 
@@ -111,8 +114,10 @@ Future degree logic should treat "student welcome", "final-year student", and "n
 - Future OpenAI API integration for analysis and drafting
 - Future Gmail and Calendar integrations only after explicit design, OAuth, and safety planning
 
-## Phase 5.1 Status
+## Phase 5.5 Status
 
-Phase 5.1 adds a mandatory Application Packet safety gate and controlled OpenAI drafting for packet text only. The app currently has local SQLite data for profile, jobs, sources, source evidence links, application packets, AI draft runs, pipeline, deterministic validation, and audit events.
+Phase 5.5 has a mandatory Application Packet safety gate, controlled OpenAI drafting for packet text only, manual source/profile evidence workflows, and clearer product direction for real applications. The app currently has local SQLite data for profile, jobs, sources, source evidence links, application packets, AI draft runs, pipeline, deterministic validation, and audit events.
 
 OpenAI is available only from the Application Packet page when `OPENAI_API_KEY` and `OPENAI_MODEL` are configured. It uses review-only drafting, stores local draft-run audit records, and never applies to jobs or sends email. Gmail OAuth, Google Calendar, scraping, resume export, PDF/DOCX generation, real agents, upload parsing, authentication, deployment, automatic applications, and automatic emails are not implemented.
+
+AI/ML research student roles are target role signals, including Deep Learning, Machine Learning, AI Research, Research Student, Student Researcher, Computer Vision, Data Science Student, Algorithm Student, AI/ML Intern, and Research Intern. Sales, regular customer service, non-technical service center, mandatory security clearance, and mandatory army experience remain hard forbidden blockers.

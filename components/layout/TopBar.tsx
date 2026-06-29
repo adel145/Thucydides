@@ -1,7 +1,10 @@
-import { CircleAlert, DatabaseZap } from "lucide-react";
+import { CircleAlert, DatabaseZap, Mail, Sparkles } from "lucide-react";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
+import { getOpenAiDraftingConfig } from "@/lib/ai/openaiClient";
 
 export function TopBar() {
+  const aiConfig = getOpenAiDraftingConfig();
+
   return (
     <header className="border-b border-white/10 bg-navy-950/44 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -13,8 +16,11 @@ export function TopBar() {
           <ScoreBadge tone="muted" icon={<DatabaseZap className="h-3.5 w-3.5" />}>
             Local SQLite active
           </ScoreBadge>
-          <ScoreBadge tone="warning" icon={<CircleAlert className="h-3.5 w-3.5" />}>
-            AI/Gmail not connected
+          <ScoreBadge tone={aiConfig.enabled ? "aqua" : "warning"} icon={aiConfig.enabled ? <Sparkles className="h-3.5 w-3.5" /> : <CircleAlert className="h-3.5 w-3.5" />}>
+            {aiConfig.enabled ? "AI drafting active" : "AI drafting not configured"}
+          </ScoreBadge>
+          <ScoreBadge tone="warning" icon={<Mail className="h-3.5 w-3.5" />}>
+            Gmail not connected
           </ScoreBadge>
         </div>
       </div>

@@ -128,8 +128,19 @@
 - Improved Profile real-data entry with missing-field callouts and examples for key CV fields.
 - Refined comfort theme surfaces, badges, card spacing, and primary actions across main workflow pages.
 
+## Completed In Phase 5.5
+
+- Locked the future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply.
+- Recorded future discovery source priority and future DOCX/PDF/TXT/local-folder export goals.
+- Split top-bar AI drafting status from Gmail connection status.
+- Added AI/ML research student roles as deterministic positive technical signals.
+- Added fixtures proving hard forbidden blockers still override AI/ML technical signals.
+- Clarified Application Packet READY versus NEEDS_MANUAL_REVIEW copy.
+- Added planned-only dashboard/export/Gmail-intake copy without enabling those features.
+
 ## Next Tasks
 
-- Refine manual source-to-profile linking after Adel adds real sources.
-- Add saved job-search views.
+- Improve packet quality review before exports.
+- Refine manual source-to-profile linking after Adel adds more real sources.
+- Add saved job-search views if still useful.
 - Add persistence/server-action integration tests.
