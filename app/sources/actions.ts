@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { optionalString, requiredString } from "@/lib/formParsing";
-import { isProfileSourceTargetField } from "@/lib/profile/profileSourceLinks";
+import { isProfileSourceTargetField, prepareProfileSourceLinkTargets } from "@/lib/profile/profileSourceLinks";
 import { normalizeSourceType } from "@/lib/sources/sourceTypes";
 import { buildStoredUploadPath, isUsableUploadFile } from "@/lib/sources/sourceUploads";
 
@@ -147,6 +147,52 @@ export async function createProfileSourceLink(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/profile");
   revalidatePath("/sources");
+  revalidatePath(`/sources/${sourceId}`);
+  redirect(`/sources/${sourceId}?linked=1`);
+}
+
+export async function createProfileSourceLinks(formData: FormData) {
+  const profileId = requiredString(formData.get("profileId"));
+  const sourceId = requiredString(formData.get("sourceId"));
+  const existingLinks = await db.profileSourceLink.findMany({
+    where: { profileId, sourceId },
+    select: { targetField: true }
+  });
+  const prepared = prepareProfileSourceLinkTargets(
+    formData.getAll("targetFields").map((value) => (typeof value === "string" ? value : null)),
+    existingLinks
+  );
+
+  if (prepared.invalidTargetFields.length > 0 || prepared.targetFields.length === 0) {
+    redirect(`/sources/${sourceId}?linkError=1`);
+  }
+
+  const note = optionalString(formData.get("note"));
+  await db.$transaction(
+    prepared.targetFields.map((targetField) =>
+      db.profileSourceLink.upsert({
+        where: {
+          profileId_sourceId_targetField: {
+            profileId,
+            sourceId,
+            targetField
+          }
+        },
+        update: { note },
+        create: {
+          profileId,
+          sourceId,
+          targetField,
+          note
+        }
+      })
+    )
+  );
+
+  revalidatePath("/");
+  revalidatePath("/profile");
+  revalidatePath("/sources");
+  revalidatePath("/resumes");
   revalidatePath(`/sources/${sourceId}`);
   redirect(`/sources/${sourceId}?linked=1`);
 }

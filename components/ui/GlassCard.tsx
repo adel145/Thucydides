@@ -8,7 +8,7 @@ export function GlassCard({
   className?: string;
 }) {
   return (
-    <section className={clsx("glass rounded-lg p-5 shadow-glow", className)}>
+    <section className={clsx("glass rounded-lg p-6 shadow-glow", className)}>
       {children}
     </section>
   );

@@ -63,6 +63,12 @@ export type ProfileSourceLinkLike = {
   targetField: string;
 };
 
+export type PreparedProfileSourceLinkTargets = {
+  targetFields: ProfileSourceTargetField[];
+  duplicateTargetFields: ProfileSourceTargetField[];
+  invalidTargetFields: string[];
+};
+
 export const sourceTypeRecommendedFields: Record<SourceType, ProfileSourceTargetField[]> = {
   CV: ["fieldExperience", "education", "technicalSkills", "softSkills", "certificates", "sourceNotes"],
   LINKEDIN_TEXT: ["fieldExperience", "technicalSkills", "education", "sourceNotes"],
@@ -85,6 +91,39 @@ export function getProfileSourceTargetField(value: string | null | undefined) {
 export function getRecommendedTargetFields(sourceType: string | null | undefined) {
   const fields = sourceTypeRecommendedFields[sourceType as SourceType] ?? sourceTypeRecommendedFields.OTHER;
   return PROFILE_SOURCE_TARGET_FIELDS.filter((field) => fields.includes(field.key));
+}
+
+export function prepareProfileSourceLinkTargets(
+  requestedTargetFields: Array<string | null | undefined>,
+  existingLinks: ProfileSourceLinkLike[] = []
+): PreparedProfileSourceLinkTargets {
+  const existing = new Set(existingLinks.map((link) => link.targetField));
+  const seen = new Set<ProfileSourceTargetField>();
+  const targetFields: ProfileSourceTargetField[] = [];
+  const duplicateTargetFields: ProfileSourceTargetField[] = [];
+  const invalidTargetFields: string[] = [];
+
+  requestedTargetFields.forEach((targetField) => {
+    const value = targetField?.trim() ?? "";
+    if (!isProfileSourceTargetField(value)) {
+      if (value) invalidTargetFields.push(value);
+      return;
+    }
+
+    if (existing.has(value) || seen.has(value)) {
+      if (!duplicateTargetFields.includes(value)) duplicateTargetFields.push(value);
+      return;
+    }
+
+    seen.add(value);
+    targetFields.push(value);
+  });
+
+  return {
+    targetFields,
+    duplicateTargetFields,
+    invalidTargetFields
+  };
 }
 
 export function groupSourceLinksByTargetField<T extends ProfileSourceLinkLike>(links: T[]) {

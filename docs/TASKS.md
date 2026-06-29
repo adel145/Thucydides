@@ -119,6 +119,15 @@
 - Refreshed Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail readability with clearer surfaces, stronger actions, and short Arabic/Hebrew helper labels.
 - Updated source readiness wording so CV, LinkedIn, GitHub/projects, certificates, and academic evidence can be files, URLs, or notes where appropriate.
 
+## Completed In Phase 5.4
+
+- Added manual bulk evidence linking from one source to multiple profile fields.
+- Added helper/test coverage for duplicate and invalid evidence-link target handling.
+- Refined Resume Lab to separate profile text, source records, and evidence links.
+- Added direct Resume Lab action links to Profile and Sources for missing data/evidence.
+- Improved Profile real-data entry with missing-field callouts and examples for key CV fields.
+- Refined comfort theme surfaces, badges, card spacing, and primary actions across main workflow pages.
+
 ## Next Tasks
 
 - Refine manual source-to-profile linking after Adel adds real sources.

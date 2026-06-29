@@ -3,6 +3,7 @@ import {
   getRecommendedTargetFields,
   groupSourceLinksByTargetField,
   isProfileSourceTargetField,
+  prepareProfileSourceLinkTargets,
   summarizeProfileEvidence
 } from "../lib/profile/profileSourceLinks";
 
@@ -37,5 +38,16 @@ describe("profile source links", () => {
     expect(grouped.education).toHaveLength(2);
     expect(summary.readyCount).toBe(2);
     expect(summary.fieldsMissingEvidence.map((field) => field.key)).toContain("githubProjects");
+  });
+
+  it("prepares bulk link targets without duplicates or invalid fields", () => {
+    const prepared = prepareProfileSourceLinkTargets(
+      ["technicalSkills", "fieldExperience", "technicalSkills", "generatedResume", "education"],
+      [{ targetField: "education" }]
+    );
+
+    expect(prepared.targetFields).toEqual(["technicalSkills", "fieldExperience"]);
+    expect(prepared.duplicateTargetFields).toEqual(["technicalSkills", "education"]);
+    expect(prepared.invalidTargetFields).toEqual(["generatedResume"]);
   });
 });

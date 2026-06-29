@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { db } from "@/lib/db";
-import { jsonToTextarea } from "@/lib/formParsing";
+import { jsonToStringArray, jsonToTextarea } from "@/lib/formParsing";
 import { getProfileSourceTargetField, summarizeProfileEvidence } from "@/lib/profile/profileSourceLinks";
 import { sourceTypeLabels } from "@/lib/sources/sourceTypes";
 
@@ -37,6 +37,14 @@ export default async function ProfilePage() {
     sourceNotes: profile?.sourceNotes ?? ""
   };
   const evidence = summarizeProfileEvidence(profile?.sourceLinks ?? []);
+  const realDataChecks = [
+    { key: "technicalSkills", label: "Technical skills", value: profile?.technicalSkills, example: "React, Node.js, Python, SQL, Git" },
+    { key: "githubProjects", label: "GitHub projects", value: profile?.githubProjects, example: "Project name, stack, GitHub URL" },
+    { key: "portfolioLinks", label: "Portfolio links", value: profile?.portfolioLinks, example: "Portfolio URL, demo, project page" },
+    { key: "fieldExperience", label: "Field experience", value: profile?.fieldExperience, example: "Projects, support work, implementation, QA" },
+    { key: "certificates", label: "Certificates", value: profile?.certificates, example: "Course/certificate name, issuer, URL" }
+  ];
+  const missingRealData = realDataChecks.filter((item) => jsonToStringArray(item.value).length === 0);
 
   return (
     <div className="grid gap-6">
@@ -44,8 +52,31 @@ export default async function ProfilePage() {
         <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Profile Intelligence</p>
         <h2 className="mt-3 text-3xl font-semibold text-white">Adel&apos;s career source of truth</h2>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-          This data is stored locally in SQLite. The form now validates required fields, salary consistency, and honest degree wording before saving.
+          This is the real text used later for CV/application work. Sources are evidence; they do not fill these fields automatically.
         </p>
+        <div className="mt-5 rounded-lg border border-white/20 bg-white/[0.08] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-white">Real data to complete / عبي بياناتك</h3>
+              <p className="mt-1 text-sm text-ink-400">Most important fields for serious CV and application drafting.</p>
+            </div>
+            <span className="rounded-full border border-white/20 px-3 py-1 text-sm text-ink-100">
+              {missingRealData.length === 0 ? "Ready / جاهز" : `${missingRealData.length} missing`}
+            </span>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            {realDataChecks.map((item) => {
+              const ready = jsonToStringArray(item.value).length > 0;
+              return (
+                <div key={item.key} className={`rounded-lg border p-3 ${ready ? "border-aqua-400/30 bg-aqua-400/10" : "border-signal-red/30 bg-signal-red/10"}`}>
+                  <div className="font-semibold text-white">{item.label}</div>
+                  <p className="mt-1 text-xs text-ink-200">{ready ? "Ready / جاهز" : "Missing / ناقص"}</p>
+                  {!ready ? <p className="mt-2 text-xs leading-5 text-ink-200">Example: {item.example}</p> : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
         <ProfileForm values={values} />
       </GlassCard>
 
@@ -58,11 +89,11 @@ export default async function ProfilePage() {
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           <div className="rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-4">
             <div className="text-2xl font-semibold text-white">{evidence.readyCount} / {evidence.totalCount}</div>
-            <div className="mt-1 text-sm text-ink-300">fields with linked evidence</div>
+            <div className="mt-1 text-sm text-ink-400">fields with linked evidence</div>
           </div>
-          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 md:col-span-2">
+          <div className="rounded-lg border border-white/20 bg-white/[0.08] p-4 md:col-span-2">
             <div className="font-semibold text-white">Missing evidence</div>
-            <p className="mt-2 text-sm text-ink-300">
+            <p className="mt-2 text-sm text-ink-400">
               {evidence.fieldsMissingEvidence.length > 0 ? evidence.fieldsMissingEvidence.map((field) => field.label).join(", ") : "All profile fields have at least one evidence link."}
             </p>
           </div>
@@ -71,7 +102,7 @@ export default async function ProfilePage() {
           {Object.entries(evidence.grouped).map(([targetField, links]) => {
             const field = getProfileSourceTargetField(targetField);
             return (
-              <div key={targetField} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div key={targetField} className="rounded-lg border border-white/20 bg-white/[0.08] p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="font-semibold text-white">{field?.label ?? targetField}</div>
@@ -82,7 +113,7 @@ export default async function ProfilePage() {
                 <div className="mt-3 grid gap-2">
                   {links.length === 0 ? <p className="text-sm text-ink-400">No linked evidence yet.</p> : null}
                   {links.map((link) => (
-                    <Link key={link.id} href={`/sources/${link.sourceId}`} className="rounded-lg border border-white/10 bg-navy-950/50 p-3 text-sm text-ink-200">
+                    <Link key={link.id} href={`/sources/${link.sourceId}`} className="rounded-lg border border-white/20 bg-white/[0.07] p-3 text-sm text-ink-200">
                       <span className="font-semibold text-white">{link.source.filename}</span>
                       <span className="text-ink-400"> | {sourceTypeLabels[link.source.type as keyof typeof sourceTypeLabels] ?? link.source.type}</span>
                       {link.note ? <span> | {link.note}</span> : null}

@@ -127,6 +127,15 @@ Phase 5.3 Correction Patch coverage:
 - Manual QA should confirm `/sources/[id]` shows uploaded-file metadata for file sources and an Open source link action for URL sources.
 - Manual QA should confirm `/jobs`, `/jobs/[id]/application`, and `/resumes` remain readable with clearer actions and no new integrations.
 
+Phase 5.4 coverage:
+
+- Unit coverage confirms bulk evidence-link target preparation skips duplicate fields and rejects invalid target fields.
+- Manual QA should confirm `/sources/[id]` can create multiple evidence links from one source in one save.
+- Manual QA should confirm duplicate source + target field links are not created.
+- Manual QA should confirm `/resumes` separates profile text, source records, and evidence links with actions to `/profile` and `/sources`.
+- Manual QA should confirm `/profile` highlights missing real data and shows examples for technical skills, GitHub projects, portfolio links, field experience, and certificates.
+- Manual QA should confirm `/jobs` and `/jobs/[id]/application` remain easier to read after the comfort theme pass.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

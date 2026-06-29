@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 5.3 Correction Patch - Source Link Intake + Readability Theme Refresh.
+Current state: Phase 5.4 - Real Profile Data Workflow + Evidence Linking UX + Comfort Theme.
 
 ## What Works Now
 
@@ -33,6 +33,9 @@ Current state: Phase 5.3 Correction Patch - Source Link Intake + Readability The
 - Manual source detail/edit workflow
 - Source readiness indicators
 - Manual source-to-profile evidence links
+- Bulk manual evidence linking from one source to multiple profile fields
+- Resume Lab guidance separating profile text from evidence links
+- Profile real-data completion prompts and examples
 - Local agent output contracts without API calls
 - Job-specific Application Packet workspace
 - Application Packet safety gate for READY status
@@ -74,7 +77,7 @@ The UI should stay dark, local-first, and sidebar-based. It should remain mostly
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 5.3 uses local SQLite data, deterministic validation, manual job/source intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. Gmail, automatic file or URL parsing, scraping, real agents, resume generation, DOCX/PDF export, and automatic communication are intentionally not connected.
+Current limitation: Phase 5.4 uses local SQLite data, deterministic validation, manual job/source intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. Gmail, automatic file or URL parsing, scraping, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, and automatic communication are intentionally not connected.
 
 ## Local Setup
 

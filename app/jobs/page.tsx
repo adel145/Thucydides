@@ -213,8 +213,8 @@ export default async function JobsPage({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <Link href={`/jobs/${job.id}`} className="text-xl font-semibold text-white hover:text-aqua-400">{job.title}</Link>
-                        <div className="mt-1 text-sm font-medium text-ink-100">{job.company ?? "Unknown company"}</div>
+                        <Link href={`/jobs/${job.id}`} className="text-2xl font-semibold text-white hover:text-aqua-400">{job.title}</Link>
+                        <div className="mt-1 text-base font-semibold text-ink-100">{job.company ?? "Unknown company"}</div>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <ScoreBadge tone={validationTone(job.validationStatus)}>{job.validationStatus}</ScoreBadge>
@@ -224,7 +224,6 @@ export default async function JobsPage({
                     </div>
                     <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-ink-200">
                       <span>{job.location ?? "Location not listed"}</span>
-                      <span>{job.source}</span>
                       <span className="font-semibold text-ink-100">{readinessContext(job.validationStatus, job.status)}</span>
                     </div>
                   </div>

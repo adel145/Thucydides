@@ -339,3 +339,23 @@ Updated:
 Not implemented:
 
 - No Gmail, Calendar, scraping, browser automation, automatic parsing, OpenAI file processing, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, remote logo fetching, or fake AI output.
+
+## 2026-06-29 Phase 5.4 - Real Profile Data Workflow + Evidence Linking UX + Comfort Theme
+
+Created:
+
+- Manual bulk evidence-linking helper and tests for duplicate/invalid target handling.
+- Multi-field evidence linking UI on Source Detail.
+- Resume Lab workflow that separates profile text, source records, and evidence links.
+
+Updated:
+
+- Source Detail now lets Adel link one source to multiple profile fields in one explicit save.
+- Duplicate source + profile-field evidence links are skipped before database writes, with the unique index still in place.
+- Resume Lab now points missing profile text to `/profile` and missing evidence links to `/sources`.
+- Profile now highlights missing real-data fields and gives examples for technical skills, GitHub projects, portfolio links, field experience, and certificates.
+- Main workflow pages received a comfort-theme pass with lighter surfaces, stronger contrast, larger actions, and simpler labels.
+
+Not implemented:
+
+- No Gmail, Calendar, scraping, browser automation, automatic parsing, OpenAI file processing, automatic profile updates from sources, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, remote logo fetching, or fake AI output.

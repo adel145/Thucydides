@@ -1,6 +1,6 @@
 # Next Prompt Context
 
-Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.3 has added UX Clarity Refresh + Manual File Upload Intake, followed by a Phase 5.3 Correction Patch for Source Link Intake + Readability Theme Refresh. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation, Phase 5.0 Application Packet + Resume Lab MVP, Phase 5.1 Controlled AI Drafting + Application Packet safety gate, and Phase 5.2 Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement.
+Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.4 has added Real Profile Data Workflow + Evidence Linking UX + Comfort Theme. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation, Phase 5.0 Application Packet + Resume Lab MVP, Phase 5.1 Controlled AI Drafting + Application Packet safety gate, Phase 5.2 Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement, and Phase 5.3 UX Clarity Refresh + Manual File/Link Source Intake.
 
 The product mission is to help Adel reach 10 interviews in the Israeli job market. Adel lives in Beersheba, prefers the South, wants above 10,000 NIS gross if staying in Beersheba, can temporarily accept 8,000 NIS gross, and expects to complete remaining degree requirements around September.
 
@@ -46,6 +46,10 @@ Current Phase 5.3 behavior:
 - `/sources` also supports URL-only source intake for LinkedIn, GitHub, portfolio, certificate/course, and other career links. URL sources do not require file upload and are not scraped or fetched.
 - `/sources` separates upload files, profile/link sources, and pasted text/notes so Adel can choose the right manual evidence path.
 - `/sources/[id]` displays uploaded-file metadata for file sources and an Open source link action for URL sources.
+- `/sources/[id]` can create multiple manual evidence links from one source in one save, using checkboxes for recommended and other profile fields.
+- Duplicate evidence links for the same source and target field are skipped before database writes; the unique index remains the persistence backstop.
+- `/resumes` separates profile text, source records, and evidence links. Source readiness 4/4 does not mean profile data or evidence readiness is complete.
+- `/profile` highlights missing real profile fields and gives examples for technical skills, GitHub projects, portfolio links, field experience, and certificates.
 - Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail have stronger contrast, clearer cards/actions, and short Arabic/Hebrew helper labels where useful.
 - Dashboard links to Resume Lab and shows packet counts.
 
@@ -69,9 +73,9 @@ Known toolchain notes:
 Recommended next work:
 
 1. Add more persistence/server-action integration tests only if a clean Next action test harness is introduced.
-2. Refine source-to-profile evidence workflows after Adel adds real sources and URL sources.
+2. After Adel fills profile text and links evidence, review whether Resume Lab has enough real data for safer controlled draft work.
 3. Improve Resume Lab and source evidence review before export/generation.
 4. Keep OpenAI limited to controlled Application Packet drafting until broader confirmation/audit flows are stronger.
-5. Do not parse uploaded files or URL sources automatically; parsing/scraping remains a later explicit phase.
+5. Do not parse uploaded files or URL sources automatically, and do not auto-fill profile fields from sources; parsing/scraping remains a later explicit phase.
 
 Do not add Gmail, Calendar, scraping, browser automation, automatic upload parsing, real agents, autonomous applications, automatic emails, resume generation, exports, auth, or deployment unless a later phase explicitly asks for them.

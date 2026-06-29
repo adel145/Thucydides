@@ -191,3 +191,15 @@ Reason: Adel should not have to upload a file to record profile and career URLs.
 Decision: keep the dark sidebar command-center direction, but lighten card surfaces, strengthen borders/actions, and use short Arabic/Hebrew helper labels where they reduce confusion.
 
 Reason: Adel likes the visual direction but needs clearer readability and less dense English on core workflow pages.
+
+## 2026-06-29: Profile Text And Evidence Are Separate
+
+Decision: treat profile text and evidence links as separate manual readiness concepts.
+
+Reason: source readiness can be complete while the actual CV/application text is still missing. Adel must fill profile data manually and separately link evidence sources.
+
+## 2026-06-29: Bulk Evidence Linking Is Manual
+
+Decision: allow one source to be manually linked to multiple profile fields in one save, while skipping duplicates and preserving the existing unique database constraint.
+
+Reason: Adel has real sources now, and linking one field at a time is too slow, but the product must still avoid parsing or automatic profile updates.

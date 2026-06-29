@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-29, Thucydides is in Phase 5.3 Correction Patch - Source Link Intake + Readability Theme Refresh state.
+As of 2026-06-29, Thucydides is in Phase 5.4 - Real Profile Data Workflow + Evidence Linking UX + Comfort Theme state.
 
 ## What Exists
 
@@ -28,7 +28,7 @@ As of 2026-06-29, Thucydides is in Phase 5.3 Correction Patch - Source Link Inta
 - Local database file exists at `prisma/dev.db`.
 - Seed profile exists for Adel Mohsen.
 - Ten seed jobs exist with deterministic validation statuses.
-- `/profile` loads and saves the local candidate profile.
+- `/profile` loads and saves the local candidate profile and highlights missing real profile data for technical skills, GitHub projects, portfolio links, field experience, and certificates.
 - `/jobs` lists local jobs as clearer LinkedIn-style review cards with stronger contrast and can create manually entered jobs from pasted descriptions.
 - `/jobs` supports text search, validation/status/facet filters, sorting, visible active-filter state, and clear filters.
 - `/jobs` supports quick review filters for ready-to-apply, high-priority, due follow-up, risky review, and forbidden/archive review views.
@@ -46,7 +46,7 @@ As of 2026-06-29, Thucydides is in Phase 5.3 Correction Patch - Source Link Inta
 - `/sources` manages local source records through three manual paths: local file uploads, profile/link sources, and pasted text or notes.
 - Uploaded source files are stored under `local_uploads/sources/` with local metadata and are gitignored.
 - LinkedIn, GitHub, portfolio, certificate/course, and other career URLs can be added as URL-only source records without requiring a file upload.
-- `/sources/[id]` can manually link a source to allowed profile fields as evidence.
+- `/sources/[id]` can manually link one source to multiple allowed profile fields as evidence in one save.
 - `/sources/[id]` shows URL-only sources with an explicit Open source link action and no scraping or metadata fetching.
 - `/profile` shows profile source evidence grouped by target field.
 - Dashboard source readiness includes manual profile evidence link counts.
@@ -63,14 +63,15 @@ As of 2026-06-29, Thucydides is in Phase 5.3 Correction Patch - Source Link Inta
 - Application Packet save/mark-ready behavior has pure helper coverage for persistence safety, READY blocking, packet-missing handling, and checklist snapshots.
 - Application Packet evidence review now shows manual source availability, missing source groups, and missing profile-evidence links before applying.
 - Job detail and Job Inbox link to application packet preparation.
-- `/resumes` is a clearer manual Resume Lab workspace showing profile/source/evidence readiness, missing-data tasks, source group status, base CV data, and recent application packet status counts.
+- `/resumes` is a clearer manual Resume Lab workspace showing profile text readiness, source record readiness, evidence link readiness, missing-data tasks, base CV data, and recent application packet status counts.
 - Dashboard includes a Resume Lab button and application packet counts.
 - Dashboard includes jobs ready to apply, due follow-ups, overdue follow-ups, high-priority jobs, recent jobs, and profile/source readiness warnings.
 - Pure helpers exist for deterministic job readiness, dashboard mission grouping, and source readiness.
 - Vitest tests exist for role validation with Israeli fixtures, job statuses, lifecycle validation helpers, dashboard metrics, profile validation, filters, priority, source types, application packet persistence safety, and controlled AI draft audit helpers.
 - Completed-degree requirements are risk/manual-check notes rather than hard forbidden blockers.
 - Top-bar and placeholder page copy reflects local SQLite status, controlled packet drafting, and planned later-phase Gmail/agent work.
-- Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail now use clearer surfaces, stronger borders/actions, and short Arabic/Hebrew helper labels where useful.
+- Job Inbox, Application Packet, Resume Lab, Sources, Source Detail, and Profile now use clearer surfaces, stronger borders/actions, and short Arabic/Hebrew helper labels where useful.
+- Source readiness can be 4/4 while profile text or evidence links remain incomplete; Resume Lab now separates those concepts.
 
 ## Latest UX Review Summary
 
@@ -79,6 +80,7 @@ As of 2026-06-29, Thucydides is in Phase 5.3 Correction Patch - Source Link Inta
 - The dashboard has too many cards for first-open use. Future priority should be Today's Mission and Jobs Ready To Apply.
 - Job Inbox should move toward job cards and a paste-job-description workflow. The current Add Manual Job form is useful but should not dominate the experience.
 - Profile and Sources must be filled with real Adel data before serious AI, CV tailoring, or resume work.
+- Adding a source is not enough for CV readiness; Adel must manually fill profile text and manually link source evidence.
 - Resume Lab, Agent Council, Gmail, and Settings should remain visible as roadmap pages with honest copy.
 
 ## What Does Not Exist Yet

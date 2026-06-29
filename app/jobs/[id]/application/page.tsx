@@ -25,7 +25,7 @@ function FieldTextArea({ label, name, value, min = "min-h-28" }: { label: string
   return (
     <label>
       <span className="text-xs uppercase tracking-[0.16em] text-ink-400">{label}</span>
-      <textarea name={name} defaultValue={value ?? ""} className={`mt-2 ${min} w-full rounded-lg border border-white/10 bg-navy-950/70 p-3 text-sm leading-6 text-white outline-none focus:border-aqua-400/70`} />
+      <textarea name={name} defaultValue={value ?? ""} className={`mt-2 ${min} w-full rounded-lg border border-white/20 bg-navy-950/60 p-3 text-sm leading-6 text-white outline-none focus:border-aqua-400/70`} />
     </label>
   );
 }
@@ -114,7 +114,7 @@ export default async function ApplicationPacketPage({
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <GlassCard>
           <h3 className="text-xl font-semibold text-white">Packet readiness / جاهز</h3>
-          <p className="mt-2 text-sm leading-6 text-ink-200">READY is blocked until required items are complete. Evidence helps manual review, but not every evidence item blocks READY.</p>
+          <p className="mt-2 text-sm leading-6 text-ink-200">READY is blocked until required items are complete. Evidence helps manual review, but profile text still has to be filled by Adel.</p>
           <div className="mt-4 grid gap-3">
             <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
               <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Decision</div>
@@ -153,19 +153,19 @@ export default async function ApplicationPacketPage({
             <div className="grid gap-4 md:grid-cols-3">
               <label>
                 <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Packet status</span>
-                <select name="status" defaultValue={packet?.status ?? "DRAFT"} className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white">
+              <select name="status" defaultValue={packet?.status ?? "DRAFT"} className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white">
                   {APPLICATION_PACKET_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
                 </select>
               </label>
               <label>
                 <span className="text-xs uppercase tracking-[0.16em] text-ink-400">CV language</span>
-                <select name="cvLanguage" defaultValue={packet?.cvLanguage ?? summary.cvLanguage} className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white">
+              <select name="cvLanguage" defaultValue={packet?.cvLanguage ?? summary.cvLanguage} className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white">
                   {CV_LANGUAGES.map((language) => <option key={language} value={language}>{language}</option>)}
                 </select>
               </label>
               <label>
                 <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Decision</span>
-                <select name="applicationDecision" defaultValue={packet?.applicationDecision ?? summary.applicationDecision} className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white">
+              <select name="applicationDecision" defaultValue={packet?.applicationDecision ?? summary.applicationDecision} className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white">
                   {APPLICATION_DECISIONS.map((decision) => <option key={decision} value={decision}>{decision}</option>)}
                 </select>
               </label>

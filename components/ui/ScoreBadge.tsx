@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 const tones = {
   aqua: "border-aqua-400/40 bg-aqua-400/10 text-aqua-400",
-  muted: "border-white/10 bg-white/[0.05] text-ink-200",
+  muted: "border-white/20 bg-white/[0.08] text-ink-100",
   warning: "border-signal-red/40 bg-signal-red/10 text-signal-red"
 };
 

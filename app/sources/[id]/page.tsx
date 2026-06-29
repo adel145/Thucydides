@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createProfileSourceLink, deleteProfileSourceLink, deleteSourceRecord, updateSourceRecord } from "@/app/sources/actions";
+import { createProfileSourceLinks, deleteProfileSourceLink, deleteSourceRecord, updateSourceRecord } from "@/app/sources/actions";
 import { DangerButton } from "@/components/ui/DangerButton";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonButton } from "@/components/ui/NeonButton";
@@ -25,6 +25,8 @@ export default async function SourceDetailPage({
   if (!source) notFound();
   const profile = await db.candidateProfile.findFirst({ orderBy: { createdAt: "asc" } });
   const recommendedFields = getRecommendedTargetFields(source.type);
+  const recommendedFieldKeys = new Set(recommendedFields.map((field) => field.key));
+  const linkedTargetFields = new Set(source.profileLinks.map((link) => link.targetField));
 
   return (
     <div className="grid gap-6">
@@ -35,9 +37,9 @@ export default async function SourceDetailPage({
           Review one manual evidence source. Files stay local, links stay as URLs, and nothing is parsed, scraped, or linked automatically.
         </p>
         {notices?.saved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Source saved.</div> : null}
-        {notices?.linked ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Evidence link saved.</div> : null}
+        {notices?.linked ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Evidence links saved. Duplicate links were skipped.</div> : null}
         {notices?.unlinked ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Evidence link removed.</div> : null}
-        {notices?.linkError ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-signal-red">Choose a valid profile field.</div> : null}
+        {notices?.linkError ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-signal-red">Choose at least one new valid profile field.</div> : null}
         {notices?.deleteError ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-signal-red">Type DELETE to remove this source.</div> : null}
       </GlassCard>
 
@@ -45,15 +47,15 @@ export default async function SourceDetailPage({
         <GlassCard>
           <h3 className="text-xl font-semibold text-white">Local file</h3>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+            <div className="rounded-lg border border-white/20 bg-white/[0.07] p-3">
               <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Stored path</div>
               <div className="mt-2 break-all text-sm text-white">{source.path}</div>
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+            <div className="rounded-lg border border-white/20 bg-white/[0.07] p-3">
               <div className="text-xs uppercase tracking-[0.16em] text-ink-400">File size</div>
               <div className="mt-2 text-sm text-white">{formatFileSize(source.uploadSizeBytes)}</div>
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+            <div className="rounded-lg border border-white/20 bg-white/[0.07] p-3">
               <div className="text-xs uppercase tracking-[0.16em] text-ink-400">MIME type</div>
               <div className="mt-2 text-sm text-white">{source.uploadMimeType ?? "Unknown"}</div>
             </div>
@@ -69,7 +71,7 @@ export default async function SourceDetailPage({
               <h3 className="text-xl font-semibold text-white">Source link</h3>
               <p className="mt-2 max-w-3xl break-all text-sm leading-6 text-ink-100">{source.url}</p>
             </div>
-            <a href={source.url} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg border border-aqua-400 bg-aqua-400 px-4 text-sm font-semibold text-navy-950 hover:bg-aqua-500">
+            <a href={source.url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-lg border border-aqua-400 bg-aqua-400 px-5 text-sm font-semibold text-navy-950 hover:bg-aqua-500">
               Open source link
             </a>
           </div>
@@ -78,40 +80,66 @@ export default async function SourceDetailPage({
       ) : null}
 
       <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Link this source to Profile</h3>
+        <h3 className="text-xl font-semibold text-white">Link evidence to Profile</h3>
         <p className="mt-3 text-sm leading-6 text-ink-200">
-          This is a manual evidence link / הוכחה. No parsing or automatic profile update happens here. Adel chooses what this source supports.
+          Manual only: choose the profile fields this source supports, then save. This does not parse files, read links, or update profile text.
         </p>
-        <div className="mt-4 rounded-lg border border-white/20 bg-white/[0.07] p-3 text-sm text-ink-100">
-          Source type: <span className="font-semibold text-white">{sourceTypeLabels[source.type as keyof typeof sourceTypeLabels] ?? source.type}</span>
-          <div className="mt-2 text-xs text-ink-400">
-            Recommended: {recommendedFields.map((field) => field.label).join(", ") || "Source notes"}
+        <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-4 text-sm text-ink-100">
+          <div className="font-semibold text-white">Recommended for this source</div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {recommendedFields.map((field) => (
+              <span key={field.key} className="rounded-full border border-aqua-400/40 bg-aqua-400/10 px-3 py-1 text-xs font-semibold text-aqua-400">
+                {field.label}
+              </span>
+            ))}
+            {recommendedFields.length === 0 ? <span className="text-ink-400">Source notes</span> : null}
           </div>
         </div>
         {profile ? (
-          <form action={createProfileSourceLink} className="mt-5 grid gap-4">
+          <form action={createProfileSourceLinks} className="mt-5 grid gap-4">
             <input type="hidden" name="profileId" value={profile.id} />
             <input type="hidden" name="sourceId" value={source.id} />
-            <label>
-              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Profile field</span>
-              <select name="targetField" className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white outline-none focus:border-aqua-400/70">
-                {PROFILE_SOURCE_TARGET_FIELDS.map((field) => (
-                  <option key={field.key} value={field.key}>{field.label}</option>
-                ))}
-              </select>
-            </label>
+            <div>
+              <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Profile fields</div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {PROFILE_SOURCE_TARGET_FIELDS.map((field) => {
+                  const alreadyLinked = linkedTargetFields.has(field.key);
+                  const recommended = recommendedFieldKeys.has(field.key);
+                  return (
+                    <label key={field.key} className={`rounded-lg border p-3 ${alreadyLinked ? "border-aqua-400/30 bg-aqua-400/10" : recommended ? "border-white/20 bg-white/[0.09]" : "border-white/10 bg-white/[0.04]"}`}>
+                      <span className="flex items-start gap-3">
+                        <input
+                          name="targetFields"
+                          type="checkbox"
+                          value={field.key}
+                          defaultChecked={recommended && !alreadyLinked}
+                          disabled={alreadyLinked}
+                          className="mt-1 h-4 w-4 accent-aqua-400"
+                        />
+                        <span>
+                          <span className="font-semibold text-white">{field.label}</span>
+                          {recommended ? <span className="ml-2 text-xs font-semibold text-aqua-400">Recommended</span> : null}
+                          {alreadyLinked ? <span className="ml-2 text-xs font-semibold text-aqua-400">Already linked</span> : null}
+                          <span className="mt-1 block text-xs leading-5 text-ink-400">{field.description}</span>
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
             <label>
               <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Evidence note</span>
-              <input name="note" className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
+              <input name="note" placeholder="Optional note used for every selected field" className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
             </label>
-            <div><NeonButton className="border-aqua-400 bg-aqua-400 text-navy-950 hover:bg-aqua-500">Create evidence link / הוכחה</NeonButton></div>
+            <div><NeonButton className="min-h-12 border-aqua-400 bg-aqua-400 px-5 text-base text-navy-950 hover:bg-aqua-500">Link evidence / اربط إثبات</NeonButton></div>
           </form>
         ) : (
           <p className="mt-4 text-sm text-ink-400">Create a profile before linking evidence.</p>
         )}
 
         <div className="mt-6 grid gap-3">
-          <h4 className="font-semibold text-white">Existing links for this source</h4>
+          <h4 className="font-semibold text-white">Existing linked fields</h4>
           {source.profileLinks.length === 0 ? <p className="text-sm text-ink-400">No profile evidence links yet.</p> : null}
           {source.profileLinks.map((link) => {
             const field = getProfileSourceTargetField(link.targetField);
@@ -125,7 +153,7 @@ export default async function SourceDetailPage({
                   <form action={deleteProfileSourceLink}>
                     <input type="hidden" name="id" value={link.id} />
                     <input type="hidden" name="sourceId" value={source.id} />
-                    <button className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-ink-200">Unlink</button>
+                    <button className="rounded-lg border border-white/20 px-3 py-2 text-xs font-semibold text-ink-200">Unlink</button>
                   </form>
                 </div>
               </div>
@@ -141,11 +169,11 @@ export default async function SourceDetailPage({
           <div className="grid gap-4 md:grid-cols-2">
             <label>
               <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Title / filename</span>
-              <input name="filename" defaultValue={source.filename} required className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
+              <input name="filename" defaultValue={source.filename} required className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
             </label>
             <label>
               <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Type</span>
-              <select name="type" defaultValue={source.type} className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white outline-none focus:border-aqua-400/70">
+              <select name="type" defaultValue={source.type} className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white outline-none focus:border-aqua-400/70">
                 {SOURCE_TYPES.map((type) => (
                   <option key={type} value={type}>{sourceTypeLabels[type]}</option>
                 ))}
@@ -153,24 +181,24 @@ export default async function SourceDetailPage({
             </label>
             <label>
               <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Path</span>
-              <input name="path" defaultValue={source.path ?? ""} className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
+              <input name="path" defaultValue={source.path ?? ""} className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
             </label>
             <label>
               <span className="text-xs uppercase tracking-[0.16em] text-ink-400">URL</span>
-              <input name="url" defaultValue={source.url ?? ""} className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
+              <input name="url" defaultValue={source.url ?? ""} className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
             </label>
           </div>
           <label>
             <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Pasted text content</span>
-            <textarea name="extractedText" defaultValue={source.extractedText ?? ""} className="mt-2 min-h-52 w-full rounded-lg border border-white/10 bg-navy-950/70 p-3 text-sm leading-6 text-white outline-none focus:border-aqua-400/70" />
+            <textarea name="extractedText" defaultValue={source.extractedText ?? ""} className="mt-2 min-h-52 w-full rounded-lg border border-white/20 bg-navy-950/60 p-3 text-sm leading-6 text-white outline-none focus:border-aqua-400/70" />
           </label>
           <label>
             <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Notes</span>
-            <textarea name="notes" defaultValue={source.notes ?? ""} className="mt-2 min-h-28 w-full rounded-lg border border-white/10 bg-navy-950/70 p-3 text-sm leading-6 text-white outline-none focus:border-aqua-400/70" />
+            <textarea name="notes" defaultValue={source.notes ?? ""} className="mt-2 min-h-28 w-full rounded-lg border border-white/20 bg-navy-950/60 p-3 text-sm leading-6 text-white outline-none focus:border-aqua-400/70" />
           </label>
           <div className="flex flex-wrap gap-3">
             <NeonButton>Save source</NeonButton>
-            <Link href="/sources" className="inline-flex min-h-10 items-center rounded-lg border border-white/10 px-4 text-sm font-semibold text-ink-200">
+            <Link href="/sources" className="inline-flex min-h-10 items-center rounded-lg border border-white/20 px-4 text-sm font-semibold text-ink-200">
               Back to Sources
             </Link>
           </div>
@@ -182,7 +210,7 @@ export default async function SourceDetailPage({
         <p className="mt-3 text-sm text-ink-200">This only removes the local source record. Type DELETE to confirm.</p>
         <form action={deleteSourceRecord} className="mt-4 flex flex-wrap gap-3">
           <input type="hidden" name="id" value={source.id} />
-          <input name="confirmText" placeholder="Type DELETE" className="min-h-10 rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white outline-none focus:border-signal-red/70" />
+          <input name="confirmText" placeholder="Type DELETE" className="min-h-10 rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white outline-none focus:border-signal-red/70" />
           <DangerButton>Delete source</DangerButton>
         </form>
       </GlassCard>
