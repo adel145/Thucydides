@@ -29,10 +29,10 @@ export default async function SourceDetailPage({
   return (
     <div className="grid gap-6">
       <GlassCard>
-        <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Source Detail</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Source Detail / Evidence / הוכחה</p>
         <h2 className="mt-3 text-3xl font-semibold text-white">{source.filename}</h2>
         <p className="mt-3 text-sm leading-6 text-ink-200">
-          Edit manual source data only. Uploaded files stay local; no parsing or automatic profile linking happens here.
+          Review one manual evidence source. Files stay local, links stay as URLs, and nothing is parsed, scraped, or linked automatically.
         </p>
         {notices?.saved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Source saved.</div> : null}
         {notices?.linked ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Evidence link saved.</div> : null}
@@ -58,16 +58,31 @@ export default async function SourceDetailPage({
               <div className="mt-2 text-sm text-white">{source.uploadMimeType ?? "Unknown"}</div>
             </div>
           </div>
-          <p className="mt-3 text-sm text-ink-300">This file is only stored locally. Text content is not extracted automatically.</p>
+          <p className="mt-3 text-sm text-ink-400">This file is only stored locally. Text content is not extracted automatically.</p>
+        </GlassCard>
+      ) : null}
+
+      {source.url ? (
+        <GlassCard>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-semibold text-white">Source link</h3>
+              <p className="mt-2 max-w-3xl break-all text-sm leading-6 text-ink-100">{source.url}</p>
+            </div>
+            <a href={source.url} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg border border-aqua-400 bg-aqua-400 px-4 text-sm font-semibold text-navy-950 hover:bg-aqua-500">
+              Open source link
+            </a>
+          </div>
+          <p className="mt-3 text-sm text-ink-400">Opening the link is manual. Thucydides does not fetch, scrape, or read this URL.</p>
         </GlassCard>
       ) : null}
 
       <GlassCard>
         <h3 className="text-xl font-semibold text-white">Link this source to Profile</h3>
         <p className="mt-3 text-sm leading-6 text-ink-200">
-          This is a manual evidence link. No parsing or automatic profile update happens here. Recommended fields are only suggestions; Adel chooses what this source supports.
+          This is a manual evidence link / הוכחה. No parsing or automatic profile update happens here. Adel chooses what this source supports.
         </p>
-        <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-200">
+        <div className="mt-4 rounded-lg border border-white/20 bg-white/[0.07] p-3 text-sm text-ink-100">
           Source type: <span className="font-semibold text-white">{sourceTypeLabels[source.type as keyof typeof sourceTypeLabels] ?? source.type}</span>
           <div className="mt-2 text-xs text-ink-400">
             Recommended: {recommendedFields.map((field) => field.label).join(", ") || "Source notes"}
@@ -79,7 +94,7 @@ export default async function SourceDetailPage({
             <input type="hidden" name="sourceId" value={source.id} />
             <label>
               <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Profile field</span>
-              <select name="targetField" className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white outline-none focus:border-aqua-400/70">
+              <select name="targetField" className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white outline-none focus:border-aqua-400/70">
                 {PROFILE_SOURCE_TARGET_FIELDS.map((field) => (
                   <option key={field.key} value={field.key}>{field.label}</option>
                 ))}
@@ -87,9 +102,9 @@ export default async function SourceDetailPage({
             </label>
             <label>
               <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Evidence note</span>
-              <input name="note" className="mt-2 min-h-11 w-full rounded-lg border border-white/10 bg-navy-950/70 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
+              <input name="note" className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white outline-none focus:border-aqua-400/70" />
             </label>
-            <div><NeonButton>Create evidence link</NeonButton></div>
+            <div><NeonButton className="border-aqua-400 bg-aqua-400 text-navy-950 hover:bg-aqua-500">Create evidence link / הוכחה</NeonButton></div>
           </form>
         ) : (
           <p className="mt-4 text-sm text-ink-400">Create a profile before linking evidence.</p>
@@ -101,7 +116,7 @@ export default async function SourceDetailPage({
           {source.profileLinks.map((link) => {
             const field = getProfileSourceTargetField(link.targetField);
             return (
-              <div key={link.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+              <div key={link.id} className="rounded-lg border border-white/20 bg-white/[0.07] p-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="font-semibold text-white">{field?.label ?? link.targetField}</div>

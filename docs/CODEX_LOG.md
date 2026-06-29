@@ -321,3 +321,21 @@ Updated:
 Not implemented:
 
 - No Gmail, Calendar, scraping, browser automation, automatic parsing, OpenAI file processing, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, or fake AI output.
+
+## 2026-06-29 Phase 5.3 Correction Patch - Source Link Intake + Readability Theme Refresh
+
+Created:
+
+- Separate URL-only source intake for LinkedIn, GitHub, portfolio, certificate/course, and other career links.
+- Source Detail URL card with a manual Open source link action.
+
+Updated:
+
+- Sources now separates upload files, profile/link sources, and pasted text/notes.
+- Source readiness wording now describes files, URLs, pasted text, and notes where appropriate.
+- Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail now use clearer surfaces, stronger actions, and short Arabic/Hebrew helper labels where useful.
+- Docs now record the correction patch and the rule that URL sources are not scraped, fetched, parsed, or sent to OpenAI.
+
+Not implemented:
+
+- No Gmail, Calendar, scraping, browser automation, automatic parsing, OpenAI file processing, DOCX/PDF export, automatic applications, automatic emails, real autonomous agents, auth, deployment, resume export, remote logo fetching, or fake AI output.

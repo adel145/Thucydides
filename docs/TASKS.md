@@ -111,6 +111,14 @@
 - Stored uploaded files under gitignored `local_uploads/sources/`.
 - Added source upload helper tests.
 
+## Completed In Phase 5.3 Correction Patch
+
+- Added URL-only source intake for LinkedIn, GitHub, portfolio, certificate/course, and other career links.
+- Separated Sources intake into upload files, profile/link sources, and pasted text/notes.
+- Updated Source Detail to show URL sources with a manual Open source link action.
+- Refreshed Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail readability with clearer surfaces, stronger actions, and short Arabic/Hebrew helper labels.
+- Updated source readiness wording so CV, LinkedIn, GitHub/projects, certificates, and academic evidence can be files, URLs, or notes where appropriate.
+
 ## Next Tasks
 
 - Refine manual source-to-profile linking after Adel adds real sources.

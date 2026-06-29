@@ -179,3 +179,15 @@ Reason: Adel can benefit from draft support after packet/profile/source groundwo
 Decision: support local source-file upload by storing files under `local_uploads/sources/` and recording additive upload metadata on `SourceFile`.
 
 Reason: Adel needs a practical way to keep CV, certificate, academic, and project files near the source inventory, but Phase 5.3 must not parse files, extract text automatically, send files to OpenAI, or auto-link profile evidence.
+
+## 2026-06-29: Separate Source Links From File Uploads
+
+Decision: keep uploads for local files, but add a separate URL-only source intake path for LinkedIn, GitHub, portfolio, certificate/course, and other career links.
+
+Reason: Adel should not have to upload a file to record profile and career URLs. URL sources are manual evidence records only and must not be scraped, fetched, parsed, or sent to OpenAI.
+
+## 2026-06-29: Clearer Dark UI Surfaces
+
+Decision: keep the dark sidebar command-center direction, but lighten card surfaces, strengthen borders/actions, and use short Arabic/Hebrew helper labels where they reduce confusion.
+
+Reason: Adel likes the visual direction but needs clearer readability and less dense English on core workflow pages.

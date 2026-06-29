@@ -72,7 +72,7 @@ export default async function ApplicationPacketPage({
       <GlassCard>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Application prep workflow</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Application prep / جهّز الطلب</p>
             <h2 className="mt-3 text-3xl font-semibold text-white">Prepare application packet</h2>
             <p className="mt-2 text-lg font-semibold text-ink-100">{job.title}</p>
             <p className="mt-1 text-sm text-ink-200">{[job.company, job.location].filter(Boolean).join(" | ") || "No metadata"}</p>
@@ -84,7 +84,7 @@ export default async function ApplicationPacketPage({
           </div>
         </div>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-          Manual workspace with an optional controlled draft helper. Nothing is sent automatically. Use this page to prepare before applying.
+          Manual workspace for one job. Review evidence, edit packet fields, and keep everything under Adel confirmation. Nothing is sent automatically.
         </p>
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           <div className="rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-4">
@@ -113,8 +113,8 @@ export default async function ApplicationPacketPage({
 
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <GlassCard>
-          <h3 className="text-xl font-semibold text-white">Packet readiness</h3>
-          <p className="mt-2 text-sm leading-6 text-ink-200">READY is blocked until the required items below are complete. Evidence links help review quality but do not all block READY.</p>
+          <h3 className="text-xl font-semibold text-white">Packet readiness / جاهز</h3>
+          <p className="mt-2 text-sm leading-6 text-ink-200">READY is blocked until required items are complete. Evidence helps manual review, but not every evidence item blocks READY.</p>
           <div className="mt-4 grid gap-3">
             <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
               <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Decision</div>
@@ -147,7 +147,7 @@ export default async function ApplicationPacketPage({
 
         <GlassCard>
           <h3 className="text-xl font-semibold text-white">Packet editing fields</h3>
-          <p className="mt-2 text-sm leading-6 text-ink-200">Write the draft material Adel will review. Saving here does not send anything.</p>
+          <p className="mt-2 text-sm leading-6 text-ink-200">Write draft material for Adel to review. Saving here does not send or apply anything.</p>
           <form action={saveApplicationPacket} className="mt-5 grid gap-4">
             <input type="hidden" name="jobId" value={job.id} />
             <div className="grid gap-4 md:grid-cols-3">
@@ -176,12 +176,12 @@ export default async function ApplicationPacketPage({
             <FieldTextArea label="Cover letter / cover note draft" name="coverLetterDraft" value={packet?.coverLetterDraft} min="min-h-36" />
             <FieldTextArea label="Recruiter message draft" name="recruiterMessageDraft" value={packet?.recruiterMessageDraft} />
             <FieldTextArea label="Follow-up plan" name="followUpPlan" value={packet?.followUpPlan} />
-            <div><NeonButton>Save packet</NeonButton></div>
+            <div><NeonButton className="border-aqua-400 bg-aqua-400 text-navy-950 hover:bg-aqua-500">Save packet</NeonButton></div>
           </form>
           {packet ? (
             <form action={markApplicationPacketReady} className="mt-3">
               <input type="hidden" name="jobId" value={job.id} />
-              <NeonButton className="border-white/20 text-ink-100" disabled={!canMarkReady}>Mark ready</NeonButton>
+              <NeonButton className="border-white/20 text-ink-100" disabled={!canMarkReady}>Mark ready / جاهز</NeonButton>
             </form>
           ) : null}
         </GlassCard>
@@ -197,7 +197,7 @@ export default async function ApplicationPacketPage({
           </div>
           <form action={generateApplicationAiDraft}>
             <input type="hidden" name="jobId" value={job.id} />
-            <NeonButton disabled={!canRequestAiDraft}>Generate draft</NeonButton>
+            <NeonButton disabled={!canRequestAiDraft}>Generate draft for review</NeonButton>
           </form>
         </div>
         {!aiConfig.enabled ? (
@@ -251,9 +251,9 @@ export default async function ApplicationPacketPage({
       </GlassCard>
 
       <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Profile evidence</h3>
+        <h3 className="text-xl font-semibold text-white">Profile evidence / הוכחה</h3>
         <p className="mt-2 text-sm leading-6 text-ink-200">
-          Manual evidence links only. Review CV / קורות חיים, LinkedIn, GitHub, projects, certificates, and academic sources before applying.
+          Manual evidence links only. Review CV, LinkedIn, GitHub, projects, certificates, and academic sources before applying.
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
@@ -269,7 +269,7 @@ export default async function ApplicationPacketPage({
             <div className="mt-2 grid gap-2 text-sm text-ink-200">
               {sources.length === 0 ? <p className="text-ink-400">No sources yet.</p> : null}
               {sources.slice(0, 6).map((source) => (
-                <Link key={source.id} href={`/sources/${source.id}`} className="rounded-lg border border-white/10 bg-navy-950/50 p-2">
+                <Link key={source.id} href={`/sources/${source.id}`} className="rounded-lg border border-white/20 bg-white/[0.07] p-2 hover:border-aqua-400/50">
                   {source.filename} | {sourceTypeLabels[source.type as keyof typeof sourceTypeLabels] ?? source.type}
                 </Link>
               ))}
@@ -286,7 +286,7 @@ export default async function ApplicationPacketPage({
                 <div className="mt-2 grid gap-2 text-sm text-ink-200">
                   {links.length === 0 ? <p className="text-ink-400">No linked evidence.</p> : null}
                   {links.map((link) => (
-                    <Link key={link.id} href={`/sources/${link.sourceId}`} className="rounded-lg border border-white/10 bg-navy-950/50 p-2">
+                    <Link key={link.id} href={`/sources/${link.sourceId}`} className="rounded-lg border border-white/20 bg-white/[0.07] p-2 hover:border-aqua-400/50">
                       {link.source.filename} | {sourceTypeLabels[link.source.type as keyof typeof sourceTypeLabels] ?? link.source.type}
                       {link.note ? ` | ${link.note}` : ""}
                     </Link>

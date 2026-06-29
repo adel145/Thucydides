@@ -12,22 +12,22 @@ const requiredSourceGroups = [
   {
     label: "CV",
     types: ["CV"],
-    note: "Add Adel's current CV."
+    note: "Upload CV file or add CV text source."
   },
   {
     label: "LinkedIn",
     types: ["LINKEDIN_TEXT"],
-    note: "Add LinkedIn profile text."
+    note: "Add LinkedIn URL or pasted LinkedIn text."
   },
   {
     label: "GitHub / Projects",
     types: ["GITHUB_PROJECTS", "PORTFOLIO"],
-    note: "Add GitHub, portfolio, or project evidence."
+    note: "Add GitHub, portfolio, or project URL/note."
   },
   {
     label: "Certificates / Academic",
     types: ["CERTIFICATE", "ACADEMIC_DOCUMENT"],
-    note: "Add certificates or academic documents."
+    note: "Upload certificate/academic file or add URL/note."
   }
 ] as const;
 

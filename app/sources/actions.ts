@@ -25,7 +25,30 @@ export async function createSourceRecord(formData: FormData) {
 
   revalidatePath("/sources");
   revalidatePath("/profile");
+  revalidatePath("/resumes");
   revalidatePath("/");
+}
+
+export async function createSourceLinkRecord(formData: FormData) {
+  const url = optionalString(formData.get("url"));
+  if (!url) {
+    redirect("/sources?linkSourceError=1");
+  }
+
+  await db.sourceFile.create({
+    data: {
+      filename: requiredString(formData.get("filename"), url),
+      type: normalizeSourceType(optionalString(formData.get("type"))),
+      url,
+      notes: optionalString(formData.get("notes"))
+    }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/sources");
+  revalidatePath("/profile");
+  revalidatePath("/resumes");
+  redirect("/sources?linkedSource=1");
 }
 
 export async function uploadSourceFile(formData: FormData) {

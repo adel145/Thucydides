@@ -1,6 +1,6 @@
 # Next Prompt Context
 
-Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.3 has added UX Clarity Refresh + Manual File Upload Intake. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation, Phase 5.0 Application Packet + Resume Lab MVP, Phase 5.1 Controlled AI Drafting + Application Packet safety gate, and Phase 5.2 Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement.
+Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. Phase 5.3 has added UX Clarity Refresh + Manual File Upload Intake, followed by a Phase 5.3 Correction Patch for Source Link Intake + Readability Theme Refresh. Earlier phases added local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, safer hard delete, Phase 3.6 product alignment, Phase 4.0 Daily Mission + Job Review UX Foundation, Phase 4.1 Manual Source-to-Profile Linking + AI Contracts Foundation, Phase 5.0 Application Packet + Resume Lab MVP, Phase 5.1 Controlled AI Drafting + Application Packet safety gate, and Phase 5.2 Controlled Drafting Refinement + Persistence Safety Tests + Evidence Workflow Refinement.
 
 The product mission is to help Adel reach 10 interviews in the Israeli job market. Adel lives in Beersheba, prefers the South, wants above 10,000 NIS gross if staying in Beersheba, can temporarily accept 8,000 NIS gross, and expects to complete remaining degree requirements around September.
 
@@ -43,6 +43,10 @@ Current Phase 5.3 behavior:
 - Job detail and Job Inbox link to packet preparation.
 - `/resumes` is a less dense manual Resume Lab workspace with profile/source/evidence readiness, actionable missing-data tasks, source group status, base CV data, and recent packet status counts.
 - `/sources` supports manual local file upload intake. Files are stored under `local_uploads/sources/`, metadata is stored on `SourceFile`, files are not parsed, and files are not sent to OpenAI.
+- `/sources` also supports URL-only source intake for LinkedIn, GitHub, portfolio, certificate/course, and other career links. URL sources do not require file upload and are not scraped or fetched.
+- `/sources` separates upload files, profile/link sources, and pasted text/notes so Adel can choose the right manual evidence path.
+- `/sources/[id]` displays uploaded-file metadata for file sources and an Open source link action for URL sources.
+- Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail have stronger contrast, clearer cards/actions, and short Arabic/Hebrew helper labels where useful.
 - Dashboard links to Resume Lab and shows packet counts.
 
 Allowed roles include Help Desk, IT Support, Technical Support, PC Technician, NOC, QA Manual, QA Automation Junior, Junior Full-Stack, Frontend, Backend, Python, Java, junior software engineering/development, QA automation, software testing, data analyst, BI, junior data engineering, ML/AI/computer vision junior, application/product/API/technical support engineering, system administrator junior, junior DevOps, SOC Tier 1, Implementation Engineer, Technical Integration, Solutions Engineer Junior, real technical Support Engineer roles, and safe technical infrastructure/state-project roles.
@@ -65,9 +69,9 @@ Known toolchain notes:
 Recommended next work:
 
 1. Add more persistence/server-action integration tests only if a clean Next action test harness is introduced.
-2. Refine source-to-profile evidence workflows after Adel adds real sources.
+2. Refine source-to-profile evidence workflows after Adel adds real sources and URL sources.
 3. Improve Resume Lab and source evidence review before export/generation.
 4. Keep OpenAI limited to controlled Application Packet drafting until broader confirmation/audit flows are stronger.
-5. Do not parse uploaded files automatically; parsing remains a later explicit phase.
+5. Do not parse uploaded files or URL sources automatically; parsing/scraping remains a later explicit phase.
 
 Do not add Gmail, Calendar, scraping, browser automation, automatic upload parsing, real agents, autonomous applications, automatic emails, resume generation, exports, auth, or deployment unless a later phase explicitly asks for them.

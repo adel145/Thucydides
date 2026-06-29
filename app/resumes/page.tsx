@@ -53,10 +53,10 @@ export default async function ResumesPage() {
   return (
     <div className="grid gap-6">
       <GlassCard>
-        <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Resume Lab</p>
-        <h2 className="mt-3 text-3xl font-semibold text-white">Manual CV preparation workspace</h2>
+        <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Resume Lab / CV / קורות חיים</p>
+        <h2 className="mt-3 text-3xl font-semibold text-white">Manual CV readiness workspace</h2>
         <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-          Resume Lab is manual in Phase 5.3. Use it to review profile data, sources, and application packets before drafting. DOCX, PDF, and export are not connected.
+          Review profile data, sources, evidence links, and packet drafts before serious CV work. DOCX, PDF, and resume export are not connected.
         </p>
       </GlassCard>
 
@@ -64,24 +64,24 @@ export default async function ResumesPage() {
         <GlassCard>
           <h3 className="text-lg font-semibold text-white">Profile readiness</h3>
           <div className="mt-3 text-3xl font-semibold text-white">{missingCvInputs.length === 0 ? "Ready" : `${missingCvInputs.length} missing`}</div>
-          <p className="mt-2 text-sm text-ink-300">{missingCvInputs.length === 0 ? "Core CV fields are filled." : missingCvInputs.join(", ")}</p>
+          <p className="mt-2 text-sm text-ink-400">{missingCvInputs.length === 0 ? "Core CV fields are filled." : missingCvInputs.join(", ")}</p>
         </GlassCard>
         <GlassCard>
-          <h3 className="text-lg font-semibold text-white">Source readiness</h3>
+          <h3 className="text-lg font-semibold text-white">Source readiness / جاهز</h3>
           <div className="mt-3 text-3xl font-semibold text-white">{sourceReadiness.readyCount} / {sourceReadiness.totalCount}</div>
-          <p className="mt-2 text-sm text-ink-300">CV, LinkedIn, GitHub/projects, and certificates/academic source groups.</p>
+          <p className="mt-2 text-sm text-ink-400">CV, LinkedIn, GitHub/projects, and certificates/academic source groups.</p>
           <div className="mt-4 grid gap-2 text-sm text-ink-200">
             {sourceReadiness.items.map((item) => (
-              <div key={item.label} className={item.ready ? "text-aqua-400" : "text-ink-300"}>
+              <div key={item.label} className={item.ready ? "text-aqua-400" : "text-ink-400"}>
                 {item.ready ? "Ready" : "Missing"}: {item.label}
               </div>
             ))}
           </div>
         </GlassCard>
         <GlassCard>
-          <h3 className="text-lg font-semibold text-white">Evidence readiness</h3>
+          <h3 className="text-lg font-semibold text-white">Evidence readiness / הוכחה</h3>
           <div className="mt-3 text-3xl font-semibold text-white">{evidence.readyCount} / {evidence.totalCount}</div>
-          <p className="mt-2 text-sm text-ink-300">Manual source links supporting profile fields.</p>
+          <p className="mt-2 text-sm text-ink-400">Manual source links supporting profile fields.</p>
           <div className="mt-4 text-sm text-ink-200">
             {missingEvidenceLabels.length === 0 ? <p className="text-aqua-400">All profile evidence fields have links.</p> : <p>Missing links: {missingEvidenceLabels.join(", ")}</p>}
           </div>
@@ -122,7 +122,7 @@ export default async function ResumesPage() {
       <GlassCard>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-xl font-semibold text-white">Recent application packets</h3>
-          <Link href="/jobs?view=ready" className="text-sm font-semibold text-aqua-400">Find ready jobs</Link>
+          <Link href="/jobs?view=ready" className="rounded-lg border border-aqua-400 bg-aqua-400 px-3 py-2 text-sm font-semibold text-navy-950 hover:bg-aqua-500">Find ready jobs</Link>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {["READY", "DRAFT"].map((status) => (
@@ -145,7 +145,7 @@ export default async function ResumesPage() {
                   <ScoreBadge tone="muted">{packet.cvLanguage ?? "Language unset"}</ScoreBadge>
                 </div>
               </div>
-              <p className="mt-3 text-sm text-ink-300">{packet.applicationDecision ?? "Decision not saved yet"}</p>
+              <p className="mt-3 text-sm text-ink-400">{packet.applicationDecision ?? "Decision not saved yet"}</p>
             </Link>
           ))}
         </div>

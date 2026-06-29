@@ -119,6 +119,14 @@ Phase 5.3 completed coverage:
 - Manual QA should smoke-check `/jobs`, `/jobs/[id]/application`, `/resumes`, `/sources`, and `/sources/[id]`.
 - Confirm uploaded files stay under `local_uploads/sources/` and no extracted text is generated automatically.
 
+Phase 5.3 Correction Patch coverage:
+
+- Unit coverage confirms source readiness copy treats LinkedIn as URL or pasted text, not file-only.
+- Build/type verification covers URL-only source creation and URL display on Sources list/detail pages.
+- Manual QA should confirm `/sources` still has upload intake, link source intake without file upload, and pasted text/notes intake.
+- Manual QA should confirm `/sources/[id]` shows uploaded-file metadata for file sources and an Open source link action for URL sources.
+- Manual QA should confirm `/jobs`, `/jobs/[id]/application`, and `/resumes` remain readable with clearer actions and no new integrations.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.
