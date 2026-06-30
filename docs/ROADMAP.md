@@ -72,4 +72,5 @@
 - Prefer readable career-link titles over raw Workday/hash ids during review.
 - Keep verified posting state separate from import readiness so duplicate, imported, blocked, and needs-review postings remain understandable.
 - Keep Workday search/listing URLs as ATS board candidates unless an exact public job URL is verified.
+- Keep `/discovery` Hebrew RTL and responsive, with long raw provider text behind expandable details.
 - Add Lever/Ashby adapters only after public, non-authenticated behavior is understood.

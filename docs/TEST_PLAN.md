@@ -229,6 +229,14 @@ Phase 6.1E coverage:
 - Build/type verification covers `/discovery` state labels and import disabled states.
 - Manual QA should confirm the import button appears only for non-imported active verified postings and is disabled unless the posting is truly ready.
 
+Phase 6.1F coverage:
+
+- Existing unit coverage remains unchanged because discovery backend behavior and import eligibility were not changed.
+- Build/type verification covers the Hebrew RTL `/discovery` page, expandable details, and responsive class changes.
+- Manual QA should confirm `/discovery` has no horizontal page scroll with the sidebar open at 100% zoom.
+- Manual QA should confirm long URLs, Markdown snippets, raw provider text, and descriptions wrap or stay inside clipped previews.
+- Manual QA should confirm source candidates clearly read as sources, not jobs, and verified posting state labels are clear in Hebrew.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

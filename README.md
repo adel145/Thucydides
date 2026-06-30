@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 6.1E - Discovery Lead State Consistency + Workday Exact-Job Safety.
+Current state: Phase 6.1F - Discovery Hebrew RTL + Responsive UX Cleanup.
 
 ## What Works Now
 
@@ -54,6 +54,9 @@ Current state: Phase 6.1E - Discovery Lead State Consistency + Workday Exact-Job
 - Markdown and plain URL extraction from candidate text for public career/job links
 - Discovery action guide and top cleanup action for old noisy leads
 - Discovery sections for verified job postings, sources to process, legacy/noisy leads, and skipped/unsupported records
+- Hebrew RTL `/discovery` page with action-oriented labels for source candidates and verified job states
+- Responsive `/discovery` cards that wrap long URLs, Markdown snippets, provider text, and descriptions without horizontal overflow
+- Expandable source/job text previews so noisy raw provider text does not dominate cards
 - Verified job postings can show Ready to import, Blocked, Duplicate, Imported, or Needs review without falling into legacy/noisy
 - Hide action for old non-importable leads without deleting data or touching imported jobs
 - Workday/plain-URL candidate title cleanup so raw ids are avoided when readable surrounding text exists
@@ -96,7 +99,7 @@ The desired product is an agent-assisted job-search command center that helps Ad
 
 Future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply. Automated application sending is not part of the plan.
 
-Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.1E treats Tavily/search results as `DiscoverySourceCandidate` records first, can safely enumerate supported public ATS/career pages, extracts Markdown/plain URL job links from candidate text, and only verified single job postings or structured Google Jobs results become `JobDiscoveryLead` records that can be manually imported. Verified postings can still be blocked, duplicated, imported, or need review before import. Source candidates are not jobs yet. The cleanup action only marks old non-importable leads as `SKIPPED`; it does not delete data or touch imported jobs. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
+Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.1F keeps the Phase 6.1E discovery logic, but makes `/discovery` Hebrew/RTL and more readable. Tavily/search results remain `DiscoverySourceCandidate` records first; only verified single job postings or structured Google Jobs results become `JobDiscoveryLead` records that can be manually imported. Verified postings can still be blocked, duplicated, imported, or need review before import. Source candidates are not jobs yet. The cleanup action only marks old non-importable leads as `SKIPPED`; it does not delete data or touch imported jobs. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
 
 Future export goals include DOCX/PDF CV and cover-letter outputs, TXT recruiter messages/notes, local per-job folders, and RTL/LTR support. Exports are not implemented yet.
 
@@ -104,7 +107,7 @@ The UI should stay dark, local-first, and sidebar-based. It should remain mostly
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 6.1E uses local SQLite data, deterministic validation, manual job/source intake, discovery source candidates and verified job postings, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. A provider key being present does not mean the provider is verified. Workday support is safe/public and limited; JS-only or blocked pages remain candidates with errors, and search/listing URLs are not treated as exact postings. SerpApi 401 means `SERPAPI_API_KEY` or account access must be fixed outside the app. Gmail OAuth, automatic inbox reading, login-gated scraping, browser automation, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
+Current limitation: Phase 6.1F uses local SQLite data, deterministic validation, manual job/source intake, discovery source candidates and verified job postings, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. A provider key being present does not mean the provider is verified. Workday support is safe/public and limited; JS-only or blocked pages remain candidates with errors, and search/listing URLs are not treated as exact postings. SerpApi 401 means `SERPAPI_API_KEY` or account access must be fixed outside the app. Gmail OAuth, automatic inbox reading, login-gated scraping, browser automation, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
 
 ## Local Setup
 

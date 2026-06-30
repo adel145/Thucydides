@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-30, Thucydides is in Phase 6.1E - Discovery Lead State Consistency + Workday Exact-Job Safety state.
+As of 2026-06-30, Thucydides is in Phase 6.1F - Discovery Hebrew RTL + Responsive UX Cleanup state.
 
 ## What Exists
 
@@ -88,13 +88,16 @@ As of 2026-06-30, Thucydides is in Phase 6.1E - Discovery Lead State Consistency
 - `/gmail` shows validation status, allowed signals, forbidden flags, risk notes, duplicate warnings, source URL, and raw snippets for lead review.
 - Safe non-forbidden leads can be manually imported into the normal Job Inbox.
 - Imported leads become normal local `Job` records and get an `ApplicationEvent`.
-- Forbidden leads remain blocked from normal import in Phase 6.1E.
+- Forbidden leads remain blocked from normal import in Phase 6.1F.
 - `/discovery` supports env-gated internet job discovery through Tavily and SerpApi.
 - `/discovery` separates source candidates from job leads. Search/listing/generic/company pages stay as source candidates; only verified single job postings become importable leads.
 - `/discovery` can test Tavily and SerpApi from the UI. Provider badges say key present/missing until a test verifies or fails them. SerpApi 401 is shown as "SerpApi authorization failed: check SERPAPI_API_KEY/account." without printing keys.
 - `/discovery` source candidates now have retry classify, try enumerate jobs, and skip candidate actions.
 - `/discovery` now separates verified job postings, sources to process, legacy/noisy leads, and skipped/unsupported candidates.
 - `/discovery` has a top "What to do next" guide and a top "Clean old noisy leads" action near provider tests.
+- `/discovery` is now a Hebrew RTL review page with right-aligned copy and action-oriented labels.
+- `/discovery` uses min-width, max-width, overflow, and word-wrapping guards so long URLs, Markdown snippets, provider text, and descriptions do not create horizontal page scroll.
+- `/discovery` candidate and lead cards show short previews by default and put full raw/source text behind expandable details.
 - `/discovery` can hide old non-importable discovery leads by setting them to SKIPPED without deleting data or touching imported jobs.
 - `/discovery` keeps verified postings visible for review when they are ready, blocked, duplicate, imported, or need review; duplicate/low-confidence verified postings do not fall into legacy/noisy.
 - `/discovery` keeps verified forbidden postings visible for review, but marks them as blocked and disables import.

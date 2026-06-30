@@ -2,7 +2,7 @@
 
 Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. The repo and docs are the official project memory.
 
-As of Phase 6.1E, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, clearer discovery action flow, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, and a source-candidate quality gate.
+As of Phase 6.1F, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, Hebrew RTL discovery review, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, and a source-candidate quality gate.
 
 ## Product Mission
 
@@ -16,7 +16,9 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 
 - Dashboard first view is Today's Mission and now links to `/discovery` with "Find suitable jobs".
 - Discovery priority is company career pages first, job platforms second, Gmail alerts third.
-- `/discovery` shows Tavily/SerpApi/Gmail provider status, a top "What to do next" guide, a top safe cleanup action, discovery run form, run history, sources to process, counts, verified job postings, legacy/noisy leads, and skipped/unsupported records.
+- `/discovery` shows Tavily/SerpApi/Gmail provider status, a Hebrew "מה לעשות עכשיו" guide, a top safe cleanup action, discovery run form, run history, sources to process, counts, verified job postings, legacy/noisy leads, and skipped/unsupported records.
+- `/discovery` is RTL and uses responsive overflow guards (`min-w-0`, max-width, wrapping, clipped previews, and expandable details) so long URLs, Markdown snippets, provider text, and descriptions do not force horizontal page scroll.
+- `/discovery` source candidates clearly say "זה מקור, לא משרה"; verified postings show large Hebrew state labels such as "מוכן לייבוא", "חסום — לא ניתן לייבא", "כפול", "כבר יובא", and "דורש בדיקה — עדיין לא מוכן".
 - `/discovery` provider badges say key present/missing until a provider test verifies or fails them. SerpApi 401 maps to "SerpApi authorization failed: check SERPAPI_API_KEY/account." and never prints API keys.
 - `/discovery` source candidates can be retried, enumerated, or skipped.
 - `/discovery` can hide old non-importable leads by setting them to SKIPPED without deletion and without touching imported jobs.

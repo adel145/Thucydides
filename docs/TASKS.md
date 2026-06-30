@@ -219,6 +219,15 @@
 - Kept Workday search/listing URLs as ATS board/source candidates requiring enumeration.
 - Added tests for low-confidence verified postings, duplicate/imported verified states, Workday search candidate classification, exact Workday verification, and cleanup safety.
 
+## Completed In Phase 6.1F
+
+- Converted `/discovery` user-facing workflow copy to Hebrew RTL while keeping provider names and enum badges technical where useful.
+- Added Hebrew action/state labels for source candidates, verified postings, cleanup, provider tests, import, duplicate, skip, and enrichment actions.
+- Added responsive overflow guards across `/discovery` cards so long URLs, Markdown snippets, provider text, and descriptions wrap or stay clipped.
+- Changed source candidate cards to show short previews by default with full source text inside expandable details.
+- Changed verified job cards to show large Hebrew state badges and put full descriptions behind expandable details.
+- Kept Phase 6.1E discovery eligibility, duplicate, forbidden, import, and Workday exact-job behavior unchanged.
+
 ## Next Tasks
 
 - Manually QA provider diagnostics, Markdown/URL candidate enumeration, discovery action clarity, and real Tavily/SerpApi runs.

@@ -329,3 +329,15 @@ Reason: low-confidence, duplicate, imported, and blocked postings are still real
 Decision: `myworkdayjobs.com` URLs must not all become `ATS_JOB_POSTING`. Search/listing Workday URLs remain ATS board/source candidates, and only exact public Workday job URLs can become ATS job postings after verification.
 
 Reason: Workday domains mix boards and individual jobs. Treating every Workday URL as a posting creates noisy import states and can bypass the intended enumerate-before-import workflow.
+
+## 2026-06-30: Discovery Review Should Be Hebrew RTL
+
+Decision: `/discovery` should use Hebrew RTL copy for the main review workflow while keeping technical provider names and enum badges in English where useful.
+
+Reason: real QA showed the English discovery page was too confusing for Adel. The page should explain source candidates, verified jobs, and next actions in Hebrew without changing the safe discovery backend logic.
+
+## 2026-06-30: Discovery Cards Must Contain Noisy Text
+
+Decision: long provider text, Markdown snippets, URLs, and job descriptions on `/discovery` should wrap or be clipped, with full text behind expandable details.
+
+Reason: raw provider content was forcing horizontal overflow and hiding content at normal browser zoom. The review board needs to stay readable with the sidebar open.

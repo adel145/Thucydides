@@ -540,3 +540,23 @@ Verified:
 Not implemented:
 
 - No Gmail OAuth, automatic inbox reading, Calendar, login/captcha bypass, authenticated scraping, browser automation, OpenAI discovery scoring/parsing, automatic applications, automatic emails, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.
+
+## 2026-06-30 Phase 6.1F - Discovery Hebrew RTL + Responsive UX Cleanup
+
+Updated:
+
+- Converted `/discovery` main workflow copy to Hebrew RTL while keeping technical provider names and enum badges readable.
+- Added Hebrew action/state labels for provider tests, source extraction, cleanup, import, duplicate, skip, enrichment, and verified posting states.
+- Added responsive overflow guards across discovery cards with `min-w-0`, max-width containment, wrapping, and clipped previews.
+- Source candidate cards now emphasize "זה מקור, לא משרה", show domain/reason/next action, and hide full raw text behind expandable details.
+- Verified job cards now show large Hebrew state badges and hide full descriptions behind expandable details.
+- Friendly Hebrew fallbacks are shown for unclear Workday/career-link titles.
+- Phase 6.1E discovery/import/forbidden/duplicate/Workday eligibility behavior was preserved.
+
+Verified:
+
+- `npm run test`, `npm run build`, `npm run lint`, and `npm run verify` are required for this patch.
+
+Not implemented:
+
+- No schema changes, new providers, Gmail OAuth, automatic inbox reading, browser automation, login/captcha bypass, fake descriptions, automatic applications, automatic emails, or weakened forbidden-role blocking.

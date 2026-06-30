@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.1E Architecture
+## Phase 6.1F Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -197,6 +197,14 @@ Phase 6.1E tightens discovery lead state semantics without changing the schema:
 - Legacy/noisy leads are reserved for non-job sources, search/listing/generic/noisy old leads.
 - Workday candidate creation uses exact public job URL detection before assigning `ATS_JOB_POSTING`; Workday search/listing URLs remain ATS board candidates.
 
+Phase 6.1F is a discovery UX/readability patch with no backend behavior change:
+
+- `/discovery` renders the main content area as Hebrew RTL and right-aligned.
+- Technical names such as Tavily, SerpApi, Workday, Greenhouse, Job Inbox, and enum/status badges may remain in English/LTR.
+- Discovery cards use `min-w-0`, max-width, overflow containment, and word wrapping so long URLs, Markdown snippets, provider text, and descriptions cannot force horizontal page scroll.
+- Source candidate cards show short previews and put full source text behind expandable details.
+- Verified posting cards show large Hebrew state labels while preserving Phase 6.1E import eligibility and forbidden-role blocking.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -217,7 +225,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.1E
+## Non-Goals in Phase 6.1F
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

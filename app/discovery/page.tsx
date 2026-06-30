@@ -19,8 +19,8 @@ function validationTone(status: string) {
 }
 
 function formatDate(value: Date | string | null | undefined) {
-  if (!value) return "No date";
-  return new Date(value).toLocaleString();
+  if (!value) return "אין תאריך";
+  return new Date(value).toLocaleString("he-IL");
 }
 
 function candidateNeedsAction(candidate: { status: string; classification: string; source?: string | null; createdLeadCount?: number | null }) {
@@ -37,12 +37,73 @@ function isUnsupportedAggregator(candidate: { classification: string; title?: st
 }
 
 function domainFromUrl(value?: string | null) {
-  if (!value) return "No URL";
+  if (!value) return "אין URL";
   try {
     return new URL(value).hostname.replace(/^www\./, "");
   } catch {
-    return "Invalid URL";
+    return "URL לא תקין";
   }
+}
+
+function isUglyTitle(value?: string | null) {
+  const title = value?.trim();
+  if (!title) return true;
+  const compact = title.replace(/\s+/g, "");
+  return (
+    /^Untitled job link from Workday$/i.test(title) ||
+    /^Untitled job link from career page$/i.test(title) ||
+    /^[a-f0-9]{8,}$/i.test(compact) ||
+    /^[A-Z0-9]{8,}$/.test(compact)
+  );
+}
+
+function sourceTitle(title?: string | null, url?: string | null) {
+  if (!isUglyTitle(title)) return title;
+  return /myworkdayjobs\.com/i.test(url ?? "")
+    ? "קישור משרה מ־Workday ללא כותרת ברורה"
+    : "קישור משרה ללא כותרת ברורה";
+}
+
+function hebrewPostingState(lead: { status?: string | null; importedJobId?: string | null; validationStatus?: string | null }, duplicate: boolean, readyLabel: string) {
+  if (lead.status === "IMPORTED" && lead.importedJobId) return { label: "כבר יובא", tone: "aqua" as const };
+  if (lead.validationStatus === "FORBIDDEN") return { label: "חסום — לא ניתן לייבא", tone: "warning" as const };
+  if (duplicate || lead.status === "DUPLICATE") return { label: "כפול", tone: "warning" as const };
+  if (readyLabel === "Ready to import") return { label: "מוכן לייבוא", tone: "aqua" as const };
+  return { label: "דורש בדיקה — עדיין לא מוכן", tone: "muted" as const };
+}
+
+function hebrewImportReason(input: {
+  blocked: boolean;
+  duplicate: boolean;
+  importBlockedReason: string | null;
+  forbiddenFlags: string[];
+}) {
+  if (input.blocked) {
+    const flags = input.forbiddenFlags.length > 0 ? `: ${input.forbiddenFlags.slice(0, 3).join(" / ")}` : "";
+    return `נחסם בגלל כלל קשיח${flags}`;
+  }
+  if (input.duplicate) return "נראה כמו משרה שכבר קיימת במערכת.";
+  if (input.importBlockedReason === "Low confidence.") return "דורש בדיקה: ביטחון נמוך במידע.";
+  if (input.importBlockedReason === "Missing meaningful job description.") return "דורש בדיקה: חסר תיאור משרה ברור.";
+  if (input.importBlockedReason) return "דורש בדיקה: המקור עדיין לא אומת כמשרה יחידה.";
+  return null;
+}
+
+function PreviewText({ value, detailsLabel }: { value?: string | null; detailsLabel: string }) {
+  if (!value) return null;
+  return (
+    <div className="mt-3 min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-navy-950/40 p-3">
+      <p className="line-clamp-3 whitespace-pre-wrap break-words text-sm leading-6 text-ink-200">{value}</p>
+      <details className="mt-2 min-w-0 text-sm text-ink-300">
+        <summary className="cursor-pointer font-semibold text-aqua-400">{detailsLabel}</summary>
+        <p className="mt-2 max-w-full whitespace-pre-wrap break-words text-ink-200">{value}</p>
+      </details>
+    </div>
+  );
+}
+
+function LtrText({ children }: { children: React.ReactNode }) {
+  return <span dir="ltr" className="inline-flex max-w-full break-all text-left">{children}</span>;
 }
 
 export default async function DiscoveryPage({
@@ -88,238 +149,239 @@ export default async function DiscoveryPage({
   const legacyLeads = leads.filter(isLegacyOrNoisyDiscoveryLead);
 
   return (
-    <div className="grid gap-6">
-      <GlassCard>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Internet Job Discovery</p>
-            <h2 className="mt-3 text-3xl font-semibold text-white">Find suitable jobs for review</h2>
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-              Company career pages first, platforms second, Gmail alerts third. Discovery creates review leads only; Adel chooses what to import.
+    <div dir="rtl" className="grid min-w-0 max-w-full gap-6 overflow-hidden text-right">
+      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 max-w-3xl">
+            <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">גילוי משרות באינטרנט</p>
+            <h2 className="mt-3 break-words text-3xl font-semibold text-white">מציאת משרות מתאימות לבדיקה</h2>
+            <p className="mt-4 break-words text-sm leading-6 text-ink-200">
+              קודם אתרי קריירה של חברות, אחר כך פלטפורמות, ובסוף Gmail ידני. הגילוי יוצר מועמדים לבדיקה בלבד; Adel מחליט מה לייבא.
             </p>
           </div>
-          <ScoreBadge tone="muted">Manual review required</ScoreBadge>
+          <ScoreBadge tone="muted">נדרשת בדיקה ידנית</ScoreBadge>
         </div>
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-5 flex min-w-0 flex-wrap gap-2">
           <ScoreBadge tone={providerStatus.tavilyConfigured ? "aqua" : "warning"}>
-            {providerStatusLabel("TAVILY", providerStatus.tavilyConfigured, providerTest === "TAVILY" ? providerTestState : undefined)}
+            <LtrText>{providerStatusLabel("TAVILY", providerStatus.tavilyConfigured, providerTest === "TAVILY" ? providerTestState : undefined)}</LtrText>
           </ScoreBadge>
           <ScoreBadge tone={providerStatus.serpApiConfigured ? "aqua" : "warning"}>
-            {providerStatusLabel("SERPAPI_GOOGLE_JOBS", providerStatus.serpApiConfigured, providerTest === "SERPAPI_GOOGLE_JOBS" ? providerTestState : undefined)}
+            <LtrText>{providerStatusLabel("SERPAPI_GOOGLE_JOBS", providerStatus.serpApiConfigured, providerTest === "SERPAPI_GOOGLE_JOBS" ? providerTestState : undefined)}</LtrText>
           </ScoreBadge>
-          <ScoreBadge tone="warning">Gmail not connected</ScoreBadge>
-          <ScoreBadge tone="muted">Max {providerStatus.maxResults}</ScoreBadge>
-          <ScoreBadge tone="muted">{providerStatus.country}</ScoreBadge>
+          <ScoreBadge tone="warning">Gmail לא מחובר</ScoreBadge>
+          <ScoreBadge tone="muted"><LtrText>Max {providerStatus.maxResults}</LtrText></ScoreBadge>
+          <ScoreBadge tone="muted"><LtrText>{providerStatus.country}</LtrText></ScoreBadge>
         </div>
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-4 flex min-w-0 flex-wrap gap-3">
           <form action={testDiscoveryProviderAction}>
             <input type="hidden" name="provider" value="TAVILY" />
-            <NeonButton className="border-white/20 text-ink-100">Test Tavily</NeonButton>
+            <NeonButton className="border-white/20 text-ink-100">בדוק Tavily</NeonButton>
           </form>
           <form action={testDiscoveryProviderAction}>
             <input type="hidden" name="provider" value="SERPAPI_GOOGLE_JOBS" />
-            <NeonButton className="border-white/20 text-ink-100">Test SerpApi</NeonButton>
+            <NeonButton className="border-white/20 text-ink-100">בדוק SerpApi</NeonButton>
           </form>
         </div>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-4">
-          <div>
-            <div className="text-sm font-semibold text-white">Clean old noisy leads</div>
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-ink-300">
-              Moves old non-importable discovery leads to SKIPPED. Does not delete anything and does not touch imported jobs.
+        <div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-4">
+          <div className="min-w-0 max-w-2xl">
+            <div className="text-sm font-semibold text-white">נקה לידים רועשים ישנים</div>
+            <p className="mt-1 break-words text-sm leading-6 text-ink-300">
+              מעביר לידים ישנים שלא ניתן לייבא ל־SKIPPED. לא מוחק כלום ולא נוגע במשרות שכבר יובאו.
             </p>
           </div>
           <form action={hideOldNonImportableDiscoveryLeads}>
-            <NeonButton className="border-white/20 text-ink-100">Clean old noisy leads</NeonButton>
+            <NeonButton className="border-white/20 text-ink-100">נקה לידים רועשים ישנים</NeonButton>
           </form>
         </div>
-        {notices?.run ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Discovery run saved locally.</div> : null}
+        {notices?.run ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">הרצת גילוי נשמרה מקומית.</div> : null}
         {notices?.providerMessage ? (
-          <div className={`mt-4 rounded-lg border p-3 text-sm ${notices.providerOk === "1" ? "border-aqua-400/30 bg-aqua-400/10 text-aqua-400" : "border-signal-red/30 bg-signal-red/10 text-ink-100"}`}>
+          <div dir="ltr" className={`mt-4 max-w-full break-words rounded-lg border p-3 text-left text-sm ${notices.providerOk === "1" ? "border-aqua-400/30 bg-aqua-400/10 text-aqua-400" : "border-signal-red/30 bg-signal-red/10 text-ink-100"}`}>
             {notices.providerMessage}
           </div>
         ) : null}
-        {notices?.enumerated ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Candidate enumeration finished: {notices.enumerated} leads and {notices.candidateLinks ?? 0} source candidates created.</div> : null}
-        {notices?.enumerated === "0" && notices?.candidateLinks === "0" ? <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Already enumerated / no new links, or no visible public job links were found.</div> : null}
-        {notices?.candidateClassified ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Source candidate classification refreshed.</div> : null}
-        {notices?.oldLeadsHidden ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Old non-importable discovery leads were hidden. Imported jobs were not touched.</div> : null}
-        {notices?.blocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Import blocked: this lead is FORBIDDEN by deterministic rules.</div> : null}
-        {notices?.duplicate ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Import blocked: this lead looks like an existing local job.</div> : null}
-        {notices?.notImportable ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Not importable: source is a listing/search/career page, not a single job posting.</div> : null}
-        {notices?.enriched ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Lead enrichment retried from the public source URL.</div> : null}
-        {notices?.missingLead ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Lead not found.</div> : null}
-        {notices?.missingCandidate ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Source candidate not found.</div> : null}
-        {notices?.noUrl ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">This lead has no source URL to enrich.</div> : null}
+        {notices?.enumerated ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">חילוץ המקור הסתיים: {notices.enumerated} לידים ו־{notices.candidateLinks ?? 0} מקורות חדשים.</div> : null}
+        {notices?.enumerated === "0" && notices?.candidateLinks === "0" ? <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">כבר חולץ / אין קישורים חדשים, או שלא נמצאו קישורי משרות ציבוריים.</div> : null}
+        {notices?.candidateClassified ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">סיווג המקור עודכן.</div> : null}
+        {notices?.oldLeadsHidden ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">לידים ישנים ורועשים הוסתרו. משרות שיובאו לא נגעו.</div> : null}
+        {notices?.blocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">הייבוא נחסם: הליד FORBIDDEN לפי הכללים הדטרמיניסטיים.</div> : null}
+        {notices?.duplicate ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">הייבוא נחסם: הליד נראה כמו משרה שכבר קיימת.</div> : null}
+        {notices?.notImportable ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">לא ניתן לייבא: זה מקור/רשימה/חיפוש, לא משרה יחידה.</div> : null}
+        {notices?.enriched ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">בוצע ניסיון העשרה מחדש מה־URL הציבורי.</div> : null}
+        {notices?.missingLead ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">הליד לא נמצא.</div> : null}
+        {notices?.missingCandidate ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">המקור לא נמצא.</div> : null}
+        {notices?.noUrl ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">אין למקור הזה URL להעשרה.</div> : null}
       </GlassCard>
 
-      <GlassCard>
-        <h3 className="text-xl font-semibold text-white">What to do next</h3>
+      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+        <h3 className="text-xl font-semibold text-white">מה לעשות עכשיו</h3>
         <ol className="mt-4 grid gap-2 text-sm leading-6 text-ink-200">
-          <li>1. Test Tavily.</li>
-          <li>2. Ignore SerpApi until its key/account is fixed.</li>
-          <li>3. Click Try enumerate jobs on Workday/company career candidates.</li>
-          <li>4. Review Verified job postings.</li>
-          <li>5. Import only non-blocked, non-duplicate postings.</li>
-          <li>6. Clean old noisy leads when needed.</li>
+          <li>1. לחץ “בדוק Tavily”.</li>
+          <li>2. התעלם מ־SerpApi אם הוא נכשל 401.</li>
+          <li>3. במקורות, לחץ “נסה לחלץ משרות”.</li>
+          <li>4. עבור ל־“משרות מאומתות”.</li>
+          <li>5. ייבא רק משרות “מוכן לייבוא”.</li>
+          <li>6. נקה לידים רועשים ישנים כשצריך.</li>
         </ol>
       </GlassCard>
 
-      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <GlassCard>
-          <h3 className="text-xl font-semibold text-white">Run discovery</h3>
-          <p className="mt-2 text-sm leading-6 text-ink-200">
-            Source priority is fixed: company career pages, then job platforms, then Gmail fallback. Missing provider keys simply produce no provider results.
+      <div className="grid min-w-0 max-w-full gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <GlassCard className="min-w-0 max-w-full overflow-hidden">
+          <h3 className="text-xl font-semibold text-white">הרצת גילוי</h3>
+          <p className="mt-2 break-words text-sm leading-6 text-ink-200">
+            סדר המקורות קבוע: אתרי קריירה של חברות, פלטפורמות, ואז Gmail ידני. אם חסר מפתח ספק, פשוט לא יתקבלו תוצאות מאותו ספק.
           </p>
-          <form action={runJobDiscovery} className="mt-5 grid gap-4">
-            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-              <div className="text-xs uppercase tracking-[0.16em] text-ink-400">Default role families</div>
+          <form action={runJobDiscovery} className="mt-5 grid min-w-0 gap-4">
+            <div className="min-w-0 rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="text-xs uppercase tracking-[0.16em] text-ink-400">משפחות תפקידים ברירת מחדל</div>
               <div className="mt-3 grid gap-2 text-sm text-ink-100">
                 {["AI/ML Research Student", "Junior Software Engineer", "QA Automation Junior", "Backend / Full Stack", "Technical Support Engineer", "NOC / IT", "Implementation / Integration"].map((role) => (
-                  <label key={role} className="flex items-center gap-2">
-                    <input type="checkbox" defaultChecked disabled className="h-4 w-4 accent-aqua-400" />
-                    {role}
+                  <label key={role} dir="ltr" className="flex min-w-0 items-center justify-end gap-2 break-words text-left">
+                    <span className="min-w-0 break-words">{role}</span>
+                    <input type="checkbox" defaultChecked disabled className="h-4 w-4 shrink-0 accent-aqua-400" />
                   </label>
                 ))}
               </div>
             </div>
-            <label>
-              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Location scope</span>
-              <select name="locationScope" defaultValue="Israel OR remote from Israel" className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white">
+            <label className="min-w-0">
+              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">טווח מיקום</span>
+              <select name="locationScope" defaultValue="Israel OR remote from Israel" className="mt-2 min-h-11 w-full min-w-0 rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white">
                 <option value="Israel">Israel</option>
                 <option value="remote from Israel">Remote from Israel</option>
                 <option value="Israel OR remote from Israel">Israel + remote from Israel</option>
               </select>
             </label>
-            <label>
-              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Max results</span>
-              <input name="maxResults" type="number" min={1} max={50} defaultValue={providerStatus.maxResults} className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white" />
+            <label className="min-w-0">
+              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">מספר תוצאות מקסימלי</span>
+              <input name="maxResults" type="number" min={1} max={50} defaultValue={providerStatus.maxResults} className="mt-2 min-h-11 w-full min-w-0 rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white" />
             </label>
-            <div><NeonButton>Find suitable jobs</NeonButton></div>
+            <div><NeonButton>מצא משרות מתאימות</NeonButton></div>
           </form>
-          <p className="mt-4 text-sm leading-6 text-ink-300">
-            API keys: `TAVILY_API_KEY`, `SERPAPI_API_KEY`. No login, captcha bypass, email, or applications.
+          <p className="mt-4 break-words text-sm leading-6 text-ink-300">
+            מפתחות API: <span dir="ltr">TAVILY_API_KEY</span>, <span dir="ltr">SERPAPI_API_KEY</span>. אין התחברות, עקיפת captcha, אימייל או הגשות.
           </p>
         </GlassCard>
 
-        <GlassCard>
-          <h3 className="text-xl font-semibold text-white">Discovery counts</h3>
-          <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
+        <GlassCard className="min-w-0 max-w-full overflow-hidden">
+          <h3 className="text-xl font-semibold text-white">ספירת גילוי</h3>
+          <div className="mt-5 grid min-w-0 grid-cols-2 gap-3 md:grid-cols-3">
             {[
-              ["Runs", runs.length],
-              ["Need action", candidatesNeedingAction.length],
-              ["New leads", counts.newLeads],
-              ["Enriched", counts.enrichedLeads],
-              ["Needs review", counts.needsReview],
-              ["Blocked", counts.blocked],
-              ["Imported", counts.imported]
+              ["הרצות", runs.length],
+              ["לטיפול", candidatesNeedingAction.length],
+              ["לידים חדשים", counts.newLeads],
+              ["הועשרו", counts.enrichedLeads],
+              ["דורשים בדיקה", counts.needsReview],
+              ["חסומים", counts.blocked],
+              ["יובאו", counts.imported]
             ].map(([label, value]) => (
-              <div key={label} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <div className="text-xs uppercase tracking-[0.16em] text-ink-400">{label}</div>
+              <div key={label} className="min-w-0 rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                <div className="break-words text-xs uppercase tracking-[0.16em] text-ink-400">{label}</div>
                 <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
               </div>
             ))}
           </div>
           <div className="mt-5">
-            <NeonButton href="/gmail" className="border-white/20 text-ink-100">Open Gmail fallback</NeonButton>
+            <NeonButton href="/gmail" className="border-white/20 text-ink-100">פתח Gmail ידני</NeonButton>
           </div>
         </GlassCard>
       </div>
 
-      <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Discovery runs</h3>
-        <div className="mt-5 grid gap-3">
-          {runs.length === 0 ? <p className="text-sm text-ink-400">No discovery runs yet.</p> : null}
+      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+        <h3 className="text-xl font-semibold text-white">הרצות גילוי</h3>
+        <div className="mt-5 grid min-w-0 gap-3">
+          {runs.length === 0 ? <p className="text-sm text-ink-400">אין עדיין הרצות גילוי.</p> : null}
           {runs.map((run) => (
-            <div key={run.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <div className="font-semibold text-white">{run.query ?? "Discovery run"}</div>
-                  <div className="mt-1 text-sm text-ink-300">{run.sourcePriority ?? "Company careers first"} | {formatDate(run.startedAt)}</div>
-                  {run.error ? <p className="mt-2 text-sm text-signal-red">{run.error}</p> : null}
+            <div key={run.id} className="min-w-0 rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="break-words font-semibold text-white">{run.query ?? "הרצת גילוי"}</div>
+                  <div className="mt-1 break-words text-sm text-ink-300">{run.sourcePriority ?? "Company careers first"} | {formatDate(run.startedAt)}</div>
+                  {run.error ? <p dir="ltr" className="mt-2 max-w-full break-words text-left text-sm text-signal-red">{run.error}</p> : null}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <ScoreBadge tone={run.status === "ERROR" ? "warning" : "muted"}>{run.status}</ScoreBadge>
-                  <ScoreBadge tone="aqua">{run.resultCount} leads</ScoreBadge>
+                  <ScoreBadge tone={run.status === "ERROR" ? "warning" : "muted"}><LtrText>{run.status}</LtrText></ScoreBadge>
+                  <ScoreBadge tone="aqua">{run.resultCount} לידים</ScoreBadge>
                 </div>
               </div>
               <form action={skipNonImportedLeadsFromRun} className="mt-4">
                 <input type="hidden" name="runId" value={run.id} />
-                <NeonButton className="border-white/20 text-ink-100">Skip non-imported leads from this run</NeonButton>
+                <NeonButton className="border-white/20 text-ink-100">דלג על לידים שלא יובאו מהרצה זו</NeonButton>
               </form>
             </div>
           ))}
         </div>
       </GlassCard>
 
-      <GlassCard>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h3 className="text-xl font-semibold text-white">Sources to process</h3>
-            <p className="mt-2 text-sm leading-6 text-ink-200">
-              These are not jobs yet. Use Try enumerate jobs to extract specific job links, or Skip.
+      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-xl font-semibold text-white">מקורות שצריך לעבד</h3>
+            <p className="mt-2 break-words text-sm leading-6 text-ink-200">
+              אלה עדיין לא משרות. השתמש ב־“נסה לחלץ משרות” כדי למצוא קישורי משרה ספציפיים, או דלג.
             </p>
           </div>
-          <ScoreBadge tone="warning">{candidatesNeedingAction.length} need action</ScoreBadge>
+          <ScoreBadge tone="warning">{candidatesNeedingAction.length} לטיפול</ScoreBadge>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2 text-xs text-ink-300">
-          <ScoreBadge tone="aqua">Verified job postings</ScoreBadge>
-          <ScoreBadge tone="warning">Sources to process</ScoreBadge>
-          <ScoreBadge tone="muted">Legacy/noisy leads</ScoreBadge>
-          <ScoreBadge tone="muted">Skipped/unsupported</ScoreBadge>
+        <div className="mt-4 flex min-w-0 flex-wrap gap-2 text-xs text-ink-300">
+          <ScoreBadge tone="aqua">משרות מאומתות</ScoreBadge>
+          <ScoreBadge tone="warning">מקורות לעיבוד</ScoreBadge>
+          <ScoreBadge tone="muted">לידים ישנים / רועשים</ScoreBadge>
+          <ScoreBadge tone="muted">דולגו / לא נתמכים</ScoreBadge>
         </div>
-        <div className="mt-5 grid gap-3">
-          {candidatesNeedingAction.length === 0 ? <p className="text-sm text-ink-400">No source candidates need enumeration right now.</p> : null}
+        <div className="mt-5 grid min-w-0 gap-3">
+          {candidatesNeedingAction.length === 0 ? <p className="text-sm text-ink-400">אין כרגע מקורות שדורשים חילוץ.</p> : null}
           {candidatesNeedingAction.map((candidate) => {
             const unsupportedAggregator = isUnsupportedAggregator(candidate);
+            const preview = candidate.snippet ?? candidate.rawText;
             return (
-              <div key={candidate.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="font-semibold text-white">{candidate.title ?? candidate.url ?? "Untitled source"}</div>
-                    <p className="mt-1 text-sm font-semibold text-ink-100">Not a job yet</p>
-                    <p className="mt-1 text-sm text-ink-300">Domain: {domainFromUrl(candidate.url)}</p>
-                    <p className="mt-1 text-sm text-ink-300">Why this is not a job yet: {candidate.reason ?? "This source has not been verified as a single posting."}</p>
-                    {candidate.source === "CAREER_LINK_EXTRACTION" ? (
-                      <p className="mt-2 text-sm text-aqua-400">Extracted from career listing. Click Try enumerate jobs to verify this exact job page.</p>
-                    ) : null}
-                    {candidate.url ? <Link href={candidate.url} className="mt-2 inline-flex text-sm font-semibold text-aqua-400">Open source</Link> : null}
+              <div key={candidate.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 max-w-3xl">
+                    <div className="break-words font-semibold text-white">{sourceTitle(candidate.title, candidate.url)}</div>
+                    <p className="mt-1 text-sm font-semibold text-ink-100">זה מקור, לא משרה</p>
+                    <p className="mt-1 break-words text-sm text-ink-300">דומיין: <span dir="ltr">{domainFromUrl(candidate.url)}</span></p>
+                    <p className="mt-1 break-words text-sm text-ink-300">למה זה עדיין לא משרה: {candidate.reason ?? "המקור עדיין לא אומת כמשרה יחידה."}</p>
+                    <p className="mt-2 break-words text-sm text-aqua-400">
+                      פעולה מומלצת: {candidate.source === "CAREER_LINK_EXTRACTION" ? "נסה לחלץ ולאמת את דף המשרה המדויק." : "נסה לחלץ משרות מהמקור או דלג עליו."}
+                    </p>
+                    {candidate.url ? <Link href={candidate.url} className="mt-2 inline-flex max-w-full break-all text-sm font-semibold text-aqua-400">פתח מקור</Link> : null}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <ScoreBadge tone="warning">{candidate.classification}</ScoreBadge>
-                    <ScoreBadge tone="warning">Needs enumeration</ScoreBadge>
-                    <ScoreBadge tone="muted">{candidate.confidence ?? "LOW"}</ScoreBadge>
-                    <ScoreBadge tone="aqua">{candidate.createdLeadCount} leads</ScoreBadge>
+                  <div className="flex min-w-0 flex-wrap gap-2">
+                    <ScoreBadge tone="warning"><LtrText>{candidate.classification}</LtrText></ScoreBadge>
+                    <ScoreBadge tone="warning">צריך חילוץ</ScoreBadge>
+                    <ScoreBadge tone="muted"><LtrText>{candidate.confidence ?? "LOW"}</LtrText></ScoreBadge>
+                    <ScoreBadge tone="aqua">{candidate.createdLeadCount} לידים</ScoreBadge>
                   </div>
                 </div>
-                {candidate.snippet ? <p className="mt-3 line-clamp-3 text-sm leading-6 text-ink-300">{candidate.snippet}</p> : null}
-                {candidate.error ? <p className="mt-2 text-sm text-signal-red">{candidate.error}</p> : null}
-                <div className="mt-4 flex flex-wrap gap-3">
+                <PreviewText value={preview} detailsLabel="הצג טקסט מקור" />
+                {candidate.error ? <p dir="ltr" className="mt-2 max-w-full break-words text-left text-sm text-signal-red">{candidate.error}</p> : null}
+                <div className="mt-4 flex min-w-0 flex-wrap gap-3">
                   <form action={retryClassifySourceCandidate}>
                     <input type="hidden" name="candidateId" value={candidate.id} />
-                    <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url}>Retry classify</NeonButton>
+                    <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url}>סווג מחדש</NeonButton>
                   </form>
                   <form action={enumerateSourceCandidate}>
                     <input type="hidden" name="candidateId" value={candidate.id} />
-                    <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url || unsupportedAggregator}>Try enumerate jobs</NeonButton>
+                    <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url || unsupportedAggregator}>נסה לחלץ משרות</NeonButton>
                   </form>
                   <form action={skipSourceCandidate}>
                     <input type="hidden" name="candidateId" value={candidate.id} />
-                    <NeonButton className="border-white/20 text-ink-100">Skip candidate</NeonButton>
+                    <NeonButton className="border-white/20 text-ink-100">דלג</NeonButton>
                   </form>
                 </div>
-                {unsupportedAggregator ? <p className="mt-3 text-sm text-signal-red">Unsupported aggregator. Not importable and enumeration is not encouraged.</p> : null}
+                {unsupportedAggregator ? <p className="mt-3 break-words text-sm text-signal-red">מקור אגרגטור לא נתמך. לא ניתן לייבוא ולא מומלץ לחלץ ממנו.</p> : null}
               </div>
             );
           })}
         </div>
       </GlassCard>
 
-      <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Verified job postings</h3>
-        <p className="mt-2 text-sm leading-6 text-ink-200">
-          These are real single job postings. Some may still be blocked by role rules.
+      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+        <h3 className="text-xl font-semibold text-white">משרות מאומתות</h3>
+        <p className="mt-2 break-words text-sm leading-6 text-ink-200">
+          זו משרה אמיתית: דף משרה יחיד שאפשר לבדוק. חלק מהמשרות עדיין חסומות או דורשות בדיקה.
         </p>
-        <div className="mt-5 grid gap-4">
-          {verifiedLeads.length === 0 ? <p className="text-sm text-ink-400">No verified internet job postings yet.</p> : null}
+        <div className="mt-5 grid min-w-0 gap-4">
+          {verifiedLeads.length === 0 ? <p className="text-sm text-ink-400">אין עדיין משרות אינטרנט מאומתות.</p> : null}
           {verifiedLeads.map((lead) => {
             const allowedSignals = jsonToStringArray(lead.allowedSignals);
             const forbiddenFlags = jsonToStringArray(lead.forbiddenFlags);
@@ -339,115 +401,121 @@ export default async function DiscoveryPage({
             const imported = lead.status === "IMPORTED" && lead.importedJobId;
             const inactive = imported || lead.status === "SKIPPED" || lead.status === "DUPLICATE";
             const postingState = discoveryPostingActionState(lead, { duplicate: Boolean(duplicate && !imported) });
+            const state = hebrewPostingState(lead, Boolean(duplicate && !imported), postingState.label);
+            const hebrewReason = hebrewImportReason({
+              blocked,
+              duplicate: Boolean(duplicate && !imported),
+              importBlockedReason,
+              forbiddenFlags
+            });
             const importDisabledReason = blocked
               ? "Blocked by deterministic role rules."
               : duplicate && !imported
                 ? "Looks like an existing local job."
                 : importBlockedReason;
             return (
-              <div key={lead.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h4 className="text-lg font-semibold text-white">{lead.title}</h4>
-                    <p className="mt-1 text-sm text-ink-200">{[lead.company, lead.location].filter(Boolean).join(" | ") || "Company/location missing"}</p>
-                    <p className="mt-1 text-xs text-ink-400">{getDiscoveryProviderLabel(lead.discoveryProvider ?? lead.provider)} | {lead.discoveryQuery ?? "No query"}</p>
+              <div key={lead.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 max-w-3xl">
+                    <div className={`inline-flex min-h-11 max-w-full items-center rounded-lg border px-4 py-2 text-base font-semibold ${state.tone === "warning" ? "border-signal-red/40 bg-signal-red/10 text-signal-red" : state.tone === "aqua" ? "border-aqua-400/40 bg-aqua-400/10 text-aqua-400" : "border-white/20 bg-white/[0.08] text-ink-100"}`}>
+                      <span className="break-words">{state.label}</span>
+                    </div>
+                    <h4 className="mt-3 break-words text-lg font-semibold text-white">{lead.title}</h4>
+                    <p className="mt-1 break-words text-sm text-ink-200">{[lead.company, lead.location].filter(Boolean).join(" | ") || "חברה/מיקום חסרים"}</p>
+                    <p className="mt-1 break-words text-xs text-ink-400">{getDiscoveryProviderLabel(lead.discoveryProvider ?? lead.provider)} | {lead.discoveryQuery ?? "אין שאילתה"}</p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <ScoreBadge tone={validationTone(lead.validationStatus)}>{lead.validationStatus}</ScoreBadge>
-                    <ScoreBadge tone={lead.fitScore && lead.fitScore >= 70 ? "aqua" : "muted"}>{lead.fitScore ?? 0}/100</ScoreBadge>
-                    <ScoreBadge tone="muted">{lead.confidence ?? "LOW"}</ScoreBadge>
-                    <ScoreBadge tone={verifiedPosting ? "aqua" : "muted"}>{lead.sourceClassification ?? "UNCLASSIFIED"}</ScoreBadge>
-                    <ScoreBadge tone="aqua">Verified job posting</ScoreBadge>
-                    <ScoreBadge tone={postingState.tone}>{postingState.label}</ScoreBadge>
-                    <ScoreBadge tone="muted">{lead.status}</ScoreBadge>
+                  <div className="flex min-w-0 flex-wrap gap-2">
+                    <ScoreBadge tone={validationTone(lead.validationStatus)}><LtrText>{lead.validationStatus}</LtrText></ScoreBadge>
+                    <ScoreBadge tone={lead.fitScore && lead.fitScore >= 70 ? "aqua" : "muted"}><LtrText>{lead.fitScore ?? 0}/100</LtrText></ScoreBadge>
+                    <ScoreBadge tone="muted"><LtrText>{lead.confidence ?? "LOW"}</LtrText></ScoreBadge>
+                    <ScoreBadge tone={verifiedPosting ? "aqua" : "muted"}><LtrText>{lead.sourceClassification ?? "UNCLASSIFIED"}</LtrText></ScoreBadge>
+                    <ScoreBadge tone="aqua">זו משרה אמיתית</ScoreBadge>
+                    <ScoreBadge tone="muted"><LtrText>{lead.status}</LtrText></ScoreBadge>
                   </div>
                 </div>
-                {lead.sourceUrl ? <Link href={lead.sourceUrl} className="mt-3 inline-flex text-sm font-semibold text-aqua-400">Open source URL</Link> : null}
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {allowedSignals.map((signal) => <ScoreBadge key={signal} tone="aqua">{signal}</ScoreBadge>)}
-                  {forbiddenFlags.map((flag) => <ScoreBadge key={flag} tone="warning">{flag}</ScoreBadge>)}
-                  {duplicate && !imported ? <ScoreBadge tone="warning">Possible duplicate</ScoreBadge> : null}
+                {lead.sourceUrl ? <Link href={lead.sourceUrl} className="mt-3 inline-flex max-w-full break-all text-sm font-semibold text-aqua-400">פתח מקור</Link> : null}
+                <div className="mt-4 flex min-w-0 flex-wrap gap-2">
+                  {allowedSignals.map((signal) => <ScoreBadge key={signal} tone="aqua"><LtrText>{signal}</LtrText></ScoreBadge>)}
+                  {forbiddenFlags.map((flag) => <ScoreBadge key={flag} tone="warning"><LtrText>{flag}</LtrText></ScoreBadge>)}
+                  {duplicate && !imported ? <ScoreBadge tone="warning">ייתכן כפול</ScoreBadge> : null}
                 </div>
-                {lead.riskNotes ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink-200">{lead.riskNotes}</p> : null}
-                {fitReasons.length > 0 ? <p className="mt-3 text-sm leading-6 text-ink-300">{fitReasons.slice(0, 3).join(" ")}</p> : null}
-                {importDisabledReason ? <p className="mt-3 text-sm text-signal-red">{importDisabledReason}</p> : null}
-                {!importDisabledReason && postingState.reason ? <p className="mt-3 text-sm text-ink-300">{postingState.reason}</p> : null}
-                {duplicate && !imported ? <p className="mt-3 text-sm text-signal-red">Looks like existing job: {duplicate.title}{duplicate.company ? ` at ${duplicate.company}` : ""}.</p> : null}
-                <p className="mt-4 line-clamp-5 whitespace-pre-wrap rounded-lg border border-white/10 bg-navy-950/40 p-3 text-sm leading-6 text-ink-200">
-                  {lead.extractedDescription ?? lead.rawText ?? lead.rawSnippet}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  {imported ? <NeonButton href={`/jobs/${lead.importedJobId}`}>Open imported job</NeonButton> : null}
+                {lead.riskNotes ? <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-ink-200">{lead.riskNotes}</p> : null}
+                {fitReasons.length > 0 ? <p className="mt-3 break-words text-sm leading-6 text-ink-300">{fitReasons.slice(0, 3).join(" ")}</p> : null}
+                {hebrewReason ? <p className="mt-3 break-words text-sm font-semibold text-signal-red">{hebrewReason}</p> : null}
+                {duplicate && !imported ? <p className="mt-3 break-words text-sm text-signal-red">נראה כמו משרה קיימת: {duplicate.title}{duplicate.company ? ` ב־${duplicate.company}` : ""}.</p> : null}
+                <PreviewText value={lead.extractedDescription ?? lead.rawText ?? lead.rawSnippet} detailsLabel="הצג תיאור מלא" />
+                <div className="mt-4 flex min-w-0 flex-wrap gap-3">
+                  {imported ? <NeonButton href={`/jobs/${lead.importedJobId}`}>פתח משרה שיובאה</NeonButton> : null}
                   {!inactive ? (
                     <form action={importDiscoveryLeadToInbox}>
                       <input type="hidden" name="leadId" value={lead.id} />
-                      <NeonButton disabled={Boolean(importDisabledReason)}>Import to Job Inbox</NeonButton>
+                      <NeonButton disabled={Boolean(importDisabledReason)}>ייבא ל־Job Inbox</NeonButton>
                     </form>
                   ) : null}
                   {!inactive ? (
                     <form action={skipDiscoveryLead}>
                       <input type="hidden" name="leadId" value={lead.id} />
-                      <NeonButton className="border-white/20 text-ink-100">Skip</NeonButton>
+                      <NeonButton className="border-white/20 text-ink-100">דלג</NeonButton>
                     </form>
                   ) : null}
                   {!inactive ? (
                     <form action={markDiscoveryLeadDuplicate}>
                       <input type="hidden" name="leadId" value={lead.id} />
-                      <NeonButton className="border-white/20 text-ink-100">Mark duplicate</NeonButton>
+                      <NeonButton className="border-white/20 text-ink-100">סמן ככפול</NeonButton>
                     </form>
                   ) : null}
                   {!inactive ? (
                     <form action={enrichDiscoveryLead}>
                       <input type="hidden" name="leadId" value={lead.id} />
-                      <NeonButton className="border-white/20 text-ink-100" disabled={!lead.sourceUrl}>Enrich/retry</NeonButton>
+                      <NeonButton className="border-white/20 text-ink-100" disabled={!lead.sourceUrl}>העשר / נסה שוב</NeonButton>
                     </form>
                   ) : null}
                 </div>
-                {blocked ? <p className="mt-3 text-sm text-signal-red">Forbidden leads stay here for review and cannot be imported in this phase.</p> : null}
+                {blocked ? <p className="mt-3 break-words text-sm text-signal-red">משרה חסומה נשארת כאן לבדיקה, אבל לא ניתן לייבא אותה בשלב הזה.</p> : null}
               </div>
             );
           })}
         </div>
       </GlassCard>
 
-      <GlassCard>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h3 className="text-xl font-semibold text-white">Legacy/noisy leads</h3>
-            <p className="mt-2 text-sm leading-6 text-ink-200">
-              Old or non-importable discovery leads live here so the main board stays trusted.
+      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-xl font-semibold text-white">לידים ישנים / רועשים</h3>
+            <p className="mt-2 break-words text-sm leading-6 text-ink-200">
+              כאן נמצאים לידים ישנים או מקורות שלא ניתנים לייבוא, כדי שהלוח הראשי יישאר נקי.
             </p>
           </div>
           <form action={hideOldNonImportableDiscoveryLeads}>
-            <NeonButton className="border-white/20 text-ink-100">Hide old non-importable leads</NeonButton>
+            <NeonButton className="border-white/20 text-ink-100">נקה לידים רועשים ישנים</NeonButton>
           </form>
         </div>
-        <div className="mt-5 grid gap-3">
-          {legacyLeads.length === 0 ? <p className="text-sm text-ink-400">No legacy/noisy leads visible.</p> : null}
+        <div className="mt-5 grid min-w-0 gap-3">
+          {legacyLeads.length === 0 ? <p className="text-sm text-ink-400">אין לידים ישנים/רועשים גלויים.</p> : null}
           {legacyLeads.map((lead) => (
-            <div key={lead.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <div className="font-semibold text-white">{lead.title}</div>
-                  <p className="mt-1 text-sm text-ink-300">{[lead.company, lead.location].filter(Boolean).join(" | ") || "Company/location missing"}</p>
-                  <p className="mt-1 text-sm text-ink-300">Old/noisy lead from earlier run</p>
+            <div key={lead.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 max-w-3xl">
+                  <div className="break-words font-semibold text-white">{lead.title}</div>
+                  <p className="mt-1 break-words text-sm text-ink-300">{[lead.company, lead.location].filter(Boolean).join(" | ") || "חברה/מיקום חסרים"}</p>
+                  <p className="mt-1 text-sm text-ink-300">ליד ישן או רועש מהרצה קודמת</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <ScoreBadge tone="muted">{lead.sourceClassification ?? "UNCLASSIFIED"}</ScoreBadge>
-                  <ScoreBadge tone="warning">Not importable</ScoreBadge>
-                  <ScoreBadge tone="muted">{lead.confidence ?? "LOW"}</ScoreBadge>
-                  <ScoreBadge tone="muted">{lead.status}</ScoreBadge>
+                <div className="flex min-w-0 flex-wrap gap-2">
+                  <ScoreBadge tone="muted"><LtrText>{lead.sourceClassification ?? "UNCLASSIFIED"}</LtrText></ScoreBadge>
+                  <ScoreBadge tone="warning">לא ניתן לייבוא</ScoreBadge>
+                  <ScoreBadge tone="muted"><LtrText>{lead.confidence ?? "LOW"}</LtrText></ScoreBadge>
+                  <ScoreBadge tone="muted"><LtrText>{lead.status}</LtrText></ScoreBadge>
                 </div>
               </div>
-              <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-ink-300">{lead.extractedDescription ?? lead.rawText ?? lead.rawSnippet}</p>
-              <div className="mt-4 flex flex-wrap gap-3">
+              <PreviewText value={lead.extractedDescription ?? lead.rawText ?? lead.rawSnippet} detailsLabel="הצג טקסט מלא" />
+              <div className="mt-4 flex min-w-0 flex-wrap gap-3">
                 <form action={skipDiscoveryLead}>
                   <input type="hidden" name="leadId" value={lead.id} />
-                  <NeonButton className="border-white/20 text-ink-100">Skip</NeonButton>
+                  <NeonButton className="border-white/20 text-ink-100">דלג</NeonButton>
                 </form>
                 <form action={enrichDiscoveryLead}>
                   <input type="hidden" name="leadId" value={lead.id} />
-                  <NeonButton className="border-white/20 text-ink-100" disabled={!lead.sourceUrl}>Enrich/retry</NeonButton>
+                  <NeonButton className="border-white/20 text-ink-100" disabled={!lead.sourceUrl}>העשר / נסה שוב</NeonButton>
                 </form>
               </div>
             </div>
@@ -455,20 +523,20 @@ export default async function DiscoveryPage({
         </div>
       </GlassCard>
 
-      <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Skipped/unsupported source candidates</h3>
-        <div className="mt-5 grid gap-3">
-          {skippedOrUnsupportedCandidates.length === 0 ? <p className="text-sm text-ink-400">No skipped or unsupported candidates.</p> : null}
+      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+        <h3 className="text-xl font-semibold text-white">מקורות שדולגו / לא נתמכים</h3>
+        <div className="mt-5 grid min-w-0 gap-3">
+          {skippedOrUnsupportedCandidates.length === 0 ? <p className="text-sm text-ink-400">אין מקורות שדולגו או לא נתמכים.</p> : null}
           {skippedOrUnsupportedCandidates.map((candidate) => (
-            <div key={candidate.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <div className="font-semibold text-white">{candidate.title ?? candidate.url ?? "Untitled source"}</div>
-                  <p className="mt-1 text-sm text-ink-300">{candidate.reason ?? candidate.error ?? "No reason saved."}</p>
+            <div key={candidate.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 max-w-3xl">
+                  <div className="break-words font-semibold text-white">{sourceTitle(candidate.title, candidate.url)}</div>
+                  <p className="mt-1 break-words text-sm text-ink-300">{candidate.reason ?? candidate.error ?? "לא נשמרה סיבה."}</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <ScoreBadge tone="muted">{candidate.classification}</ScoreBadge>
-                  <ScoreBadge tone="muted">{candidate.status}</ScoreBadge>
+                <div className="flex min-w-0 flex-wrap gap-2">
+                  <ScoreBadge tone="muted"><LtrText>{candidate.classification}</LtrText></ScoreBadge>
+                  <ScoreBadge tone="muted"><LtrText>{candidate.status}</LtrText></ScoreBadge>
                 </div>
               </div>
             </div>
