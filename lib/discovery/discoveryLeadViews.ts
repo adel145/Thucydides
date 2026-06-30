@@ -7,6 +7,7 @@ export type DiscoveryLeadViewItem = {
   rawText?: string | null;
   status?: string | null;
   importedJobId?: string | null;
+  validationStatus?: string | null;
 };
 
 export function hasMeaningfulDiscoveryDescription(lead: DiscoveryLeadViewItem) {
@@ -35,4 +36,36 @@ export function shouldHideOldNonImportableLead(lead: DiscoveryLeadViewItem) {
     lead.status !== "SKIPPED" &&
     (!isImportableSourceClassification(lead.sourceClassification) || lead.confidence === "LOW")
   );
+}
+
+export function discoveryPostingActionState(
+  lead: DiscoveryLeadViewItem,
+  options: { duplicate?: boolean } = {}
+) {
+  if (lead.validationStatus === "FORBIDDEN") {
+    return {
+      label: "Blocked — cannot import",
+      tone: "warning" as const,
+      reason: "Blocked by deterministic role rules."
+    };
+  }
+  if (options.duplicate) {
+    return {
+      label: "Duplicate",
+      tone: "warning" as const,
+      reason: "Looks like an existing local job."
+    };
+  }
+  if (!isVerifiedImportableDiscoveryLead(lead)) {
+    return {
+      label: "Needs review",
+      tone: "muted" as const,
+      reason: "Missing import confidence, verified posting classification, or meaningful description."
+    };
+  }
+  return {
+    label: "Ready to import",
+    tone: "aqua" as const,
+    reason: null
+  };
 }

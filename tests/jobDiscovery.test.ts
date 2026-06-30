@@ -6,13 +6,13 @@ import { buildCompanyCareerQueries, buildPlatformDiscoveryQueries } from "../lib
 import { countDiscoveryLeads } from "../lib/discovery/jobDiscoveryCounts";
 import { prepareDiscoveryLeadForCreate } from "../lib/discovery/jobDiscoveryEngine";
 import { prepareJobCreateFromDiscoveryLead } from "../lib/discovery/jobDiscoveryImport";
-import { isLegacyOrNoisyDiscoveryLead, isVerifiedImportableDiscoveryLead, shouldHideOldNonImportableLead } from "../lib/discovery/discoveryLeadViews";
+import { discoveryPostingActionState, isLegacyOrNoisyDiscoveryLead, isVerifiedImportableDiscoveryLead, shouldHideOldNonImportableLead } from "../lib/discovery/discoveryLeadViews";
 import { scoreDiscoveryLead } from "../lib/discovery/jobDiscoveryScoring";
 import { isSafePublicHttpUrl } from "../lib/discovery/jobPageFetcher";
 import { extractJobDescriptionFromHtml, extractJsonLdJobPosting } from "../lib/discovery/jobDescriptionExtractor";
 import { classifyDiscoverySource, SOURCE_CLASSIFICATIONS } from "../lib/discovery/pageClassifier";
 import { dedupeProviderMessages, formatProviderDiagnosticError, providerStatusLabel } from "../lib/discovery/providerDiagnostics";
-import { extractCareerJobLinks } from "../lib/discovery/careerLinkExtractor";
+import { extractCareerJobLinks, isReadableLinkTitle } from "../lib/discovery/careerLinkExtractor";
 import { dedupePreparedSourceCandidates, enumerateCandidateFromHtml } from "../lib/discovery/sourceCandidateEnumeration";
 import { isWorkdayExactJobUrl, isWorkdaySearchUrl, prepareWorkdayLeadFromHtml } from "../lib/discovery/workdayDiscovery";
 import { validateJob } from "../lib/rules/validateJob";
@@ -241,6 +241,27 @@ describe("career listing and Workday enumeration", () => {
     });
   });
 
+  it("uses surrounding text instead of raw Workday ids for plain URL titles", () => {
+    const url = "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/Israel/8f7a6e5d4c3b2a10";
+    const links = extractCareerJobLinks(`Software Engineer Intern Israel ${url}`, "https://nvidia.com/careers");
+    expect(links).toHaveLength(1);
+    expect(links[0]).toMatchObject({
+      title: "Software Engineer Intern Israel",
+      url
+    });
+    expect(isReadableLinkTitle("8f7a6e5d4c3b2a10")).toBe(false);
+  });
+
+  it("uses a readable Workday fallback title when no better title exists", () => {
+    const url = "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/Israel/8f7a6e5d4c3b2a10";
+    const links = extractCareerJobLinks(url, "https://nvidia.com/careers");
+    expect(links).toHaveLength(1);
+    expect(links[0]).toMatchObject({
+      title: "Untitled job link from Workday",
+      url
+    });
+  });
+
   it("extracts plain Workday job URLs", () => {
     const url = "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/Israel/Senior-Backend-Engineer_JR999";
     const links = extractCareerJobLinks(`See ${url} for details`, "https://nvidia.com/careers");
@@ -263,6 +284,23 @@ describe("career listing and Workday enumeration", () => {
       title: "Deep Learning Software Engineer - Israel",
       url,
       classification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING
+    });
+  });
+
+  it("preserves readable titles for source candidates created from extracted links", () => {
+    const url = "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/Israel/Computer-Vision-Engineer_JR789";
+    const result = enumerateCandidateFromHtml({
+      url: "https://nvidia.com/careers",
+      title: "NVIDIA Careers",
+      rawText: `Open role: Computer Vision Engineer Israel ${url}`,
+      provider: "TAVILY",
+      source: "WEB_SEARCH"
+    }, "<main>Careers listing</main>");
+    expect(result.newCandidates).toHaveLength(1);
+    expect(result.newCandidates[0]).toMatchObject({
+      title: "Computer Vision Engineer Israel",
+      url,
+      source: "CAREER_LINK_EXTRACTION"
     });
   });
 
@@ -502,5 +540,30 @@ describe("discovery run bulk safety", () => {
     expect(isLegacyOrNoisyDiscoveryLead(noisy)).toBe(true);
     expect(shouldHideOldNonImportableLead(noisy)).toBe(true);
     expect(shouldHideOldNonImportableLead(importedNoisy)).toBe(false);
+  });
+
+  it("keeps verified posting action labels explicit for blocked, duplicate, review, and ready states", () => {
+    const baseLead = {
+      sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+      confidence: "HIGH",
+      extractedDescription: "Backend Developer role using Python, APIs, databases, testing, and distributed systems in Israel.",
+      status: "NEW"
+    };
+
+    expect(discoveryPostingActionState({ ...baseLead, validationStatus: "FORBIDDEN" })).toMatchObject({
+      label: "Blocked — cannot import",
+      reason: "Blocked by deterministic role rules."
+    });
+    expect(discoveryPostingActionState({ ...baseLead, validationStatus: "ALLOWED" }, { duplicate: true })).toMatchObject({
+      label: "Duplicate",
+      reason: "Looks like an existing local job."
+    });
+    expect(discoveryPostingActionState({ ...baseLead, validationStatus: "ALLOWED" })).toMatchObject({
+      label: "Ready to import",
+      reason: null
+    });
+    expect(discoveryPostingActionState({ ...baseLead, confidence: "LOW", validationStatus: "ALLOWED" })).toMatchObject({
+      label: "Needs review"
+    });
   });
 });

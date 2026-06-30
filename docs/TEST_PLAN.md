@@ -206,6 +206,18 @@ Phase 6.1C coverage:
 - Unit tests cover hiding old non-importable leads without affecting imported leads.
 - Build/type verification covers `/discovery` trust sections and hide-old-leads server action.
 
+Phase 6.1D coverage:
+
+- Unit tests cover Markdown job-link title preservation.
+- Unit tests cover plain Workday URLs using readable surrounding text instead of hash-like ids.
+- Unit tests cover untitled Workday URLs falling back to "Untitled job link from Workday".
+- Unit tests cover extracted source candidates preserving readable titles.
+- Unit tests cover verified posting action labels for blocked, duplicate, needs-review, and ready-to-import states.
+- Unit tests cover verified job posting versus legacy/noisy lead separation and safe hide behavior.
+- Build/type verification covers `/discovery` action guide, renamed sections, source-candidate cards, and verified posting labels.
+- Manual QA should confirm "Clean old noisy leads" marks old non-importable leads skipped without deletion and without touching imported jobs.
+- Manual QA should confirm source candidates are not presented as jobs, and verified postings can still be blocked by role rules.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

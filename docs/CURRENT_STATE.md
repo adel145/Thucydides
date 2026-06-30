@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-30, Thucydides is in Phase 6.1C - Discovery UX Cleanup + Markdown Link Extraction + Provider Status Clarity state.
+As of 2026-06-30, Thucydides is in Phase 6.1D - Discovery UX Action Clarity + Candidate Title Cleanup state.
 
 ## What Exists
 
@@ -88,15 +88,18 @@ As of 2026-06-30, Thucydides is in Phase 6.1C - Discovery UX Cleanup + Markdown 
 - `/gmail` shows validation status, allowed signals, forbidden flags, risk notes, duplicate warnings, source URL, and raw snippets for lead review.
 - Safe non-forbidden leads can be manually imported into the normal Job Inbox.
 - Imported leads become normal local `Job` records and get an `ApplicationEvent`.
-- Forbidden leads remain blocked from normal import in Phase 6.1C.
+- Forbidden leads remain blocked from normal import in Phase 6.1D.
 - `/discovery` supports env-gated internet job discovery through Tavily and SerpApi.
 - `/discovery` separates source candidates from job leads. Search/listing/generic/company pages stay as source candidates; only verified single job postings become importable leads.
 - `/discovery` can test Tavily and SerpApi from the UI. Provider badges say key present/missing until a test verifies or fails them. SerpApi 401 is shown as "SerpApi authorization failed: check SERPAPI_API_KEY/account." without printing keys.
 - `/discovery` source candidates now have retry classify, try enumerate jobs, and skip candidate actions.
-- `/discovery` now separates verified job leads, source candidates needing action, legacy/noisy leads, and skipped/unsupported candidates.
+- `/discovery` now separates verified job postings, sources to process, legacy/noisy leads, and skipped/unsupported candidates.
+- `/discovery` has a top "What to do next" guide and a top "Clean old noisy leads" action near provider tests.
 - `/discovery` can hide old non-importable discovery leads by setting them to SKIPPED without deleting data or touching imported jobs.
+- `/discovery` keeps verified forbidden postings visible for review, but marks them as blocked and disables import.
 - Candidate enumeration supports Greenhouse boards, safe public Workday pages, and generic public career HTML link extraction.
 - Candidate enumeration extracts HTML links, Markdown links, and plain job URLs from fetched content plus saved candidate text/snippets, deduping by URL.
+- Markdown link titles are preserved. Plain Workday or career URLs use readable surrounding text when possible and fall back to "Untitled job link from Workday" or "Untitled job link from career page" instead of raw hash-like ids.
 - `JobDiscoveryRun` stores discovery run status, provider/query metadata, counts, and errors.
 - Discovery helpers support company-career queries, platform queries, Greenhouse public board detection/mapping, safe public page fetch, source classification, JSON-LD JobPosting extraction, HTML fallback extraction, deterministic fit scoring, and duplicate checks.
 - Greenhouse exact job URLs map only that job; Greenhouse boards are enumerated and filtered for Israel/remote target roles instead of blindly taking the first listing.

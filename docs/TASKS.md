@@ -195,13 +195,23 @@
 - Added Markdown link and plain public URL extraction to career-link extraction.
 - Updated enumeration to read fetched content plus saved candidate raw text/snippets.
 - Added idempotent candidate/lead dedupe for repeated Try enumerate jobs actions.
-- Split `/discovery` into source candidates needing action, verified job leads, legacy/noisy leads, and skipped/unsupported candidates.
+- Split `/discovery` into sources to process, verified job postings, legacy/noisy leads, and skipped/unsupported candidates.
 - Added Hide old non-importable leads action that marks old noisy leads SKIPPED without deletion or touching imported jobs.
 - Added tests for Markdown/plain URL extraction, NVIDIA Workday candidate text, idempotent candidate dedupe, provider status labels, legacy/noisy lead filtering, and hide safety.
 
+## Completed In Phase 6.1D
+
+- Added a top `/discovery` "What to do next" guide for provider tests, enumeration, review, import, and cleanup.
+- Duplicated the safe cleanup action near provider tests as "Clean old noisy leads" with no deletion and no imported-job changes.
+- Renamed discovery sections to "Verified job postings" and "Sources to process".
+- Added verified posting state labels for ready-to-import, blocked, duplicate, and needs-review cases.
+- Improved source candidate cards with domain, classification/status context, and extracted-link next-action copy.
+- Improved Workday/plain-URL title cleanup so readable Markdown/nearby titles are preferred over raw ids.
+- Added tests for title cleanup, source-candidate title preservation, verified posting action states, legacy/noisy separation, and safe hide behavior.
+
 ## Next Tasks
 
-- Manually QA provider diagnostics, Markdown/URL candidate enumeration, and real Tavily/SerpApi runs.
+- Manually QA provider diagnostics, Markdown/URL candidate enumeration, discovery action clarity, and real Tavily/SerpApi runs.
 - Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.
 - Improve packet quality review before exports.

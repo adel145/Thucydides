@@ -5,7 +5,7 @@ import { NeonButton } from "@/components/ui/NeonButton";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { db } from "@/lib/db";
 import { getDiscoveryProviderStatus, getDiscoveryProviderLabel } from "@/lib/discovery/discoveryProviders";
-import { isLegacyOrNoisyDiscoveryLead, isVerifiedImportableDiscoveryLead } from "@/lib/discovery/discoveryLeadViews";
+import { discoveryPostingActionState, isLegacyOrNoisyDiscoveryLead, isVerifiedImportableDiscoveryLead } from "@/lib/discovery/discoveryLeadViews";
 import { countDiscoveryLeads } from "@/lib/discovery/jobDiscoveryCounts";
 import { isImportableSourceClassification } from "@/lib/discovery/pageClassifier";
 import { providerStatusLabel } from "@/lib/discovery/providerDiagnostics";
@@ -23,10 +23,10 @@ function formatDate(value: Date | string | null | undefined) {
   return new Date(value).toLocaleString();
 }
 
-function candidateNeedsAction(candidate: { status: string; classification: string }) {
+function candidateNeedsAction(candidate: { status: string; classification: string; source?: string | null; createdLeadCount?: number | null }) {
+  if (candidate.status === "SKIPPED" || candidate.status === "UNSUPPORTED") return false;
+  if (candidate.source === "CAREER_LINK_EXTRACTION" && (candidate.createdLeadCount ?? 0) === 0) return true;
   return (
-    candidate.status !== "SKIPPED" &&
-    candidate.status !== "UNSUPPORTED" &&
     !isImportableSourceClassification(candidate.classification) &&
     ["ATS_BOARD", "CAREERS_LISTING", "COMPANY_CAREERS_HOME", "SEARCH_RESULTS_PAGE", "UNKNOWN"].includes(candidate.classification)
   );
@@ -34,6 +34,15 @@ function candidateNeedsAction(candidate: { status: string; classification: strin
 
 function isUnsupportedAggregator(candidate: { classification: string; title?: string | null; url?: string | null }) {
   return candidate.classification === "THIRD_PARTY_AGGREGATOR_LIST" || /glassdoor|linkedin\.com\/jobs|indeed|alljobs|drushim/i.test(`${candidate.title ?? ""} ${candidate.url ?? ""}`);
+}
+
+function domainFromUrl(value?: string | null) {
+  if (!value) return "No URL";
+  try {
+    return new URL(value).hostname.replace(/^www\./, "");
+  } catch {
+    return "Invalid URL";
+  }
 }
 
 export default async function DiscoveryPage({
@@ -112,6 +121,17 @@ export default async function DiscoveryPage({
             <NeonButton className="border-white/20 text-ink-100">Test SerpApi</NeonButton>
           </form>
         </div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-4">
+          <div>
+            <div className="text-sm font-semibold text-white">Clean old noisy leads</div>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-ink-300">
+              Moves old non-importable discovery leads to SKIPPED. Does not delete anything and does not touch imported jobs.
+            </p>
+          </div>
+          <form action={hideOldNonImportableDiscoveryLeads}>
+            <NeonButton className="border-white/20 text-ink-100">Clean old noisy leads</NeonButton>
+          </form>
+        </div>
         {notices?.run ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Discovery run saved locally.</div> : null}
         {notices?.providerMessage ? (
           <div className={`mt-4 rounded-lg border p-3 text-sm ${notices.providerOk === "1" ? "border-aqua-400/30 bg-aqua-400/10 text-aqua-400" : "border-signal-red/30 bg-signal-red/10 text-ink-100"}`}>
@@ -129,6 +149,18 @@ export default async function DiscoveryPage({
         {notices?.missingLead ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Lead not found.</div> : null}
         {notices?.missingCandidate ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Source candidate not found.</div> : null}
         {notices?.noUrl ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">This lead has no source URL to enrich.</div> : null}
+      </GlassCard>
+
+      <GlassCard>
+        <h3 className="text-xl font-semibold text-white">What to do next</h3>
+        <ol className="mt-4 grid gap-2 text-sm leading-6 text-ink-200">
+          <li>1. Test Tavily.</li>
+          <li>2. Ignore SerpApi until its key/account is fixed.</li>
+          <li>3. Click Try enumerate jobs on Workday/company career candidates.</li>
+          <li>4. Review Verified job postings.</li>
+          <li>5. Import only non-blocked, non-duplicate postings.</li>
+          <li>6. Clean old noisy leads when needed.</li>
+        </ol>
       </GlassCard>
 
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -221,16 +253,16 @@ export default async function DiscoveryPage({
       <GlassCard>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="text-xl font-semibold text-white">Source candidates needing action</h3>
+            <h3 className="text-xl font-semibold text-white">Sources to process</h3>
             <p className="mt-2 text-sm leading-6 text-ink-200">
-              Search results are source candidates, not jobs. Listing, search, career-home, and broad aggregator pages must be enumerated or ignored before import.
+              These are not jobs yet. Use Try enumerate jobs to extract specific job links, or Skip.
             </p>
           </div>
           <ScoreBadge tone="warning">{candidatesNeedingAction.length} need action</ScoreBadge>
         </div>
         <div className="mt-4 flex flex-wrap gap-2 text-xs text-ink-300">
-          <ScoreBadge tone="aqua">Verified job leads</ScoreBadge>
-          <ScoreBadge tone="warning">Source candidates needing action</ScoreBadge>
+          <ScoreBadge tone="aqua">Verified job postings</ScoreBadge>
+          <ScoreBadge tone="warning">Sources to process</ScoreBadge>
           <ScoreBadge tone="muted">Legacy/noisy leads</ScoreBadge>
           <ScoreBadge tone="muted">Skipped/unsupported</ScoreBadge>
         </div>
@@ -244,7 +276,11 @@ export default async function DiscoveryPage({
                   <div>
                     <div className="font-semibold text-white">{candidate.title ?? candidate.url ?? "Untitled source"}</div>
                     <p className="mt-1 text-sm font-semibold text-ink-100">Not a job yet</p>
+                    <p className="mt-1 text-sm text-ink-300">Domain: {domainFromUrl(candidate.url)}</p>
                     <p className="mt-1 text-sm text-ink-300">Why this is not a job yet: {candidate.reason ?? "This source has not been verified as a single posting."}</p>
+                    {candidate.source === "CAREER_LINK_EXTRACTION" ? (
+                      <p className="mt-2 text-sm text-aqua-400">Extracted from career listing. Click Try enumerate jobs to verify this exact job page.</p>
+                    ) : null}
                     {candidate.url ? <Link href={candidate.url} className="mt-2 inline-flex text-sm font-semibold text-aqua-400">Open source</Link> : null}
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -278,12 +314,12 @@ export default async function DiscoveryPage({
       </GlassCard>
 
       <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Verified job leads</h3>
+        <h3 className="text-xl font-semibold text-white">Verified job postings</h3>
         <p className="mt-2 text-sm leading-6 text-ink-200">
-          Only verified single job postings with medium/high confidence and meaningful descriptions appear here.
+          These are real single job postings. Some may still be blocked by role rules.
         </p>
         <div className="mt-5 grid gap-4">
-          {verifiedLeads.length === 0 ? <p className="text-sm text-ink-400">No verified importable internet discovery leads yet.</p> : null}
+          {verifiedLeads.length === 0 ? <p className="text-sm text-ink-400">No verified internet job postings yet.</p> : null}
           {verifiedLeads.map((lead) => {
             const allowedSignals = jsonToStringArray(lead.allowedSignals);
             const forbiddenFlags = jsonToStringArray(lead.forbiddenFlags);
@@ -302,6 +338,12 @@ export default async function DiscoveryPage({
                   : null;
             const imported = lead.status === "IMPORTED" && lead.importedJobId;
             const inactive = imported || lead.status === "SKIPPED" || lead.status === "DUPLICATE";
+            const postingState = discoveryPostingActionState(lead, { duplicate: Boolean(duplicate && !imported) });
+            const importDisabledReason = blocked
+              ? "Blocked by deterministic role rules."
+              : duplicate && !imported
+                ? "Looks like an existing local job."
+                : importBlockedReason;
             return (
               <div key={lead.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -316,6 +358,7 @@ export default async function DiscoveryPage({
                     <ScoreBadge tone="muted">{lead.confidence ?? "LOW"}</ScoreBadge>
                     <ScoreBadge tone={verifiedPosting ? "aqua" : "muted"}>{lead.sourceClassification ?? "UNCLASSIFIED"}</ScoreBadge>
                     <ScoreBadge tone="aqua">Verified job posting</ScoreBadge>
+                    <ScoreBadge tone={postingState.tone}>{postingState.label}</ScoreBadge>
                     <ScoreBadge tone="muted">{lead.status}</ScoreBadge>
                   </div>
                 </div>
@@ -327,7 +370,8 @@ export default async function DiscoveryPage({
                 </div>
                 {lead.riskNotes ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink-200">{lead.riskNotes}</p> : null}
                 {fitReasons.length > 0 ? <p className="mt-3 text-sm leading-6 text-ink-300">{fitReasons.slice(0, 3).join(" ")}</p> : null}
-                {importBlockedReason ? <p className="mt-3 text-sm text-signal-red">{importBlockedReason}</p> : null}
+                {importDisabledReason ? <p className="mt-3 text-sm text-signal-red">{importDisabledReason}</p> : null}
+                {!importDisabledReason && postingState.reason ? <p className="mt-3 text-sm text-ink-300">{postingState.reason}</p> : null}
                 {duplicate && !imported ? <p className="mt-3 text-sm text-signal-red">Looks like existing job: {duplicate.title}{duplicate.company ? ` at ${duplicate.company}` : ""}.</p> : null}
                 <p className="mt-4 line-clamp-5 whitespace-pre-wrap rounded-lg border border-white/10 bg-navy-950/40 p-3 text-sm leading-6 text-ink-200">
                   {lead.extractedDescription ?? lead.rawText ?? lead.rawSnippet}
@@ -337,7 +381,7 @@ export default async function DiscoveryPage({
                   {!inactive ? (
                     <form action={importDiscoveryLeadToInbox}>
                       <input type="hidden" name="leadId" value={lead.id} />
-                      <NeonButton disabled={blocked || Boolean(duplicate) || Boolean(importBlockedReason)}>Import to Job Inbox</NeonButton>
+                      <NeonButton disabled={Boolean(importDisabledReason)}>Import to Job Inbox</NeonButton>
                     </form>
                   ) : null}
                   {!inactive ? (

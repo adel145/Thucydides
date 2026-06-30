@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.1C Architecture
+## Phase 6.1D Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -172,12 +172,21 @@ Phase 6.1C improves discovery trust and candidate extraction without changing th
 
 - Provider status badges distinguish key present/missing from verified/failed test results.
 - SerpApi auth failures are deduped during discovery runs, and SerpApi queries stop after the first auth failure.
-- `/discovery` separates verified job leads, source candidates needing action, legacy/noisy leads, and skipped/unsupported records.
+- `/discovery` separates verified job postings, sources to process, legacy/noisy leads, and skipped/unsupported records.
 - Old non-importable discovery leads can be hidden by marking them `SKIPPED`; imported jobs are not touched and nothing is deleted.
 - `lib/discovery/careerLinkExtractor.ts` extracts HTML anchors, Markdown links, and plain public job URLs.
 - Source candidate enumeration reads fetched content plus saved candidate `rawText` and `snippet`, which supports Tavily Markdown-style links.
 - Source candidate and lead creation is idempotent by URL/lead identity when enumeration is repeated.
 - `lib/discovery/discoveryLeadViews.ts` centralizes verified versus legacy/noisy lead logic for the UI.
+
+Phase 6.1D improves discovery action clarity and candidate titles without changing the schema:
+
+- `/discovery` shows a top "What to do next" guide and duplicates the safe cleanup action near provider tests.
+- Source candidates are labeled "Sources to process" and remain non-jobs until enumeration verifies a specific posting.
+- Verified single postings are labeled "Verified job postings"; they can still be blocked by deterministic role rules.
+- Verified posting cards distinguish ready-to-import, blocked, duplicate, and needs-review states before import.
+- Career-link extraction preserves Markdown titles, uses readable nearby text for plain Workday/career URLs when possible, and avoids showing raw hash-like ids unless no better title exists.
+- Cleanup still marks old non-importable leads `SKIPPED`; it does not delete data or touch imported jobs.
 
 ## Rules Architecture
 
@@ -199,7 +208,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.1C
+## Non-Goals in Phase 6.1D
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

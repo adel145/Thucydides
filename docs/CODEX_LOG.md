@@ -491,12 +491,32 @@ Updated:
 - Career link extraction now supports HTML anchors, Markdown links, and plain public URLs.
 - Source candidate enumeration now reads fetched content plus saved candidate raw text/snippets.
 - Enumeration avoids duplicate source candidates and duplicate discovery leads when retried.
-- `/discovery` now separates source candidates needing action, verified job leads, legacy/noisy leads, and skipped/unsupported candidates.
+- `/discovery` now separates sources to process, verified job postings, legacy/noisy leads, and skipped/unsupported candidates.
 - Old non-importable leads can be hidden by marking them `SKIPPED`; imported jobs are not touched and nothing is deleted.
 
 Verified:
 
 - Added tests for Markdown/plain URL extraction, NVIDIA Workday candidate links, idempotent candidate dedupe, provider status labels, SerpApi message dedupe, legacy/noisy lead separation, and hide safety.
+
+Not implemented:
+
+- No Gmail OAuth, automatic inbox reading, Calendar, login/captcha bypass, authenticated scraping, browser automation, OpenAI discovery scoring/parsing, automatic applications, automatic emails, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.
+
+## 2026-06-30 Phase 6.1D - Discovery UX Action Clarity + Candidate Title Cleanup
+
+Updated:
+
+- `/discovery` now shows a top "What to do next" guide.
+- The safe cleanup action is duplicated near provider tests as "Clean old noisy leads".
+- Discovery sections are renamed to "Verified job postings" and "Sources to process".
+- Verified posting cards distinguish ready-to-import, blocked, duplicate, and needs-review states.
+- Source candidate cards show clearer domain/classification/status context and extracted-link next actions.
+- Career-link extraction preserves Markdown titles, prefers nearby readable text for plain Workday/career URLs, and avoids raw hash-like ids where possible.
+- Old noisy lead cleanup still marks records `SKIPPED`; it does not delete data or touch imported jobs.
+
+Verified:
+
+- Added tests for Workday/plain-URL title cleanup, untitled Workday fallback titles, extracted source-candidate title preservation, verified posting action labels, legacy/noisy separation, and safe hide behavior.
 
 Not implemented:
 

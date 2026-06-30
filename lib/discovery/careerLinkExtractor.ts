@@ -6,7 +6,8 @@ export type ExtractedCareerJobLink = {
 };
 
 const targetRolePattern = /(software|developer|engineer|backend|full\s*stack|fullstack|python|qa|automation|data|machine learning|deep learning|computer vision|research student|student|technical support|noc|implementation|integration)/i;
-const locationPattern = /(israel|tel aviv|haifa|jerusalem|beer|beersheba|remote|hybrid|ישראל|תל אביב|חיפה|ירושלים|באר שבע)/i;
+const locationPattern = /(israel|tel aviv|haifa|jerusalem|beer|beersheba|remote|hybrid|\u05d9\u05e9\u05e8\u05d0\u05dc|\u05ea\u05dc \u05d0\u05d1\u05d9\u05d1|\u05d7\u05d9\u05e4\u05d4|\u05d9\u05e8\u05d5\u05e9\u05dc\u05d9\u05dd|\u05d1\u05d0\u05e8 \u05e9\u05d1\u05e2)/i;
+const hashLikePattern = /^[a-f0-9]{8,}$/i;
 
 function decodeHtml(value: string) {
   return value
@@ -32,25 +33,56 @@ function resolveUrl(href: string, baseUrl: string) {
   }
 }
 
+function fallbackUntitledTitle(url: string) {
+  return /myworkdayjobs\.com/i.test(url) ? "Untitled job link from Workday" : "Untitled job link from career page";
+}
+
+export function isReadableLinkTitle(value: string | null | undefined) {
+  const title = stripTags(value ?? "");
+  if (!title) return false;
+  const compact = title.replace(/\s+/g, "");
+  if (hashLikePattern.test(compact)) return false;
+  if (/^[A-Z0-9]{8,}$/.test(compact)) return false;
+  return /[a-zA-Z\u0590-\u05ff]/.test(title) && title.length >= 3;
+}
+
 function titleFromUrl(url: string) {
   try {
     const parsed = new URL(url);
     const last = parsed.pathname.split("/").filter(Boolean).at(-1) ?? parsed.hostname;
-    return decodeURIComponent(last)
+    const title = decodeURIComponent(last)
       .replace(/[_-]+/g, " ")
       .replace(/\s+/g, " ")
       .trim();
+    return isReadableLinkTitle(title) ? title : fallbackUntitledTitle(url);
   } catch {
-    return url;
+    return fallbackUntitledTitle(url);
   }
 }
 
-function pushLink(links: ExtractedCareerJobLink[], seen: Set<string>, titleValue: string, href: string, baseUrl: string) {
+function titleFromNearbyText(content: string, index: number) {
+  const before = stripTags(content.slice(Math.max(0, index - 160), index))
+    .replace(/\[[^\]]*$/g, "")
+    .split(/[\n\r.?!|\u2022]/)
+    .at(-1)
+    ?.trim() ?? "";
+  const marker = before.match(/(?:^|\s)(open\s+role|role|job|position)\s*:?\s*(.{3,})$/i);
+  const candidate = marker?.[2] && targetRolePattern.test(marker[2]) ? marker[2] : before;
+  if (!targetRolePattern.test(candidate)) return null;
+  return candidate
+    .replace(/^(see|apply|open\s+role|role|job|position)\s*:?\s*/i, "")
+    .slice(-110)
+    .trim() || null;
+}
+
+function pushLink(links: ExtractedCareerJobLink[], seen: Set<string>, titleValue: string, href: string, baseUrl: string, contextValue?: string) {
   const url = resolveUrl(href, baseUrl);
   if (!url || seen.has(url)) return;
-  const title = stripTags(titleValue) || titleFromUrl(url);
-  const context = decodeHtml(`${title} ${url}`);
-  if (!title || !targetRolePattern.test(context)) return;
+  const providedTitle = stripTags(titleValue);
+  const title = isReadableLinkTitle(providedTitle) ? providedTitle : titleFromUrl(url);
+  const context = decodeHtml(`${contextValue ?? ""} ${title} ${url}`);
+  const isSpecificJobUrl = /\/job\//i.test(url) || /myworkdayjobs\.com/i.test(url);
+  if (!title || (!targetRolePattern.test(context) && !isSpecificJobUrl)) return;
   seen.add(url);
   links.push({
     title,
@@ -71,13 +103,16 @@ export function extractCareerJobLinks(content: string, baseUrl: string, limit = 
 
   const markdownLinks = content.matchAll(/\[([^\]]{2,160})\]\((https?:\/\/[^)\s]+)\)/gi);
   for (const link of markdownLinks) {
-    pushLink(links, seen, link[1], link[2], baseUrl);
+    pushLink(links, seen, link[1], link[2], baseUrl, link[1]);
   }
 
   const plainUrls = content.matchAll(/https?:\/\/[^\s<>)\]]+/gi);
   for (const match of plainUrls) {
     const url = match[0].replace(/[.,;:"']+$/g, "");
-    pushLink(links, seen, titleFromUrl(url), url, baseUrl);
+    const index = match.index ?? 0;
+    const nearbyTitle = titleFromNearbyText(content, index);
+    const nearbyContext = content.slice(Math.max(0, index - 160), index + url.length + 60);
+    pushLink(links, seen, nearbyTitle ?? titleFromUrl(url), url, baseUrl, nearbyTitle ?? nearbyContext);
   }
 
   return links

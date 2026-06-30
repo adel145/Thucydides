@@ -290,7 +290,7 @@ Reason: Adel needs to distinguish "discovery found no jobs" from "provider autho
 
 ## 2026-06-30: Discovery UI Must Separate Trust Levels
 
-Decision: `/discovery` should separate verified job leads from source candidates, legacy/noisy leads, and skipped/unsupported records. Old non-importable leads may be hidden by marking them `SKIPPED`, but they must not be deleted and imported jobs must not be touched.
+Decision: `/discovery` should separate verified job postings from sources to process, legacy/noisy leads, and skipped/unsupported records. Old non-importable leads may be hidden by marking them `SKIPPED`, but they must not be deleted and imported jobs must not be touched.
 
 Reason: real QA showed Adel could not tell what was trusted, old, noisy, or actually importable when everything appeared in one board.
 
@@ -299,3 +299,21 @@ Reason: real QA showed Adel could not tell what was trusted, old, noisy, or actu
 Decision: candidate enumeration should extract target-role links from HTML anchors, Markdown links, and plain public URLs in fetched content plus saved candidate text/snippets, while deduping URLs.
 
 Reason: real Tavily candidates included NVIDIA/Workday links in Markdown-style text rather than HTML anchors. These links are still public source candidates, not jobs, until verified.
+
+## 2026-06-30: Discovery UX Should Show Next Actions First
+
+Decision: `/discovery` should show a short "What to do next" guide, a top safe cleanup action, "Sources to process" for non-job candidates, and "Verified job postings" for real postings.
+
+Reason: Adel needs to know which records are jobs, which records still need enumeration, and when it is safe to clean old noisy leads. Cleanup marks records `SKIPPED`; it does not delete data or touch imported jobs.
+
+## 2026-06-30: Verified Postings Can Still Be Blocked
+
+Decision: verified single job postings may remain visible in the verified section even when deterministic role rules mark them `FORBIDDEN`, but import must stay disabled with a clear blocked label.
+
+Reason: "Verified" means the source looks like a real individual job posting, not that the role is safe or importable for Adel.
+
+## 2026-06-30: Discovery Link Titles Prefer Human Text
+
+Decision: Markdown titles should be preserved, and plain Workday/career URLs should prefer readable surrounding text before falling back to neutral untitled labels instead of raw hash-like ids.
+
+Reason: Workday and company-career URLs often contain opaque ids that confuse review. Human-readable titles make source candidates easier to process without pretending the candidate is a verified job.

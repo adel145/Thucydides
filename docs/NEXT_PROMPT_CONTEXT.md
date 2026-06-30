@@ -2,7 +2,7 @@
 
 Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. The repo and docs are the official project memory.
 
-As of Phase 6.1C, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, cleaner discovery sections, Markdown/plain URL extraction, and a source-candidate quality gate.
+As of Phase 6.1D, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, clearer discovery action flow, Markdown/plain URL extraction, Workday/plain-URL title cleanup, and a source-candidate quality gate.
 
 ## Product Mission
 
@@ -16,17 +16,17 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 
 - Dashboard first view is Today's Mission and now links to `/discovery` with "Find suitable jobs".
 - Discovery priority is company career pages first, job platforms second, Gmail alerts third.
-- `/discovery` shows Tavily/SerpApi/Gmail provider status, discovery run form, run history, source candidates, counts, verified job leads, legacy/noisy leads, and skipped/unsupported records.
+- `/discovery` shows Tavily/SerpApi/Gmail provider status, a top "What to do next" guide, a top safe cleanup action, discovery run form, run history, sources to process, counts, verified job postings, legacy/noisy leads, and skipped/unsupported records.
 - `/discovery` provider badges say key present/missing until a provider test verifies or fails them. SerpApi 401 maps to "SerpApi authorization failed: check SERPAPI_API_KEY/account." and never prints API keys.
 - `/discovery` source candidates can be retried, enumerated, or skipped.
 - `/discovery` can hide old non-importable leads by setting them to SKIPPED without deletion and without touching imported jobs.
 - `JobDiscoveryRun` stores discovery run status, provider/query metadata, counts, and errors.
 - `DiscoverySourceCandidate` stores Tavily/search/career-page results before they become jobs. Generic company pages, search result pages, ATS boards, career listings, blocked pages, and noisy pages stay candidates.
 - `JobDiscoveryLead` stores both Gmail/manual leads and verified internet discovery leads, including source/evidence fields, extracted content, confidence, fit score, and reasons.
-- Only verified single job postings, exact ATS job postings, or structured SerpApi Google Jobs results can become importable discovery leads.
+- Only verified single job postings, exact ATS job postings, or structured SerpApi Google Jobs results can become importable discovery leads. Verified postings can still be blocked by deterministic role rules.
 - Broad Glassdoor/listing/search pages remain source candidates and are not importable.
 - Workday support is safe/public and limited: search pages are ATS board candidates, visible specific links become source candidates, exact public job pages can create ATS job leads only when title and meaningful description are available, and JS-only/blocked pages stay candidates with errors.
-- Candidate enumeration extracts HTML anchors, Markdown links like `[Title](https://...)`, and plain public job URLs from fetched content plus saved candidate raw text/snippets. Repeated enumeration dedupes candidates and leads.
+- Candidate enumeration extracts HTML anchors, Markdown links like `[Title](https://...)`, and plain public job URLs from fetched content plus saved candidate raw text/snippets. Markdown titles are preserved; plain Workday/career URLs prefer readable surrounding text and fall back to "Untitled job link from Workday" or "Untitled job link from career page" instead of raw ids when no title exists. Repeated enumeration dedupes candidates and leads.
 - Safe non-forbidden discovery leads can be manually imported into normal local `Job` records.
 - Imported discovery leads create `JOB_IMPORTED_FROM_DISCOVERY` events.
 - Forbidden discovery leads stay blocked from normal import.
@@ -48,7 +48,7 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 - `lib/discovery/providerDiagnostics.ts`: lightweight Tavily/SerpApi test helpers, key-present/verified status labels, deduped provider messages, and safe provider error messages.
 - `lib/discovery/companyCareerDiscovery.ts`: Greenhouse board token/job-id detection, public board fetch, target-role filtering, and mapping.
 - `lib/discovery/workdayDiscovery.ts`: safe public Workday URL/link/job-page helpers; no browser automation.
-- `lib/discovery/careerLinkExtractor.ts`: target-role public career-link extraction from HTML, Markdown links, and plain URLs.
+- `lib/discovery/careerLinkExtractor.ts`: target-role public career-link extraction from HTML, Markdown links, and plain URLs, including conservative candidate title cleanup.
 - `lib/discovery/sourceCandidateEnumeration.ts`: source-candidate retry/enumeration logic that creates candidates or verified leads.
 - `lib/discovery/discoveryLeadViews.ts`: verified versus legacy/noisy discovery lead view helpers.
 - `lib/discovery/jobPageFetcher.ts`: safe public HTTP(S) page fetch with timeout and content-type checks.
