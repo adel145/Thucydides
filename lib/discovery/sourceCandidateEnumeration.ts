@@ -38,6 +38,45 @@ export type SourceCandidateEnumerationResult = {
   leads: PreparedDiscoveryLead[];
 };
 
+export function normalizeDiscoveryUrl(value: string | null | undefined) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return value.trim() || null;
+  }
+}
+
+export function dedupePreparedSourceCandidates(candidates: PreparedDiscoverySourceCandidate[], existingUrls: Array<string | null | undefined> = []) {
+  const seen = new Set(existingUrls.map(normalizeDiscoveryUrl).filter(Boolean));
+  return candidates.filter((candidate) => {
+    const key = normalizeDiscoveryUrl(candidate.url);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export function discoveryLeadIdentity(lead: { canonicalUrl?: string | null; sourceUrl?: string | null; title?: string | null; company?: string | null }) {
+  return [
+    normalizeDiscoveryUrl(lead.canonicalUrl ?? lead.sourceUrl),
+    lead.title?.trim().toLocaleLowerCase() ?? "",
+    lead.company?.trim().toLocaleLowerCase() ?? ""
+  ].join("|");
+}
+
+export function dedupePreparedDiscoveryLeads(leads: PreparedDiscoveryLead[], existingLeads: Array<{ canonicalUrl?: string | null; sourceUrl?: string | null; title?: string | null; company?: string | null }> = []) {
+  const seen = new Set(existingLeads.map(discoveryLeadIdentity));
+  return leads.filter((lead) => {
+    const key = discoveryLeadIdentity(lead);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function unsupportedAggregatorReason(url: string | null | undefined, title: string | null | undefined) {
   const text = `${url ?? ""} ${title ?? ""}`;
   if (/glassdoor|linkedin\.com\/jobs|indeed|alljobs|drushim/i.test(text)) {
@@ -96,6 +135,7 @@ function leadFromExtractedPage(candidate: SourceCandidateForEnumeration, html: s
 
 export function enumerateCandidateFromHtml(candidate: SourceCandidateForEnumeration, html: string): SourceCandidateEnumerationResult {
   const url = candidate.url ?? "";
+  const searchableContent = [html, candidate.rawText, candidate.snippet].filter(Boolean).join("\n");
   const unsupported = unsupportedAggregatorReason(candidate.url, candidate.title);
   if (unsupported) {
     return {
@@ -139,7 +179,7 @@ export function enumerateCandidateFromHtml(candidate: SourceCandidateForEnumerat
   }
 
   if (isWorkdayUrl(url)) {
-    const links = extractWorkdayJobLinks(html, url);
+    const links = extractWorkdayJobLinks(searchableContent, url);
     if (links.length > 0) {
       return {
         candidateUpdate: {
@@ -200,7 +240,7 @@ export function enumerateCandidateFromHtml(candidate: SourceCandidateForEnumerat
     }
   }
 
-  const links = extractCareerJobLinks(html, url);
+  const links = extractCareerJobLinks(searchableContent, url);
   if (links.length > 0) {
     return {
       candidateUpdate: {

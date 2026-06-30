@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 6.1B - ATS Adapters + Provider Diagnostics.
+Current state: Phase 6.1C - Discovery UX Cleanup + Markdown Link Extraction + Provider Status Clarity.
 
 ## What Works Now
 
@@ -51,6 +51,9 @@ Current state: Phase 6.1B - ATS Adapters + Provider Diagnostics.
 - Source candidate actions for retry classify, safe enumeration, and skip
 - Provider diagnostics for Tavily and SerpApi, including clear SerpApi 401 guidance
 - Safe public Workday adapter foundation and generic career-link extraction
+- Markdown and plain URL extraction from candidate text for public career/job links
+- Discovery sections for verified job leads, source candidates needing action, legacy/noisy leads, and skipped/unsupported records
+- Hide action for old non-importable leads without deleting data or touching imported jobs
 - Import quality gate for verified single job postings only
 - Deterministic discovery fit scoring for review leads
 - Manual evidence review on Application Packets and Resume Lab
@@ -89,7 +92,7 @@ The desired product is an agent-assisted job-search command center that helps Ad
 
 Future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply. Automated application sending is not part of the plan.
 
-Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.1B treats Tavily/search results as `DiscoverySourceCandidate` records first, can safely enumerate supported public ATS/career pages, and only verified single job postings or structured Google Jobs results become `JobDiscoveryLead` records that can be manually imported. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
+Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.1C treats Tavily/search results as `DiscoverySourceCandidate` records first, can safely enumerate supported public ATS/career pages, extracts Markdown/plain URL job links from candidate text, and only verified single job postings or structured Google Jobs results become `JobDiscoveryLead` records that can be manually imported. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
 
 Future export goals include DOCX/PDF CV and cover-letter outputs, TXT recruiter messages/notes, local per-job folders, and RTL/LTR support. Exports are not implemented yet.
 
@@ -97,7 +100,7 @@ The UI should stay dark, local-first, and sidebar-based. It should remain mostly
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 6.1B uses local SQLite data, deterministic validation, manual job/source intake, discovery source candidates and verified job leads, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. Workday support is safe/public and limited; JS-only or blocked pages remain candidates with errors. SerpApi 401 means `SERPAPI_API_KEY` or account access must be fixed outside the app. Gmail OAuth, automatic inbox reading, login-gated scraping, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
+Current limitation: Phase 6.1C uses local SQLite data, deterministic validation, manual job/source intake, discovery source candidates and verified job leads, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. A provider key being present does not mean the provider is verified. Workday support is safe/public and limited; JS-only or blocked pages remain candidates with errors. SerpApi 401 means `SERPAPI_API_KEY` or account access must be fixed outside the app. Gmail OAuth, automatic inbox reading, login-gated scraping, browser automation, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
 
 ## Local Setup
 

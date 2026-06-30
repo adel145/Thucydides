@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { enrichDiscoveryLead, enumerateSourceCandidate, importDiscoveryLeadToInbox, markDiscoveryLeadDuplicate, retryClassifySourceCandidate, runJobDiscovery, skipDiscoveryLead, skipNonImportedLeadsFromRun, skipSourceCandidate, testDiscoveryProviderAction } from "@/app/discovery/actions";
+import { enrichDiscoveryLead, enumerateSourceCandidate, hideOldNonImportableDiscoveryLeads, importDiscoveryLeadToInbox, markDiscoveryLeadDuplicate, retryClassifySourceCandidate, runJobDiscovery, skipDiscoveryLead, skipNonImportedLeadsFromRun, skipSourceCandidate, testDiscoveryProviderAction } from "@/app/discovery/actions";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonButton } from "@/components/ui/NeonButton";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { db } from "@/lib/db";
 import { getDiscoveryProviderStatus, getDiscoveryProviderLabel } from "@/lib/discovery/discoveryProviders";
+import { isLegacyOrNoisyDiscoveryLead, isVerifiedImportableDiscoveryLead } from "@/lib/discovery/discoveryLeadViews";
 import { countDiscoveryLeads } from "@/lib/discovery/jobDiscoveryCounts";
 import { isImportableSourceClassification } from "@/lib/discovery/pageClassifier";
+import { providerStatusLabel } from "@/lib/discovery/providerDiagnostics";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
 import { jsonToStringArray } from "@/lib/formParsing";
 
@@ -19,6 +21,19 @@ function validationTone(status: string) {
 function formatDate(value: Date | string | null | undefined) {
   if (!value) return "No date";
   return new Date(value).toLocaleString();
+}
+
+function candidateNeedsAction(candidate: { status: string; classification: string }) {
+  return (
+    candidate.status !== "SKIPPED" &&
+    candidate.status !== "UNSUPPORTED" &&
+    !isImportableSourceClassification(candidate.classification) &&
+    ["ATS_BOARD", "CAREERS_LISTING", "COMPANY_CAREERS_HOME", "SEARCH_RESULTS_PAGE", "UNKNOWN"].includes(candidate.classification)
+  );
+}
+
+function isUnsupportedAggregator(candidate: { classification: string; title?: string | null; url?: string | null }) {
+  return candidate.classification === "THIRD_PARTY_AGGREGATOR_LIST" || /glassdoor|linkedin\.com\/jobs|indeed|alljobs|drushim/i.test(`${candidate.title ?? ""} ${candidate.url ?? ""}`);
 }
 
 export default async function DiscoveryPage({
@@ -39,6 +54,7 @@ export default async function DiscoveryPage({
     enumerated?: string;
     candidateLinks?: string;
     candidateClassified?: string;
+    oldLeadsHidden?: string;
   }>;
 }) {
   const notices = await searchParams;
@@ -55,12 +71,12 @@ export default async function DiscoveryPage({
     db.job.findMany({ select: { id: true, title: true, company: true, sourceUrl: true } })
   ]);
   const counts = countDiscoveryLeads(leads);
-  const candidatesNeedingEnumeration = candidates.filter((candidate) =>
-    candidate.status !== "SKIPPED" &&
-    candidate.status !== "UNSUPPORTED" &&
-    !isImportableSourceClassification(candidate.classification) &&
-    ["ATS_BOARD", "CAREERS_LISTING", "COMPANY_CAREERS_HOME", "SEARCH_RESULTS_PAGE", "UNKNOWN"].includes(candidate.classification)
-  ).length;
+  const providerTest = notices?.providerTest === "SERPAPI_GOOGLE_JOBS" || notices?.providerTest === "TAVILY" ? notices.providerTest : null;
+  const providerTestState = notices?.providerMessage ? { ok: notices.providerOk === "1", message: notices.providerMessage } : undefined;
+  const candidatesNeedingAction = candidates.filter(candidateNeedsAction);
+  const skippedOrUnsupportedCandidates = candidates.filter((candidate) => candidate.status === "SKIPPED" || candidate.status === "UNSUPPORTED");
+  const verifiedLeads = leads.filter(isVerifiedImportableDiscoveryLead);
+  const legacyLeads = leads.filter(isLegacyOrNoisyDiscoveryLead);
 
   return (
     <div className="grid gap-6">
@@ -76,8 +92,12 @@ export default async function DiscoveryPage({
           <ScoreBadge tone="muted">Manual review required</ScoreBadge>
         </div>
         <div className="mt-5 flex flex-wrap gap-2">
-          <ScoreBadge tone={providerStatus.tavilyConfigured ? "aqua" : "warning"}>Tavily {providerStatus.tavilyConfigured ? "configured" : "not configured"}</ScoreBadge>
-          <ScoreBadge tone={providerStatus.serpApiConfigured ? "aqua" : "warning"}>SerpApi {providerStatus.serpApiConfigured ? "configured" : "not configured"}</ScoreBadge>
+          <ScoreBadge tone={providerStatus.tavilyConfigured ? "aqua" : "warning"}>
+            {providerStatusLabel("TAVILY", providerStatus.tavilyConfigured, providerTest === "TAVILY" ? providerTestState : undefined)}
+          </ScoreBadge>
+          <ScoreBadge tone={providerStatus.serpApiConfigured ? "aqua" : "warning"}>
+            {providerStatusLabel("SERPAPI_GOOGLE_JOBS", providerStatus.serpApiConfigured, providerTest === "SERPAPI_GOOGLE_JOBS" ? providerTestState : undefined)}
+          </ScoreBadge>
           <ScoreBadge tone="warning">Gmail not connected</ScoreBadge>
           <ScoreBadge tone="muted">Max {providerStatus.maxResults}</ScoreBadge>
           <ScoreBadge tone="muted">{providerStatus.country}</ScoreBadge>
@@ -99,7 +119,9 @@ export default async function DiscoveryPage({
           </div>
         ) : null}
         {notices?.enumerated ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Candidate enumeration finished: {notices.enumerated} leads and {notices.candidateLinks ?? 0} source candidates created.</div> : null}
+        {notices?.enumerated === "0" && notices?.candidateLinks === "0" ? <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Already enumerated / no new links, or no visible public job links were found.</div> : null}
         {notices?.candidateClassified ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Source candidate classification refreshed.</div> : null}
+        {notices?.oldLeadsHidden ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Old non-importable discovery leads were hidden. Imported jobs were not touched.</div> : null}
         {notices?.blocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Import blocked: this lead is FORBIDDEN by deterministic rules.</div> : null}
         {notices?.duplicate ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Import blocked: this lead looks like an existing local job.</div> : null}
         {notices?.notImportable ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Not importable: source is a listing/search/career page, not a single job posting.</div> : null}
@@ -151,7 +173,7 @@ export default async function DiscoveryPage({
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
             {[
               ["Runs", runs.length],
-              ["Need enum", candidatesNeedingEnumeration],
+              ["Need action", candidatesNeedingAction.length],
               ["New leads", counts.newLeads],
               ["Enriched", counts.enrichedLeads],
               ["Needs review", counts.needsReview],
@@ -197,54 +219,72 @@ export default async function DiscoveryPage({
       </GlassCard>
 
       <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Source candidates</h3>
-        <p className="mt-2 text-sm leading-6 text-ink-200">
-          Search results are source candidates, not jobs. Listing, search, career-home, and broad aggregator pages must be enumerated or ignored before import.
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-semibold text-white">Source candidates needing action</h3>
+            <p className="mt-2 text-sm leading-6 text-ink-200">
+              Search results are source candidates, not jobs. Listing, search, career-home, and broad aggregator pages must be enumerated or ignored before import.
+            </p>
+          </div>
+          <ScoreBadge tone="warning">{candidatesNeedingAction.length} need action</ScoreBadge>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs text-ink-300">
+          <ScoreBadge tone="aqua">Verified job leads</ScoreBadge>
+          <ScoreBadge tone="warning">Source candidates needing action</ScoreBadge>
+          <ScoreBadge tone="muted">Legacy/noisy leads</ScoreBadge>
+          <ScoreBadge tone="muted">Skipped/unsupported</ScoreBadge>
+        </div>
         <div className="mt-5 grid gap-3">
-          {candidates.length === 0 ? <p className="text-sm text-ink-400">No source candidates yet.</p> : null}
-          {candidates.map((candidate) => (
-            <div key={candidate.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <div className="font-semibold text-white">{candidate.title ?? candidate.url ?? "Untitled source"}</div>
-                  <p className="mt-1 text-sm text-ink-300">{candidate.reason ?? "No classification reason saved."}</p>
-                  {candidate.url ? <Link href={candidate.url} className="mt-2 inline-flex text-sm font-semibold text-aqua-400">Open source</Link> : null}
+          {candidatesNeedingAction.length === 0 ? <p className="text-sm text-ink-400">No source candidates need enumeration right now.</p> : null}
+          {candidatesNeedingAction.map((candidate) => {
+            const unsupportedAggregator = isUnsupportedAggregator(candidate);
+            return (
+              <div key={candidate.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="font-semibold text-white">{candidate.title ?? candidate.url ?? "Untitled source"}</div>
+                    <p className="mt-1 text-sm font-semibold text-ink-100">Not a job yet</p>
+                    <p className="mt-1 text-sm text-ink-300">Why this is not a job yet: {candidate.reason ?? "This source has not been verified as a single posting."}</p>
+                    {candidate.url ? <Link href={candidate.url} className="mt-2 inline-flex text-sm font-semibold text-aqua-400">Open source</Link> : null}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <ScoreBadge tone="warning">{candidate.classification}</ScoreBadge>
+                    <ScoreBadge tone="warning">Needs enumeration</ScoreBadge>
+                    <ScoreBadge tone="muted">{candidate.confidence ?? "LOW"}</ScoreBadge>
+                    <ScoreBadge tone="aqua">{candidate.createdLeadCount} leads</ScoreBadge>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <ScoreBadge tone={isImportableSourceClassification(candidate.classification) ? "aqua" : "muted"}>{candidate.classification}</ScoreBadge>
-                  <ScoreBadge tone="muted">{candidate.confidence ?? "LOW"}</ScoreBadge>
-                  <ScoreBadge tone={candidate.status === "UNSUPPORTED" ? "warning" : "muted"}>{candidate.status}</ScoreBadge>
-                  <ScoreBadge tone="aqua">{candidate.createdLeadCount} leads</ScoreBadge>
-                  {candidate.error ? <ScoreBadge tone="warning">Fetch issue</ScoreBadge> : null}
+                {candidate.snippet ? <p className="mt-3 line-clamp-3 text-sm leading-6 text-ink-300">{candidate.snippet}</p> : null}
+                {candidate.error ? <p className="mt-2 text-sm text-signal-red">{candidate.error}</p> : null}
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <form action={retryClassifySourceCandidate}>
+                    <input type="hidden" name="candidateId" value={candidate.id} />
+                    <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url}>Retry classify</NeonButton>
+                  </form>
+                  <form action={enumerateSourceCandidate}>
+                    <input type="hidden" name="candidateId" value={candidate.id} />
+                    <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url || unsupportedAggregator}>Try enumerate jobs</NeonButton>
+                  </form>
+                  <form action={skipSourceCandidate}>
+                    <input type="hidden" name="candidateId" value={candidate.id} />
+                    <NeonButton className="border-white/20 text-ink-100">Skip candidate</NeonButton>
+                  </form>
                 </div>
+                {unsupportedAggregator ? <p className="mt-3 text-sm text-signal-red">Unsupported aggregator. Not importable and enumeration is not encouraged.</p> : null}
               </div>
-              {candidate.snippet ? <p className="mt-3 line-clamp-3 text-sm leading-6 text-ink-300">{candidate.snippet}</p> : null}
-              {candidate.error ? <p className="mt-2 text-sm text-signal-red">{candidate.error}</p> : null}
-              <div className="mt-4 flex flex-wrap gap-3">
-                <form action={retryClassifySourceCandidate}>
-                  <input type="hidden" name="candidateId" value={candidate.id} />
-                  <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url || candidate.status === "SKIPPED"}>Retry classify</NeonButton>
-                </form>
-                <form action={enumerateSourceCandidate}>
-                  <input type="hidden" name="candidateId" value={candidate.id} />
-                  <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url || candidate.status === "SKIPPED"}>Try enumerate jobs</NeonButton>
-                </form>
-                <form action={skipSourceCandidate}>
-                  <input type="hidden" name="candidateId" value={candidate.id} />
-                  <NeonButton className="border-white/20 text-ink-100" disabled={candidate.status === "SKIPPED"}>Skip candidate</NeonButton>
-                </form>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </GlassCard>
 
       <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Lead review board</h3>
+        <h3 className="text-xl font-semibold text-white">Verified job leads</h3>
+        <p className="mt-2 text-sm leading-6 text-ink-200">
+          Only verified single job postings with medium/high confidence and meaningful descriptions appear here.
+        </p>
         <div className="mt-5 grid gap-4">
-          {leads.length === 0 ? <p className="text-sm text-ink-400">No internet discovery leads yet. Run discovery when a provider is configured.</p> : null}
-          {leads.map((lead) => {
+          {verifiedLeads.length === 0 ? <p className="text-sm text-ink-400">No verified importable internet discovery leads yet.</p> : null}
+          {verifiedLeads.map((lead) => {
             const allowedSignals = jsonToStringArray(lead.allowedSignals);
             const forbiddenFlags = jsonToStringArray(lead.forbiddenFlags);
             const fitReasons = jsonToStringArray(lead.fitReasons);
@@ -275,6 +315,7 @@ export default async function DiscoveryPage({
                     <ScoreBadge tone={lead.fitScore && lead.fitScore >= 70 ? "aqua" : "muted"}>{lead.fitScore ?? 0}/100</ScoreBadge>
                     <ScoreBadge tone="muted">{lead.confidence ?? "LOW"}</ScoreBadge>
                     <ScoreBadge tone={verifiedPosting ? "aqua" : "muted"}>{lead.sourceClassification ?? "UNCLASSIFIED"}</ScoreBadge>
+                    <ScoreBadge tone="aqua">Verified job posting</ScoreBadge>
                     <ScoreBadge tone="muted">{lead.status}</ScoreBadge>
                   </div>
                 </div>
@@ -322,6 +363,72 @@ export default async function DiscoveryPage({
               </div>
             );
           })}
+        </div>
+      </GlassCard>
+
+      <GlassCard>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-semibold text-white">Legacy/noisy leads</h3>
+            <p className="mt-2 text-sm leading-6 text-ink-200">
+              Old or non-importable discovery leads live here so the main board stays trusted.
+            </p>
+          </div>
+          <form action={hideOldNonImportableDiscoveryLeads}>
+            <NeonButton className="border-white/20 text-ink-100">Hide old non-importable leads</NeonButton>
+          </form>
+        </div>
+        <div className="mt-5 grid gap-3">
+          {legacyLeads.length === 0 ? <p className="text-sm text-ink-400">No legacy/noisy leads visible.</p> : null}
+          {legacyLeads.map((lead) => (
+            <div key={lead.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="font-semibold text-white">{lead.title}</div>
+                  <p className="mt-1 text-sm text-ink-300">{[lead.company, lead.location].filter(Boolean).join(" | ") || "Company/location missing"}</p>
+                  <p className="mt-1 text-sm text-ink-300">Old/noisy lead from earlier run</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <ScoreBadge tone="muted">{lead.sourceClassification ?? "UNCLASSIFIED"}</ScoreBadge>
+                  <ScoreBadge tone="warning">Not importable</ScoreBadge>
+                  <ScoreBadge tone="muted">{lead.confidence ?? "LOW"}</ScoreBadge>
+                  <ScoreBadge tone="muted">{lead.status}</ScoreBadge>
+                </div>
+              </div>
+              <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-6 text-ink-300">{lead.extractedDescription ?? lead.rawText ?? lead.rawSnippet}</p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <form action={skipDiscoveryLead}>
+                  <input type="hidden" name="leadId" value={lead.id} />
+                  <NeonButton className="border-white/20 text-ink-100">Skip</NeonButton>
+                </form>
+                <form action={enrichDiscoveryLead}>
+                  <input type="hidden" name="leadId" value={lead.id} />
+                  <NeonButton className="border-white/20 text-ink-100" disabled={!lead.sourceUrl}>Enrich/retry</NeonButton>
+                </form>
+              </div>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      <GlassCard>
+        <h3 className="text-xl font-semibold text-white">Skipped/unsupported source candidates</h3>
+        <div className="mt-5 grid gap-3">
+          {skippedOrUnsupportedCandidates.length === 0 ? <p className="text-sm text-ink-400">No skipped or unsupported candidates.</p> : null}
+          {skippedOrUnsupportedCandidates.map((candidate) => (
+            <div key={candidate.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="font-semibold text-white">{candidate.title ?? candidate.url ?? "Untitled source"}</div>
+                  <p className="mt-1 text-sm text-ink-300">{candidate.reason ?? candidate.error ?? "No reason saved."}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <ScoreBadge tone="muted">{candidate.classification}</ScoreBadge>
+                  <ScoreBadge tone="muted">{candidate.status}</ScoreBadge>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </GlassCard>
     </div>

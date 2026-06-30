@@ -66,4 +66,6 @@
 - Treat search/career results as source candidates first; only verified single job postings should become importable leads.
 - Add provider diagnostics and safe public candidate enumeration before broadening ATS support.
 - Keep Workday support limited to public visible content; JS-only pages should not trigger browser automation.
+- Keep discovery UI organized by trust level: verified leads, source candidates, legacy/noisy, skipped/unsupported.
+- Extract public career links from HTML, Markdown, and plain URLs, but keep them as candidates until verified.
 - Add Lever/Ashby adapters only after public, non-authenticated behavior is understood.

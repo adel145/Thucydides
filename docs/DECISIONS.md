@@ -287,3 +287,15 @@ Reason: real QA showed the quality gate is correct but too few leads are produce
 Decision: Tavily and SerpApi tests report safe operational messages in `/discovery` query notices, without storing secrets or printing API keys. SerpApi 401 explicitly means `SERPAPI_API_KEY` or account access must be fixed outside the app.
 
 Reason: Adel needs to distinguish "discovery found no jobs" from "provider authorization failed" without exposing credentials in UI, logs, docs, or git.
+
+## 2026-06-30: Discovery UI Must Separate Trust Levels
+
+Decision: `/discovery` should separate verified job leads from source candidates, legacy/noisy leads, and skipped/unsupported records. Old non-importable leads may be hidden by marking them `SKIPPED`, but they must not be deleted and imported jobs must not be touched.
+
+Reason: real QA showed Adel could not tell what was trusted, old, noisy, or actually importable when everything appeared in one board.
+
+## 2026-06-30: Candidate Text Can Contain Safe Job Links
+
+Decision: candidate enumeration should extract target-role links from HTML anchors, Markdown links, and plain public URLs in fetched content plus saved candidate text/snippets, while deduping URLs.
+
+Reason: real Tavily candidates included NVIDIA/Workday links in Markdown-style text rather than HTML anchors. These links are still public source candidates, not jobs, until verified.

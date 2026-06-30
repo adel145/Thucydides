@@ -188,9 +188,20 @@
 - Kept broad Glassdoor/listing pages unsupported and non-importable.
 - Added tests for provider diagnostics, Workday behavior, generic link extraction, unsupported aggregators, enumeration count updates, strict import gates, and hard-forbidden verified postings.
 
+## Completed In Phase 6.1C
+
+- Renamed provider status copy to key present/missing and separated it from verified/failed provider tests.
+- Deduped repeated SerpApi 401/auth messages and stopped further SerpApi queries in the same run after an auth failure.
+- Added Markdown link and plain public URL extraction to career-link extraction.
+- Updated enumeration to read fetched content plus saved candidate raw text/snippets.
+- Added idempotent candidate/lead dedupe for repeated Try enumerate jobs actions.
+- Split `/discovery` into source candidates needing action, verified job leads, legacy/noisy leads, and skipped/unsupported candidates.
+- Added Hide old non-importable leads action that marks old noisy leads SKIPPED without deletion or touching imported jobs.
+- Added tests for Markdown/plain URL extraction, NVIDIA Workday candidate text, idempotent candidate dedupe, provider status labels, legacy/noisy lead filtering, and hide safety.
+
 ## Next Tasks
 
-- Manually QA provider diagnostics, Workday/career-page enumeration, and real Tavily/SerpApi runs.
+- Manually QA provider diagnostics, Markdown/URL candidate enumeration, and real Tavily/SerpApi runs.
 - Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.
 - Improve packet quality review before exports.

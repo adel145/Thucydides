@@ -193,6 +193,19 @@ Phase 6.1B coverage:
 - Build/type verification covers `/discovery` provider tests and source-candidate retry/enumerate/skip actions.
 - Manual QA should confirm SerpApi 401 tells Adel to fix the key/account outside the app and does not print secrets.
 
+Phase 6.1C coverage:
+
+- Unit tests cover Markdown job-link extraction.
+- Unit tests cover plain Workday job URL extraction.
+- Unit tests confirm HTML link extraction still works.
+- Unit tests cover URL dedupe during extraction/enumeration preparation.
+- Unit tests cover NVIDIA Workday Markdown text producing source candidates.
+- Unit tests cover provider status copy distinguishing key present from verified/auth failed.
+- Unit tests cover deduped SerpApi 401/auth messages.
+- Unit tests cover verified job lead versus legacy/noisy lead separation.
+- Unit tests cover hiding old non-importable leads without affecting imported leads.
+- Build/type verification covers `/discovery` trust sections and hide-old-leads server action.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

@@ -19,6 +19,24 @@ export function formatProviderDiagnosticError(provider: DiscoveryProviderDiagnos
   return `Tavily test failed: ${message}`;
 }
 
+export function isProviderAuthFailureMessage(message: string) {
+  return /authorization failed|failed:\s*401|\b401\b/i.test(message);
+}
+
+export function dedupeProviderMessages(messages: string[]) {
+  return [...new Set(messages.filter(Boolean))];
+}
+
+export function providerStatusLabel(provider: DiscoveryProviderDiagnostic["provider"], keyPresent: boolean, tested?: { ok: boolean; message?: string | null }) {
+  const name = provider === "SERPAPI_GOOGLE_JOBS" ? "SerpApi" : "Tavily";
+  if (tested) {
+    if (tested.ok) return `${name} verified`;
+    if (provider === "SERPAPI_GOOGLE_JOBS" && tested.message && isProviderAuthFailureMessage(tested.message)) return "SerpApi auth failed";
+    return `${name} failed`;
+  }
+  return `${name} ${keyPresent ? "key present" : "key missing"}`;
+}
+
 export async function testDiscoveryProvider(
   provider: DiscoveryProviderDiagnostic["provider"],
   env: NodeJS.ProcessEnv | Record<string, string | undefined> = process.env

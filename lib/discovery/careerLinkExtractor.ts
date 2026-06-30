@@ -32,24 +32,52 @@ function resolveUrl(href: string, baseUrl: string) {
   }
 }
 
-export function extractCareerJobLinks(html: string, baseUrl: string, limit = 20): ExtractedCareerJobLink[] {
+function titleFromUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    const last = parsed.pathname.split("/").filter(Boolean).at(-1) ?? parsed.hostname;
+    return decodeURIComponent(last)
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  } catch {
+    return url;
+  }
+}
+
+function pushLink(links: ExtractedCareerJobLink[], seen: Set<string>, titleValue: string, href: string, baseUrl: string) {
+  const url = resolveUrl(href, baseUrl);
+  if (!url || seen.has(url)) return;
+  const title = stripTags(titleValue) || titleFromUrl(url);
+  const context = decodeHtml(`${title} ${url}`);
+  if (!title || !targetRolePattern.test(context)) return;
+  seen.add(url);
+  links.push({
+    title,
+    url,
+    snippet: title,
+    preferredLocationSignal: locationPattern.test(context)
+  });
+}
+
+export function extractCareerJobLinks(content: string, baseUrl: string, limit = 20): ExtractedCareerJobLink[] {
   const links: ExtractedCareerJobLink[] = [];
   const seen = new Set<string>();
-  const anchors = html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi);
+  const anchors = content.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi);
 
   for (const anchor of anchors) {
-    const url = resolveUrl(anchor[1], baseUrl);
-    if (!url || seen.has(url)) continue;
-    const title = stripTags(anchor[2]);
-    const context = decodeHtml(`${title} ${url}`);
-    if (!title || !targetRolePattern.test(context)) continue;
-    seen.add(url);
-    links.push({
-      title,
-      url,
-      snippet: title,
-      preferredLocationSignal: locationPattern.test(context)
-    });
+    pushLink(links, seen, anchor[2], anchor[1], baseUrl);
+  }
+
+  const markdownLinks = content.matchAll(/\[([^\]]{2,160})\]\((https?:\/\/[^)\s]+)\)/gi);
+  for (const link of markdownLinks) {
+    pushLink(links, seen, link[1], link[2], baseUrl);
+  }
+
+  const plainUrls = content.matchAll(/https?:\/\/[^\s<>)\]]+/gi);
+  for (const match of plainUrls) {
+    const url = match[0].replace(/[.,;:"']+$/g, "");
+    pushLink(links, seen, titleFromUrl(url), url, baseUrl);
   }
 
   return links

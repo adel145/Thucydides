@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.1B Architecture
+## Phase 6.1C Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -168,6 +168,17 @@ Phase 6.1B adds ATS adapters and provider diagnostics without changing the schem
 - Broad aggregators such as Glassdoor remain unsupported/non-importable candidates.
 - No browser automation, login bypass, authenticated scraping, automatic application, automatic email, or fake job description generation is introduced.
 
+Phase 6.1C improves discovery trust and candidate extraction without changing the schema:
+
+- Provider status badges distinguish key present/missing from verified/failed test results.
+- SerpApi auth failures are deduped during discovery runs, and SerpApi queries stop after the first auth failure.
+- `/discovery` separates verified job leads, source candidates needing action, legacy/noisy leads, and skipped/unsupported records.
+- Old non-importable discovery leads can be hidden by marking them `SKIPPED`; imported jobs are not touched and nothing is deleted.
+- `lib/discovery/careerLinkExtractor.ts` extracts HTML anchors, Markdown links, and plain public job URLs.
+- Source candidate enumeration reads fetched content plus saved candidate `rawText` and `snippet`, which supports Tavily Markdown-style links.
+- Source candidate and lead creation is idempotent by URL/lead identity when enumeration is repeated.
+- `lib/discovery/discoveryLeadViews.ts` centralizes verified versus legacy/noisy lead logic for the UI.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -188,7 +199,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.1B
+## Non-Goals in Phase 6.1C
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

@@ -8,7 +8,7 @@ import { optionalString, requiredString } from "@/lib/formParsing";
 import { enrichDiscoveryLeadFromUrl, prepareDiscoveryLeadForCreate, runInternetJobDiscovery, asPrismaDiscoveryLeadCreate, asPrismaSourceCandidateCreate, type PreparedDiscoverySourceCandidate } from "@/lib/discovery/jobDiscoveryEngine";
 import { prepareJobCreateFromDiscoveryLead } from "@/lib/discovery/jobDiscoveryImport";
 import { testDiscoveryProvider } from "@/lib/discovery/providerDiagnostics";
-import { enumerateDiscoverySourceCandidate, retryClassifyDiscoverySourceCandidate } from "@/lib/discovery/sourceCandidateEnumeration";
+import { dedupePreparedDiscoveryLeads, dedupePreparedSourceCandidates, enumerateDiscoverySourceCandidate, retryClassifyDiscoverySourceCandidate } from "@/lib/discovery/sourceCandidateEnumeration";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
 
 function optionalPositiveInt(value: FormDataEntryValue | null, fallback: number) {
@@ -176,16 +176,22 @@ export async function enumerateSourceCandidate(formData: FormData) {
   const candidate = await db.discoverySourceCandidate.findUnique({ where: { id } });
   if (!candidate) redirect("/discovery?missingCandidate=1");
   const result = await enumerateDiscoverySourceCandidate(candidate);
+  const [existingCandidates, existingLeads] = await Promise.all([
+    db.discoverySourceCandidate.findMany({ select: { url: true } }),
+    db.jobDiscoveryLead.findMany({ select: { canonicalUrl: true, sourceUrl: true, title: true, company: true } })
+  ]);
+  const newCandidates = dedupePreparedSourceCandidates(result.newCandidates, existingCandidates.map((item) => item.url));
+  const newLeads = dedupePreparedDiscoveryLeads(result.leads, existingLeads);
 
-  for (const newCandidate of result.newCandidates) {
+  for (const newCandidate of newCandidates) {
     await db.discoverySourceCandidate.create({
       data: sourceCandidateCreateInput(newCandidate, candidate.discoveryRunId)
     });
   }
 
-  if (result.leads.length > 0) {
+  if (newLeads.length > 0) {
     await db.jobDiscoveryLead.createMany({
-      data: result.leads.map((lead) => ({
+      data: newLeads.map((lead) => ({
         ...lead,
         discoveryRunId: candidate.discoveryRunId,
         sourceCandidateId: candidate.id,
@@ -198,19 +204,25 @@ export async function enumerateSourceCandidate(formData: FormData) {
 
   await db.discoverySourceCandidate.update({
     where: { id },
-    data: result.candidateUpdate
+    data: {
+      ...result.candidateUpdate,
+      reason: newCandidates.length === 0 && newLeads.length === 0 && (result.newCandidates.length > 0 || result.leads.length > 0)
+        ? "Already enumerated / no new links."
+        : result.candidateUpdate.reason,
+      createdLeadCount: (candidate.createdLeadCount ?? 0) + newLeads.length
+    }
   });
 
-  if (candidate.discoveryRunId && result.leads.length > 0) {
+  if (candidate.discoveryRunId && newLeads.length > 0) {
     await db.jobDiscoveryRun.update({
       where: { id: candidate.discoveryRunId },
-      data: { resultCount: { increment: result.leads.length } }
+      data: { resultCount: { increment: newLeads.length } }
     });
   }
 
   revalidatePath("/");
   revalidatePath("/discovery");
-  redirect(`/discovery?enumerated=${result.leads.length}&candidateLinks=${result.newCandidates.length}`);
+  redirect(`/discovery?enumerated=${newLeads.length}&candidateLinks=${newCandidates.length}`);
 }
 
 export async function skipSourceCandidate(formData: FormData) {
@@ -223,6 +235,28 @@ export async function skipSourceCandidate(formData: FormData) {
     }
   });
   revalidatePath("/discovery");
+}
+
+export async function hideOldNonImportableDiscoveryLeads() {
+  await db.jobDiscoveryLead.updateMany({
+    where: {
+      sourceType: { not: "GMAIL_ALERT" },
+      importedJobId: null,
+      status: { notIn: ["IMPORTED", "SKIPPED"] },
+      OR: [
+        { sourceClassification: null },
+        { sourceClassification: { notIn: ["ACTUAL_JOB_POSTING", "ATS_JOB_POSTING"] } },
+        { confidence: "LOW" }
+      ]
+    },
+    data: {
+      status: "SKIPPED",
+      notes: "Hidden from main discovery review because this old lead is not verified as an importable job posting."
+    }
+  });
+  revalidatePath("/");
+  revalidatePath("/discovery");
+  redirect("/discovery?oldLeadsHidden=1");
 }
 
 export async function importDiscoveryLeadToInbox(formData: FormData) {

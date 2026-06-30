@@ -477,3 +477,27 @@ Verified:
 Not implemented:
 
 - No Gmail OAuth, automatic inbox reading, Calendar, login/captcha bypass, authenticated scraping, browser automation, OpenAI discovery scoring/parsing, automatic applications, automatic emails, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.
+
+## 2026-06-30 Phase 6.1C - Discovery UX Cleanup + Markdown Link Extraction + Provider Status Clarity
+
+Created:
+
+- `lib/discovery/discoveryLeadViews.ts` for verified versus legacy/noisy discovery lead view rules.
+
+Updated:
+
+- Provider badges now say key present/missing until a provider test verifies or fails the provider.
+- SerpApi auth failures are deduped in run errors, and a run stops trying more SerpApi queries after the first auth failure.
+- Career link extraction now supports HTML anchors, Markdown links, and plain public URLs.
+- Source candidate enumeration now reads fetched content plus saved candidate raw text/snippets.
+- Enumeration avoids duplicate source candidates and duplicate discovery leads when retried.
+- `/discovery` now separates source candidates needing action, verified job leads, legacy/noisy leads, and skipped/unsupported candidates.
+- Old non-importable leads can be hidden by marking them `SKIPPED`; imported jobs are not touched and nothing is deleted.
+
+Verified:
+
+- Added tests for Markdown/plain URL extraction, NVIDIA Workday candidate links, idempotent candidate dedupe, provider status labels, SerpApi message dedupe, legacy/noisy lead separation, and hide safety.
+
+Not implemented:
+
+- No Gmail OAuth, automatic inbox reading, Calendar, login/captcha bypass, authenticated scraping, browser automation, OpenAI discovery scoring/parsing, automatic applications, automatic emails, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.

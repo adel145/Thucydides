@@ -6,13 +6,14 @@ import { buildCompanyCareerQueries, buildPlatformDiscoveryQueries } from "../lib
 import { countDiscoveryLeads } from "../lib/discovery/jobDiscoveryCounts";
 import { prepareDiscoveryLeadForCreate } from "../lib/discovery/jobDiscoveryEngine";
 import { prepareJobCreateFromDiscoveryLead } from "../lib/discovery/jobDiscoveryImport";
+import { isLegacyOrNoisyDiscoveryLead, isVerifiedImportableDiscoveryLead, shouldHideOldNonImportableLead } from "../lib/discovery/discoveryLeadViews";
 import { scoreDiscoveryLead } from "../lib/discovery/jobDiscoveryScoring";
 import { isSafePublicHttpUrl } from "../lib/discovery/jobPageFetcher";
 import { extractJobDescriptionFromHtml, extractJsonLdJobPosting } from "../lib/discovery/jobDescriptionExtractor";
 import { classifyDiscoverySource, SOURCE_CLASSIFICATIONS } from "../lib/discovery/pageClassifier";
-import { formatProviderDiagnosticError } from "../lib/discovery/providerDiagnostics";
+import { dedupeProviderMessages, formatProviderDiagnosticError, providerStatusLabel } from "../lib/discovery/providerDiagnostics";
 import { extractCareerJobLinks } from "../lib/discovery/careerLinkExtractor";
-import { enumerateCandidateFromHtml } from "../lib/discovery/sourceCandidateEnumeration";
+import { dedupePreparedSourceCandidates, enumerateCandidateFromHtml } from "../lib/discovery/sourceCandidateEnumeration";
 import { isWorkdayExactJobUrl, isWorkdaySearchUrl, prepareWorkdayLeadFromHtml } from "../lib/discovery/workdayDiscovery";
 import { validateJob } from "../lib/rules/validateJob";
 
@@ -35,6 +36,14 @@ describe("discovery provider config", () => {
     const message = formatProviderDiagnosticError("SERPAPI_GOOGLE_JOBS", new Error("SerpApi Google Jobs failed: 401"));
     expect(message).toBe("SerpApi authorization failed: check SERPAPI_API_KEY/account.");
     expect(message).not.toContain("secret-key");
+  });
+
+  it("dedupes repeated SerpApi 401 messages and separates key present from verified", () => {
+    const authMessage = "SerpApi authorization failed: check SERPAPI_API_KEY/account.";
+    expect(dedupeProviderMessages([authMessage, authMessage])).toEqual([authMessage]);
+    expect(providerStatusLabel("SERPAPI_GOOGLE_JOBS", true)).toBe("SerpApi key present");
+    expect(providerStatusLabel("SERPAPI_GOOGLE_JOBS", true, { ok: false, message: authMessage })).toBe("SerpApi auth failed");
+    expect(providerStatusLabel("TAVILY", true, { ok: true })).toBe("Tavily verified");
   });
 });
 
@@ -217,6 +226,65 @@ describe("career listing and Workday enumeration", () => {
     expect(result.leads).toHaveLength(0);
     expect(result.newCandidates).toHaveLength(2);
     expect(result.candidateUpdate.classification).toBe(SOURCE_CLASSIFICATIONS.CAREERS_LISTING);
+  });
+
+  it("extracts Markdown job links and dedupes the same URL", () => {
+    const url = "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/Israel/Software-Engineer_JR123";
+    const links = extractCareerJobLinks(`
+      [Software Engineer - Israel](${url})
+      [Software Engineer - Israel duplicate](${url})
+    `, "https://nvidia.com/careers");
+    expect(links).toHaveLength(1);
+    expect(links[0]).toMatchObject({
+      title: "Software Engineer - Israel",
+      url
+    });
+  });
+
+  it("extracts plain Workday job URLs", () => {
+    const url = "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/Israel/Senior-Backend-Engineer_JR999";
+    const links = extractCareerJobLinks(`See ${url} for details`, "https://nvidia.com/careers");
+    expect(links).toHaveLength(1);
+    expect(links[0]?.url).toBe(url);
+  });
+
+  it("turns NVIDIA Workday Markdown text into source candidates", () => {
+    const url = "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/Israel/Deep-Learning-Software-Engineer_JR456";
+    const result = enumerateCandidateFromHtml({
+      url: "https://nvidia.com/en-us/about-nvidia/careers/",
+      title: "Careers at NVIDIA",
+      rawText: `[Deep Learning Software Engineer - Israel](${url})`,
+      provider: "TAVILY",
+      source: "WEB_SEARCH"
+    }, "<main>NVIDIA careers</main>");
+    expect(result.leads).toHaveLength(0);
+    expect(result.newCandidates).toHaveLength(1);
+    expect(result.newCandidates[0]).toMatchObject({
+      title: "Deep Learning Software Engineer - Israel",
+      url,
+      classification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING
+    });
+  });
+
+  it("dedupes prepared source candidates against existing URLs", () => {
+    const candidate = {
+      provider: "TAVILY",
+      source: "CAREER_LINK_EXTRACTION",
+      query: "nvidia",
+      url: "https://example.com/job/software-engineer",
+      title: "Software Engineer",
+      snippet: "Software Engineer",
+      rawText: "Software Engineer",
+      classification: SOURCE_CLASSIFICATIONS.UNKNOWN,
+      confidence: "MEDIUM",
+      reason: "Specific link.",
+      extractedJobCount: 0,
+      status: "REVIEW",
+      createdLeadCount: 0,
+      leads: []
+    };
+    expect(dedupePreparedSourceCandidates([candidate, candidate], [candidate.url])).toHaveLength(0);
+    expect(dedupePreparedSourceCandidates([candidate, candidate], [])).toHaveLength(1);
   });
 
   it("turns exact public Workday job-like pages into ATS job posting leads", () => {
@@ -409,5 +477,30 @@ describe("discovery run bulk safety", () => {
     expect(isSkippableNonImportedDiscoveryLead({ status: "SKIPPED", importedJobId: null })).toBe(true);
     expect(isSkippableNonImportedDiscoveryLead({ status: "IMPORTED", importedJobId: "job-1" })).toBe(false);
     expect(isSkippableNonImportedDiscoveryLead({ status: "NEW", importedJobId: "job-1" })).toBe(false);
+  });
+
+  it("separates verified job leads from legacy/noisy leads and hides only non-imported old leads", () => {
+    const verified = {
+      sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+      confidence: "HIGH",
+      extractedDescription: "Backend Developer role using Python, APIs, databases, testing, and distributed systems in Israel.",
+      status: "NEW"
+    };
+    const noisy = {
+      sourceClassification: SOURCE_CLASSIFICATIONS.CAREERS_LISTING,
+      confidence: "LOW",
+      rawText: "Open jobs",
+      status: "NEW"
+    };
+    const importedNoisy = {
+      ...noisy,
+      status: "IMPORTED",
+      importedJobId: "job-1"
+    };
+
+    expect(isVerifiedImportableDiscoveryLead(verified)).toBe(true);
+    expect(isLegacyOrNoisyDiscoveryLead(noisy)).toBe(true);
+    expect(shouldHideOldNonImportableLead(noisy)).toBe(true);
+    expect(shouldHideOldNonImportableLead(importedNoisy)).toBe(false);
   });
 });
