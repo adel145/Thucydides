@@ -64,4 +64,6 @@
 - Use public ATS APIs such as Greenhouse when detected.
 - Keep Tavily and SerpApi optional and review-only.
 - Treat search/career results as source candidates first; only verified single job postings should become importable leads.
-- Add Lever/Ashby/Workday adapters only after public, non-authenticated behavior is understood.
+- Add provider diagnostics and safe public candidate enumeration before broadening ATS support.
+- Keep Workday support limited to public visible content; JS-only pages should not trigger browser automation.
+- Add Lever/Ashby adapters only after public, non-authenticated behavior is understood.

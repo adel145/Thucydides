@@ -180,6 +180,19 @@ Phase 6.1A coverage:
 - Build/type verification covers additive `DiscoverySourceCandidate`, source-candidate UI, source classification, and the import quality gate.
 - Manual QA should confirm `/discovery` separates Source candidates from Job leads and disables import for non-importable candidates.
 
+Phase 6.1B coverage:
+
+- Unit tests cover SerpApi 401 diagnostic copy without exposing keys.
+- Unit tests cover Workday search pages as non-importable ATS board candidates.
+- Unit tests cover exact public Workday job-like pages becoming ATS job leads only when title and meaningful description exist.
+- Unit tests cover Workday JS-only/blocked pages staying candidates with errors and no leads.
+- Unit tests cover generic public career HTML extracting target-role links as source candidates.
+- Unit tests cover broad Glassdoor listings remaining unsupported/non-importable.
+- Unit tests cover enumeration updating `createdLeadCount`.
+- Unit tests keep LOW-confidence/listing candidates non-importable and verified security-clearance postings FORBIDDEN.
+- Build/type verification covers `/discovery` provider tests and source-candidate retry/enumerate/skip actions.
+- Manual QA should confirm SerpApi 401 tells Adel to fix the key/account outside the app and does not print secrets.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

@@ -10,6 +10,10 @@ import { scoreDiscoveryLead } from "../lib/discovery/jobDiscoveryScoring";
 import { isSafePublicHttpUrl } from "../lib/discovery/jobPageFetcher";
 import { extractJobDescriptionFromHtml, extractJsonLdJobPosting } from "../lib/discovery/jobDescriptionExtractor";
 import { classifyDiscoverySource, SOURCE_CLASSIFICATIONS } from "../lib/discovery/pageClassifier";
+import { formatProviderDiagnosticError } from "../lib/discovery/providerDiagnostics";
+import { extractCareerJobLinks } from "../lib/discovery/careerLinkExtractor";
+import { enumerateCandidateFromHtml } from "../lib/discovery/sourceCandidateEnumeration";
+import { isWorkdayExactJobUrl, isWorkdaySearchUrl, prepareWorkdayLeadFromHtml } from "../lib/discovery/workdayDiscovery";
 import { validateJob } from "../lib/rules/validateJob";
 
 describe("discovery provider config", () => {
@@ -25,6 +29,12 @@ describe("discovery provider config", () => {
     expect(configured.tavilyConfigured).toBe(true);
     expect(configured.serpApiConfigured).toBe(true);
     expect(configured.maxResults).toBe(12);
+  });
+
+  it("maps SerpApi 401 to a clear diagnostic without exposing keys", () => {
+    const message = formatProviderDiagnosticError("SERPAPI_GOOGLE_JOBS", new Error("SerpApi Google Jobs failed: 401"));
+    expect(message).toBe("SerpApi authorization failed: check SERPAPI_API_KEY/account.");
+    expect(message).not.toContain("secret-key");
   });
 });
 
@@ -134,6 +144,19 @@ describe("source candidate classification and safety", () => {
     });
   });
 
+  it("classifies Workday search pages as ATS boards and non-importable", () => {
+    const result = classifyDiscoverySource({
+      title: "Search Jobs",
+      url: "https://acme.wd5.myworkdayjobs.com/acme_external/search",
+      snippet: "Search all open roles."
+    });
+    expect(isWorkdaySearchUrl("https://acme.wd5.myworkdayjobs.com/acme_external/search")).toBe(true);
+    expect(result).toMatchObject({
+      classification: SOURCE_CLASSIFICATIONS.ATS_BOARD,
+      importable: false
+    });
+  });
+
   it("keeps listing-page customer service text as a source candidate, not a forbidden lead", () => {
     const result = classifyDiscoverySource({
       title: "Open Positions",
@@ -142,6 +165,16 @@ describe("source candidate classification and safety", () => {
     });
     expect(result.importable).toBe(false);
     expect(result.classification).toBe(SOURCE_CLASSIFICATIONS.SEARCH_RESULTS_PAGE);
+  });
+
+  it("keeps Glassdoor listings unsupported and non-importable", () => {
+    const result = enumerateCandidateFromHtml({
+      url: "https://www.glassdoor.com/Jobs/Mobileye-Jobs.htm",
+      title: "Mobileye Jobs & Careers - Glassdoor",
+      snippet: "Browse open jobs."
+    }, "<html><title>Mobileye Jobs & Careers - Glassdoor</title><a href='/job/backend'>Backend Engineer</a></html>");
+    expect(result.leads).toHaveLength(0);
+    expect(result.candidateUpdate.classification).not.toBe(SOURCE_CLASSIFICATIONS.ACTUAL_JOB_POSTING);
   });
 
   it("rejects unsafe or unsupported URLs before fetching", () => {
@@ -160,6 +193,53 @@ describe("source candidate classification and safety", () => {
       expect(isSafePublicHttpUrl(url)).toBe(false);
     }
     expect(isSafePublicHttpUrl("https://boards.greenhouse.io/acme/jobs/123")).toBe(true);
+  });
+});
+
+describe("career listing and Workday enumeration", () => {
+  it("extracts generic career job-like links as source candidates", () => {
+    const links = extractCareerJobLinks(`
+      <a href="/careers/backend-engineer-israel">Backend Engineer - Israel</a>
+      <a href="/careers/sales-manager">Sales Manager</a>
+      <a href="/careers/qa-automation-remote">QA Automation Junior Remote</a>
+    `, "https://example.com/jobs");
+    expect(links.map((link) => link.title)).toEqual(["Backend Engineer - Israel", "QA Automation Junior Remote"]);
+
+    const result = enumerateCandidateFromHtml({
+      url: "https://example.com/careers",
+      title: "Open Positions",
+      provider: "TAVILY",
+      source: "WEB_SEARCH"
+    }, `
+      <a href="/careers/backend-engineer-israel">Backend Engineer - Israel</a>
+      <a href="/careers/qa-automation-remote">QA Automation Junior Remote</a>
+    `);
+    expect(result.leads).toHaveLength(0);
+    expect(result.newCandidates).toHaveLength(2);
+    expect(result.candidateUpdate.classification).toBe(SOURCE_CLASSIFICATIONS.CAREERS_LISTING);
+  });
+
+  it("turns exact public Workday job-like pages into ATS job posting leads", () => {
+    const url = "https://acme.wd5.myworkdayjobs.com/acme_external/job/Tel-Aviv/Backend-Developer_JR123";
+    const html = "<title>Backend Developer</title><main><h1>Backend Developer</h1><p>Job description: Backend Developer role using Python, APIs, databases, and distributed systems for a product engineering team in Israel.</p><p>Requirements: Python, SQL, APIs, teamwork.</p></main>";
+    expect(isWorkdayExactJobUrl(url)).toBe(true);
+    expect(prepareWorkdayLeadFromHtml({ url, html })?.title).toContain("Backend Developer");
+
+    const result = enumerateCandidateFromHtml({ url, title: "Backend Developer", createdLeadCount: 2 }, html);
+    expect(result.leads).toHaveLength(1);
+    expect(result.candidateUpdate.classification).toBe(SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING);
+    expect(result.candidateUpdate.createdLeadCount).toBe(3);
+  });
+
+  it("keeps Workday JS-only pages as candidates with an error and no lead", () => {
+    const result = enumerateCandidateFromHtml({
+      url: "https://acme.wd5.myworkdayjobs.com/acme_external/search",
+      title: "Search Jobs"
+    }, "<html><head><script src='/wday/app.js'></script></head><body><div id='root'></div></body></html>");
+    expect(result.leads).toHaveLength(0);
+    expect(result.newCandidates).toHaveLength(0);
+    expect(result.candidateUpdate.status).toBe("UNSUPPORTED");
+    expect(result.candidateUpdate.error).toContain("JS-only");
   });
 });
 

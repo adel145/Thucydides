@@ -5,13 +5,52 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { optionalString, requiredString } from "@/lib/formParsing";
-import { enrichDiscoveryLeadFromUrl, prepareDiscoveryLeadForCreate, runInternetJobDiscovery, asPrismaDiscoveryLeadCreate, asPrismaSourceCandidateCreate } from "@/lib/discovery/jobDiscoveryEngine";
+import { enrichDiscoveryLeadFromUrl, prepareDiscoveryLeadForCreate, runInternetJobDiscovery, asPrismaDiscoveryLeadCreate, asPrismaSourceCandidateCreate, type PreparedDiscoverySourceCandidate } from "@/lib/discovery/jobDiscoveryEngine";
 import { prepareJobCreateFromDiscoveryLead } from "@/lib/discovery/jobDiscoveryImport";
+import { testDiscoveryProvider } from "@/lib/discovery/providerDiagnostics";
+import { enumerateDiscoverySourceCandidate, retryClassifyDiscoverySourceCandidate } from "@/lib/discovery/sourceCandidateEnumeration";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
 
 function optionalPositiveInt(value: FormDataEntryValue | null, fallback: number) {
   const parsed = Number.parseInt(typeof value === "string" ? value : "", 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function providerNoticeUrl(provider: string, ok: boolean, message: string) {
+  const params = new URLSearchParams({
+    providerTest: provider,
+    providerOk: ok ? "1" : "0",
+    providerMessage: message
+  });
+  return `/discovery?${params.toString()}`;
+}
+
+function sourceCandidateCreateInput(candidate: PreparedDiscoverySourceCandidate, discoveryRunId: string | null | undefined): Prisma.DiscoverySourceCandidateCreateInput {
+  return {
+    ...(discoveryRunId ? { discoveryRun: { connect: { id: discoveryRunId } } } : {}),
+    provider: candidate.provider,
+    source: candidate.source,
+    query: candidate.query,
+    url: candidate.url,
+    title: candidate.title,
+    snippet: candidate.snippet,
+    rawText: candidate.rawText,
+    classification: candidate.classification,
+    confidence: candidate.confidence,
+    reason: candidate.reason,
+    extractedCompany: candidate.extractedCompany,
+    extractedJobCount: candidate.extractedJobCount,
+    status: candidate.status,
+    createdLeadCount: candidate.createdLeadCount,
+    error: candidate.error
+  };
+}
+
+export async function testDiscoveryProviderAction(formData: FormData) {
+  const provider = requiredString(formData.get("provider"));
+  const normalized = provider === "SERPAPI_GOOGLE_JOBS" ? "SERPAPI_GOOGLE_JOBS" : "TAVILY";
+  const result = await testDiscoveryProvider(normalized);
+  redirect(providerNoticeUrl(normalized, result.ok, result.message));
 }
 
 export async function runJobDiscovery(formData: FormData) {
@@ -117,6 +156,73 @@ export async function enrichDiscoveryLead(formData: FormData) {
 
   revalidatePath("/discovery");
   redirect("/discovery?enriched=1");
+}
+
+export async function retryClassifySourceCandidate(formData: FormData) {
+  const id = requiredString(formData.get("candidateId"));
+  const candidate = await db.discoverySourceCandidate.findUnique({ where: { id } });
+  if (!candidate) redirect("/discovery?missingCandidate=1");
+  const update = await retryClassifyDiscoverySourceCandidate(candidate);
+  await db.discoverySourceCandidate.update({
+    where: { id },
+    data: update
+  });
+  revalidatePath("/discovery");
+  redirect("/discovery?candidateClassified=1");
+}
+
+export async function enumerateSourceCandidate(formData: FormData) {
+  const id = requiredString(formData.get("candidateId"));
+  const candidate = await db.discoverySourceCandidate.findUnique({ where: { id } });
+  if (!candidate) redirect("/discovery?missingCandidate=1");
+  const result = await enumerateDiscoverySourceCandidate(candidate);
+
+  for (const newCandidate of result.newCandidates) {
+    await db.discoverySourceCandidate.create({
+      data: sourceCandidateCreateInput(newCandidate, candidate.discoveryRunId)
+    });
+  }
+
+  if (result.leads.length > 0) {
+    await db.jobDiscoveryLead.createMany({
+      data: result.leads.map((lead) => ({
+        ...lead,
+        discoveryRunId: candidate.discoveryRunId,
+        sourceCandidateId: candidate.id,
+        forbiddenFlags: lead.forbiddenFlags as Prisma.InputJsonValue,
+        allowedSignals: lead.allowedSignals as Prisma.InputJsonValue,
+        fitReasons: lead.fitReasons as Prisma.InputJsonValue
+      }))
+    });
+  }
+
+  await db.discoverySourceCandidate.update({
+    where: { id },
+    data: result.candidateUpdate
+  });
+
+  if (candidate.discoveryRunId && result.leads.length > 0) {
+    await db.jobDiscoveryRun.update({
+      where: { id: candidate.discoveryRunId },
+      data: { resultCount: { increment: result.leads.length } }
+    });
+  }
+
+  revalidatePath("/");
+  revalidatePath("/discovery");
+  redirect(`/discovery?enumerated=${result.leads.length}&candidateLinks=${result.newCandidates.length}`);
+}
+
+export async function skipSourceCandidate(formData: FormData) {
+  const id = requiredString(formData.get("candidateId"));
+  await db.discoverySourceCandidate.update({
+    where: { id },
+    data: {
+      status: "SKIPPED",
+      reason: "Skipped during source-candidate review."
+    }
+  });
+  revalidatePath("/discovery");
 }
 
 export async function importDiscoveryLeadToInbox(formData: FormData) {

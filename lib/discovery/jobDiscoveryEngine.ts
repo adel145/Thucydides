@@ -7,6 +7,7 @@ import { extractJobDescriptionFromHtml, extractJsonLdJobPosting } from "./jobDes
 import { fetchPublicJobPage } from "./jobPageFetcher";
 import { scoreDiscoveryLead } from "./jobDiscoveryScoring";
 import { classifyDiscoverySource, isImportableSourceClassification, SOURCE_CLASSIFICATIONS } from "./pageClassifier";
+import { formatProviderDiagnosticError } from "./providerDiagnostics";
 import { getSerpApiConfig, mapSerpApiJobsToLeads, serpApiGoogleJobsSearch } from "./serpApiJobsClient";
 import { getTavilyConfig, mapTavilyResultsToLeads, tavilySearch, type DiscoverySearchLead } from "./tavilySearchClient";
 
@@ -369,7 +370,7 @@ export async function runInternetJobDiscovery(options: {
         try {
           structuredLeads.push(...mapSerpApiJobsToLeads(query, await serpApiGoogleJobsSearch(query, { apiKey: serpConfig.apiKey, location: "Israel", maxResults: 10 })));
         } catch (error) {
-          errors.push(error instanceof Error ? error.message : "SerpApi Google Jobs search failed.");
+          errors.push(formatProviderDiagnosticError("SERPAPI_GOOGLE_JOBS", error));
         }
       }
     }

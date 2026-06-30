@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { enrichDiscoveryLead, importDiscoveryLeadToInbox, markDiscoveryLeadDuplicate, runJobDiscovery, skipDiscoveryLead, skipNonImportedLeadsFromRun } from "@/app/discovery/actions";
+import { enrichDiscoveryLead, enumerateSourceCandidate, importDiscoveryLeadToInbox, markDiscoveryLeadDuplicate, retryClassifySourceCandidate, runJobDiscovery, skipDiscoveryLead, skipNonImportedLeadsFromRun, skipSourceCandidate, testDiscoveryProviderAction } from "@/app/discovery/actions";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonButton } from "@/components/ui/NeonButton";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
@@ -24,7 +24,22 @@ function formatDate(value: Date | string | null | undefined) {
 export default async function DiscoveryPage({
   searchParams
 }: {
-  searchParams?: Promise<{ run?: string; blocked?: string; duplicate?: string; enriched?: string; missingLead?: string; noUrl?: string; notImportable?: string }>;
+  searchParams?: Promise<{
+    run?: string;
+    blocked?: string;
+    duplicate?: string;
+    enriched?: string;
+    missingLead?: string;
+    missingCandidate?: string;
+    noUrl?: string;
+    notImportable?: string;
+    providerTest?: string;
+    providerOk?: string;
+    providerMessage?: string;
+    enumerated?: string;
+    candidateLinks?: string;
+    candidateClassified?: string;
+  }>;
 }) {
   const notices = await searchParams;
   const providerStatus = getDiscoveryProviderStatus();
@@ -40,6 +55,12 @@ export default async function DiscoveryPage({
     db.job.findMany({ select: { id: true, title: true, company: true, sourceUrl: true } })
   ]);
   const counts = countDiscoveryLeads(leads);
+  const candidatesNeedingEnumeration = candidates.filter((candidate) =>
+    candidate.status !== "SKIPPED" &&
+    candidate.status !== "UNSUPPORTED" &&
+    !isImportableSourceClassification(candidate.classification) &&
+    ["ATS_BOARD", "CAREERS_LISTING", "COMPANY_CAREERS_HOME", "SEARCH_RESULTS_PAGE", "UNKNOWN"].includes(candidate.classification)
+  ).length;
 
   return (
     <div className="grid gap-6">
@@ -61,12 +82,30 @@ export default async function DiscoveryPage({
           <ScoreBadge tone="muted">Max {providerStatus.maxResults}</ScoreBadge>
           <ScoreBadge tone="muted">{providerStatus.country}</ScoreBadge>
         </div>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <form action={testDiscoveryProviderAction}>
+            <input type="hidden" name="provider" value="TAVILY" />
+            <NeonButton className="border-white/20 text-ink-100">Test Tavily</NeonButton>
+          </form>
+          <form action={testDiscoveryProviderAction}>
+            <input type="hidden" name="provider" value="SERPAPI_GOOGLE_JOBS" />
+            <NeonButton className="border-white/20 text-ink-100">Test SerpApi</NeonButton>
+          </form>
+        </div>
         {notices?.run ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Discovery run saved locally.</div> : null}
+        {notices?.providerMessage ? (
+          <div className={`mt-4 rounded-lg border p-3 text-sm ${notices.providerOk === "1" ? "border-aqua-400/30 bg-aqua-400/10 text-aqua-400" : "border-signal-red/30 bg-signal-red/10 text-ink-100"}`}>
+            {notices.providerMessage}
+          </div>
+        ) : null}
+        {notices?.enumerated ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Candidate enumeration finished: {notices.enumerated} leads and {notices.candidateLinks ?? 0} source candidates created.</div> : null}
+        {notices?.candidateClassified ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Source candidate classification refreshed.</div> : null}
         {notices?.blocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Import blocked: this lead is FORBIDDEN by deterministic rules.</div> : null}
         {notices?.duplicate ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Import blocked: this lead looks like an existing local job.</div> : null}
         {notices?.notImportable ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Not importable: source is a listing/search/career page, not a single job posting.</div> : null}
         {notices?.enriched ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Lead enrichment retried from the public source URL.</div> : null}
         {notices?.missingLead ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Lead not found.</div> : null}
+        {notices?.missingCandidate ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Source candidate not found.</div> : null}
         {notices?.noUrl ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">This lead has no source URL to enrich.</div> : null}
       </GlassCard>
 
@@ -112,6 +151,7 @@ export default async function DiscoveryPage({
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
             {[
               ["Runs", runs.length],
+              ["Need enum", candidatesNeedingEnumeration],
               ["New leads", counts.newLeads],
               ["Enriched", counts.enrichedLeads],
               ["Needs review", counts.needsReview],
@@ -174,12 +214,27 @@ export default async function DiscoveryPage({
                 <div className="flex flex-wrap gap-2">
                   <ScoreBadge tone={isImportableSourceClassification(candidate.classification) ? "aqua" : "muted"}>{candidate.classification}</ScoreBadge>
                   <ScoreBadge tone="muted">{candidate.confidence ?? "LOW"}</ScoreBadge>
+                  <ScoreBadge tone={candidate.status === "UNSUPPORTED" ? "warning" : "muted"}>{candidate.status}</ScoreBadge>
                   <ScoreBadge tone="aqua">{candidate.createdLeadCount} leads</ScoreBadge>
                   {candidate.error ? <ScoreBadge tone="warning">Fetch issue</ScoreBadge> : null}
                 </div>
               </div>
               {candidate.snippet ? <p className="mt-3 line-clamp-3 text-sm leading-6 text-ink-300">{candidate.snippet}</p> : null}
               {candidate.error ? <p className="mt-2 text-sm text-signal-red">{candidate.error}</p> : null}
+              <div className="mt-4 flex flex-wrap gap-3">
+                <form action={retryClassifySourceCandidate}>
+                  <input type="hidden" name="candidateId" value={candidate.id} />
+                  <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url || candidate.status === "SKIPPED"}>Retry classify</NeonButton>
+                </form>
+                <form action={enumerateSourceCandidate}>
+                  <input type="hidden" name="candidateId" value={candidate.id} />
+                  <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url || candidate.status === "SKIPPED"}>Try enumerate jobs</NeonButton>
+                </form>
+                <form action={skipSourceCandidate}>
+                  <input type="hidden" name="candidateId" value={candidate.id} />
+                  <NeonButton className="border-white/20 text-ink-100" disabled={candidate.status === "SKIPPED"}>Skip candidate</NeonButton>
+                </form>
+              </div>
             </div>
           ))}
         </div>

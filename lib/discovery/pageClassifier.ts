@@ -1,3 +1,5 @@
+import { classifyWorkdaySource } from "./workdayDiscovery";
+
 export const SOURCE_CLASSIFICATIONS = {
   ACTUAL_JOB_POSTING: "ACTUAL_JOB_POSTING",
   ATS_JOB_POSTING: "ATS_JOB_POSTING",
@@ -82,9 +84,8 @@ export function classifyDiscoverySource(input: {
   if (input.greenhouseBoardToken) {
     return { classification: SOURCE_CLASSIFICATIONS.ATS_BOARD, confidence: "HIGH", reason: "Greenhouse board/listing URL detected; enumerate matching jobs first.", importable: false };
   }
-  if (/myworkdayjobs\.com/i.test(lowerUrl) && /search/i.test(lowerUrl + " " + title)) {
-    return { classification: SOURCE_CLASSIFICATIONS.ATS_BOARD, confidence: "HIGH", reason: "Workday search/listing page is not a single job posting.", importable: false };
-  }
+  const workday = classifyWorkdaySource(input.url);
+  if (workday) return workday;
   if (broadTitlePatterns.some((pattern) => pattern.test(text))) {
     const aggregator = /glassdoor|linkedin|indeed|alljobs|drushim/i.test(text);
     return {

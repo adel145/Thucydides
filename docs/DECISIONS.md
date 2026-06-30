@@ -275,3 +275,15 @@ Reason: missing provider keys should degrade gracefully in local development and
 Decision: Tavily/search/career-page results must first become `DiscoverySourceCandidate` records. Only verified single job postings, exact ATS job postings, or structured Google Jobs results can become importable `JobDiscoveryLead` records.
 
 Reason: search results, career home pages, ATS boards, generic company pages, and aggregator lists are often broad or stale. Treating them as jobs creates noisy or falsely forbidden leads. The safe workflow is candidate -> classify -> verify -> lead -> manual import.
+
+## 2026-06-30: Candidate Enumeration Must Stay Public And Conservative
+
+Decision: Phase 6.1B may enumerate supported public ATS/career candidates into more source candidates or verified leads, but only from public HTML/API behavior. Workday support is limited to visible public links and exact public job pages. Broad aggregators remain unsupported.
+
+Reason: real QA showed the quality gate is correct but too few leads are produced until listing pages can be safely enumerated. Enumeration must not become browser automation, login bypass, authenticated scraping, or fake job extraction.
+
+## 2026-06-30: Provider Diagnostics Are Operational Notices
+
+Decision: Tavily and SerpApi tests report safe operational messages in `/discovery` query notices, without storing secrets or printing API keys. SerpApi 401 explicitly means `SERPAPI_API_KEY` or account access must be fixed outside the app.
+
+Reason: Adel needs to distinguish "discovery found no jobs" from "provider authorization failed" without exposing credentials in UI, logs, docs, or git.

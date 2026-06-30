@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.1A Architecture
+## Phase 6.1B Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -156,6 +156,18 @@ Phase 6.1 adds internet discovery foundation. Phase 6.1A tightens that foundatio
 - Imported discovery leads create normal `Job` records and `JOB_IMPORTED_FROM_DISCOVERY` events only after explicit user action.
 - No provider login, captcha bypass, authenticated scraping, automatic application, automatic email, Gmail OAuth, or OpenAI parsing is introduced.
 
+Phase 6.1B adds ATS adapters and provider diagnostics without changing the schema:
+
+- `/discovery` can run lightweight Test Tavily and Test SerpApi actions and display query-notice results.
+- SerpApi 401 is shown as "SerpApi authorization failed: check SERPAPI_API_KEY/account." API keys are never printed.
+- Source candidates have retry classify, try enumerate jobs, and skip candidate actions.
+- `lib/discovery/providerDiagnostics.ts` maps provider errors to safe diagnostic copy.
+- `lib/discovery/workdayDiscovery.ts` supports public Workday URL detection, visible job-link extraction, exact job-page verification, and JS-only/blocked-page errors.
+- `lib/discovery/careerLinkExtractor.ts` extracts target-role links from public career HTML into source candidates.
+- `lib/discovery/sourceCandidateEnumeration.ts` turns supported public ATS/career listings into new source candidates or verified leads.
+- Broad aggregators such as Glassdoor remain unsupported/non-importable candidates.
+- No browser automation, login bypass, authenticated scraping, automatic application, automatic email, or fake job description generation is introduced.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -176,7 +188,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.1A
+## Non-Goals in Phase 6.1B
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

@@ -177,9 +177,20 @@
 - Added skip-non-imported-leads action for discovery runs without touching imported leads.
 - Added tests for broad/generic titles, JSON-LD importability, Greenhouse exact/board behavior, unsafe URLs, non-importable sources, hard forbidden verified postings, and skip safety.
 
+## Completed In Phase 6.1B
+
+- Added provider diagnostics for Tavily and SerpApi on `/discovery`.
+- Added clear SerpApi 401 message: check `SERPAPI_API_KEY`/account outside the app.
+- Added source candidate actions for retry classify, try enumerate jobs, and skip candidate.
+- Added safe public Workday foundation for search-page classification, visible specific job links, exact public job-page verification, and JS-only/blocked-page errors.
+- Added generic public career-link extraction for target technical roles.
+- Added source candidate enumeration that creates new candidates for specific links or verified leads only for single postings.
+- Kept broad Glassdoor/listing pages unsupported and non-importable.
+- Added tests for provider diagnostics, Workday behavior, generic link extraction, unsupported aggregators, enumeration count updates, strict import gates, and hard-forbidden verified postings.
+
 ## Next Tasks
 
-- Manually QA internet discovery with real Tavily/SerpApi/career-page runs and tune classifications conservatively.
+- Manually QA provider diagnostics, Workday/career-page enumeration, and real Tavily/SerpApi runs.
 - Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.
 - Improve packet quality review before exports.

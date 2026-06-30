@@ -451,3 +451,29 @@ Verified:
 Not implemented:
 
 - No Gmail OAuth, automatic inbox reading, Calendar, scraping behind authentication, browser automation, OpenAI discovery scoring/parsing, automatic applications, automatic emails, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.
+
+## 2026-06-30 Phase 6.1B - ATS Adapters + Provider Diagnostics
+
+Created:
+
+- `lib/discovery/providerDiagnostics.ts` for safe Tavily/SerpApi provider test messages.
+- `lib/discovery/workdayDiscovery.ts` for safe public Workday URL, link, exact job-page, and JS-only/blocked-page handling.
+- `lib/discovery/careerLinkExtractor.ts` for public career-page target-role link extraction.
+- `lib/discovery/sourceCandidateEnumeration.ts` for source-candidate retry/enumeration logic.
+
+Updated:
+
+- `/discovery` now has Test Tavily and Test SerpApi actions.
+- SerpApi 401 now displays "SerpApi authorization failed: check SERPAPI_API_KEY/account." without printing secrets.
+- Source candidates now support retry classify, try enumerate jobs, and skip candidate.
+- Candidate enumeration can create new source candidates from specific public job links or verified leads from exact postings.
+- Workday search pages remain ATS board candidates, exact public job pages can create ATS leads only with visible title and meaningful description, and JS-only/blocked pages stay candidates with errors.
+- Broad Glassdoor/listing pages remain unsupported and non-importable.
+
+Verified:
+
+- Added tests for provider diagnostics, Workday search/exact/JS-only behavior, generic career-link extraction, unsupported aggregator listings, enumeration count updates, strict import gates, and hard-forbidden verified postings.
+
+Not implemented:
+
+- No Gmail OAuth, automatic inbox reading, Calendar, login/captcha bypass, authenticated scraping, browser automation, OpenAI discovery scoring/parsing, automatic applications, automatic emails, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.
