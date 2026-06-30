@@ -8,7 +8,7 @@ import { getDiscoveryProviderStatus, getDiscoveryProviderLabel } from "@/lib/dis
 import { discoveryPostingActionState, isLegacyOrNoisyDiscoveryLead, isVerifiedImportableDiscoveryLead } from "@/lib/discovery/discoveryLeadViews";
 import { countDiscoveryLeads } from "@/lib/discovery/jobDiscoveryCounts";
 import { isImportableSourceClassification } from "@/lib/discovery/pageClassifier";
-import { providerStatusLabel } from "@/lib/discovery/providerDiagnostics";
+import { isProviderAuthFailureMessage } from "@/lib/discovery/providerDiagnostics";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
 import { jsonToStringArray } from "@/lib/formParsing";
 
@@ -93,10 +93,10 @@ function PreviewText({ value, detailsLabel }: { value?: string | null; detailsLa
   if (!value) return null;
   return (
     <div className="mt-3 min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-navy-950/40 p-3">
-      <p className="line-clamp-3 whitespace-pre-wrap break-words text-sm leading-6 text-ink-200">{value}</p>
+      <p dir="auto" className="line-clamp-3 whitespace-pre-wrap break-words text-sm leading-6 text-ink-200">{value}</p>
       <details className="mt-2 min-w-0 text-sm text-ink-300">
         <summary className="cursor-pointer font-semibold text-aqua-400">{detailsLabel}</summary>
-        <p className="mt-2 max-w-full whitespace-pre-wrap break-words text-ink-200">{value}</p>
+        <p dir="auto" className="mt-2 max-w-full whitespace-pre-wrap break-words text-ink-200">{value}</p>
       </details>
     </div>
   );
@@ -104,6 +104,16 @@ function PreviewText({ value, detailsLabel }: { value?: string | null; detailsLa
 
 function LtrText({ children }: { children: React.ReactNode }) {
   return <span dir="ltr" className="inline-flex max-w-full break-all text-left">{children}</span>;
+}
+
+function hebrewProviderStatusLabel(provider: "TAVILY" | "SERPAPI_GOOGLE_JOBS", keyPresent: boolean, tested?: { ok: boolean; message?: string | null }) {
+  const name = provider === "SERPAPI_GOOGLE_JOBS" ? "SerpApi" : "Tavily";
+  if (tested) {
+    if (tested.ok) return `${name} אומת`;
+    if (tested.message && isProviderAuthFailureMessage(tested.message)) return `${name} הרשאה נכשלה`;
+    return `${name} נכשל`;
+  }
+  return `${name} ${keyPresent ? "מוגדר" : "לא מוגדר"}`;
 }
 
 export default async function DiscoveryPage({
@@ -163,10 +173,10 @@ export default async function DiscoveryPage({
         </div>
         <div className="mt-5 flex min-w-0 flex-wrap gap-2">
           <ScoreBadge tone={providerStatus.tavilyConfigured ? "aqua" : "warning"}>
-            <LtrText>{providerStatusLabel("TAVILY", providerStatus.tavilyConfigured, providerTest === "TAVILY" ? providerTestState : undefined)}</LtrText>
+            <span>{hebrewProviderStatusLabel("TAVILY", providerStatus.tavilyConfigured, providerTest === "TAVILY" ? providerTestState : undefined)}</span>
           </ScoreBadge>
           <ScoreBadge tone={providerStatus.serpApiConfigured ? "aqua" : "warning"}>
-            <LtrText>{providerStatusLabel("SERPAPI_GOOGLE_JOBS", providerStatus.serpApiConfigured, providerTest === "SERPAPI_GOOGLE_JOBS" ? providerTestState : undefined)}</LtrText>
+            <span>{hebrewProviderStatusLabel("SERPAPI_GOOGLE_JOBS", providerStatus.serpApiConfigured, providerTest === "SERPAPI_GOOGLE_JOBS" ? providerTestState : undefined)}</span>
           </ScoreBadge>
           <ScoreBadge tone="warning">Gmail לא מחובר</ScoreBadge>
           <ScoreBadge tone="muted"><LtrText>Max {providerStatus.maxResults}</LtrText></ScoreBadge>
@@ -294,7 +304,7 @@ export default async function DiscoveryPage({
               <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="break-words font-semibold text-white">{run.query ?? "הרצת גילוי"}</div>
-                  <div className="mt-1 break-words text-sm text-ink-300">{run.sourcePriority ?? "Company careers first"} | {formatDate(run.startedAt)}</div>
+                  <div className="mt-1 break-words text-sm text-ink-300">{run.sourcePriority ?? "אתרי קריירה קודם"} | {formatDate(run.startedAt)}</div>
                   {run.error ? <p dir="ltr" className="mt-2 max-w-full break-words text-left text-sm text-signal-red">{run.error}</p> : null}
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -336,14 +346,14 @@ export default async function DiscoveryPage({
               <div key={candidate.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 max-w-3xl">
-                    <div className="break-words font-semibold text-white">{sourceTitle(candidate.title, candidate.url)}</div>
+                    <div dir="auto" className="break-words font-semibold text-white">{sourceTitle(candidate.title, candidate.url)}</div>
                     <p className="mt-1 text-sm font-semibold text-ink-100">זה מקור, לא משרה</p>
                     <p className="mt-1 break-words text-sm text-ink-300">דומיין: <span dir="ltr">{domainFromUrl(candidate.url)}</span></p>
-                    <p className="mt-1 break-words text-sm text-ink-300">למה זה עדיין לא משרה: {candidate.reason ?? "המקור עדיין לא אומת כמשרה יחידה."}</p>
+                    <p dir="auto" className="mt-1 break-words text-sm text-ink-300">למה זה עדיין לא משרה: {candidate.reason ?? "המקור עדיין לא אומת כמשרה יחידה."}</p>
                     <p className="mt-2 break-words text-sm text-aqua-400">
                       פעולה מומלצת: {candidate.source === "CAREER_LINK_EXTRACTION" ? "נסה לחלץ ולאמת את דף המשרה המדויק." : "נסה לחלץ משרות מהמקור או דלג עליו."}
                     </p>
-                    {candidate.url ? <Link href={candidate.url} className="mt-2 inline-flex max-w-full break-all text-sm font-semibold text-aqua-400">פתח מקור</Link> : null}
+                    {candidate.url ? <Link dir="ltr" href={candidate.url} className="mt-2 inline-flex max-w-full break-all text-left text-sm font-semibold text-aqua-400">פתח מקור</Link> : null}
                   </div>
                   <div className="flex min-w-0 flex-wrap gap-2">
                     <ScoreBadge tone="warning"><LtrText>{candidate.classification}</LtrText></ScoreBadge>
@@ -420,9 +430,9 @@ export default async function DiscoveryPage({
                     <div className={`inline-flex min-h-11 max-w-full items-center rounded-lg border px-4 py-2 text-base font-semibold ${state.tone === "warning" ? "border-signal-red/40 bg-signal-red/10 text-signal-red" : state.tone === "aqua" ? "border-aqua-400/40 bg-aqua-400/10 text-aqua-400" : "border-white/20 bg-white/[0.08] text-ink-100"}`}>
                       <span className="break-words">{state.label}</span>
                     </div>
-                    <h4 className="mt-3 break-words text-lg font-semibold text-white">{lead.title}</h4>
-                    <p className="mt-1 break-words text-sm text-ink-200">{[lead.company, lead.location].filter(Boolean).join(" | ") || "חברה/מיקום חסרים"}</p>
-                    <p className="mt-1 break-words text-xs text-ink-400">{getDiscoveryProviderLabel(lead.discoveryProvider ?? lead.provider)} | {lead.discoveryQuery ?? "אין שאילתה"}</p>
+                    <h4 dir="auto" className="mt-3 break-words text-lg font-semibold text-white">{lead.title}</h4>
+                    <p dir="auto" className="mt-1 break-words text-sm text-ink-200">{[lead.company, lead.location].filter(Boolean).join(" | ") || "חברה/מיקום חסרים"}</p>
+                    <p dir="auto" className="mt-1 break-words text-xs text-ink-400">{getDiscoveryProviderLabel(lead.discoveryProvider ?? lead.provider)} | {lead.discoveryQuery ?? "אין שאילתה"}</p>
                   </div>
                   <div className="flex min-w-0 flex-wrap gap-2">
                     <ScoreBadge tone={validationTone(lead.validationStatus)}><LtrText>{lead.validationStatus}</LtrText></ScoreBadge>
@@ -433,14 +443,14 @@ export default async function DiscoveryPage({
                     <ScoreBadge tone="muted"><LtrText>{lead.status}</LtrText></ScoreBadge>
                   </div>
                 </div>
-                {lead.sourceUrl ? <Link href={lead.sourceUrl} className="mt-3 inline-flex max-w-full break-all text-sm font-semibold text-aqua-400">פתח מקור</Link> : null}
+                {lead.sourceUrl ? <Link dir="ltr" href={lead.sourceUrl} className="mt-3 inline-flex max-w-full break-all text-left text-sm font-semibold text-aqua-400">פתח מקור</Link> : null}
                 <div className="mt-4 flex min-w-0 flex-wrap gap-2">
                   {allowedSignals.map((signal) => <ScoreBadge key={signal} tone="aqua"><LtrText>{signal}</LtrText></ScoreBadge>)}
                   {forbiddenFlags.map((flag) => <ScoreBadge key={flag} tone="warning"><LtrText>{flag}</LtrText></ScoreBadge>)}
                   {duplicate && !imported ? <ScoreBadge tone="warning">ייתכן כפול</ScoreBadge> : null}
                 </div>
-                {lead.riskNotes ? <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-ink-200">{lead.riskNotes}</p> : null}
-                {fitReasons.length > 0 ? <p className="mt-3 break-words text-sm leading-6 text-ink-300">{fitReasons.slice(0, 3).join(" ")}</p> : null}
+                {lead.riskNotes ? <p dir="auto" className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-ink-200">{lead.riskNotes}</p> : null}
+                {fitReasons.length > 0 ? <p dir="auto" className="mt-3 break-words text-sm leading-6 text-ink-300">{fitReasons.slice(0, 3).join(" ")}</p> : null}
                 {hebrewReason ? <p className="mt-3 break-words text-sm font-semibold text-signal-red">{hebrewReason}</p> : null}
                 {duplicate && !imported ? <p className="mt-3 break-words text-sm text-signal-red">נראה כמו משרה קיימת: {duplicate.title}{duplicate.company ? ` ב־${duplicate.company}` : ""}.</p> : null}
                 <PreviewText value={lead.extractedDescription ?? lead.rawText ?? lead.rawSnippet} detailsLabel="הצג תיאור מלא" />
@@ -496,8 +506,8 @@ export default async function DiscoveryPage({
             <div key={lead.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
               <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 max-w-3xl">
-                  <div className="break-words font-semibold text-white">{lead.title}</div>
-                  <p className="mt-1 break-words text-sm text-ink-300">{[lead.company, lead.location].filter(Boolean).join(" | ") || "חברה/מיקום חסרים"}</p>
+                  <div dir="auto" className="break-words font-semibold text-white">{lead.title}</div>
+                  <p dir="auto" className="mt-1 break-words text-sm text-ink-300">{[lead.company, lead.location].filter(Boolean).join(" | ") || "חברה/מיקום חסרים"}</p>
                   <p className="mt-1 text-sm text-ink-300">ליד ישן או רועש מהרצה קודמת</p>
                 </div>
                 <div className="flex min-w-0 flex-wrap gap-2">
@@ -531,8 +541,8 @@ export default async function DiscoveryPage({
             <div key={candidate.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
               <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 max-w-3xl">
-                  <div className="break-words font-semibold text-white">{sourceTitle(candidate.title, candidate.url)}</div>
-                  <p className="mt-1 break-words text-sm text-ink-300">{candidate.reason ?? candidate.error ?? "לא נשמרה סיבה."}</p>
+                  <div dir="auto" className="break-words font-semibold text-white">{sourceTitle(candidate.title, candidate.url)}</div>
+                  <p dir="auto" className="mt-1 break-words text-sm text-ink-300">{candidate.reason ?? candidate.error ?? "לא נשמרה סיבה."}</p>
                 </div>
                 <div className="flex min-w-0 flex-wrap gap-2">
                   <ScoreBadge tone="muted"><LtrText>{candidate.classification}</LtrText></ScoreBadge>

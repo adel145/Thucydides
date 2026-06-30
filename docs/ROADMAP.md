@@ -73,4 +73,6 @@
 - Keep verified posting state separate from import readiness so duplicate, imported, blocked, and needs-review postings remain understandable.
 - Keep Workday search/listing URLs as ATS board candidates unless an exact public job URL is verified.
 - Keep `/discovery` Hebrew RTL and responsive, with long raw provider text behind expandable details.
+- Extend Hebrew-first RTL readability across the whole app shell and core workflow pages without changing backend behavior.
+- Keep global pages overflow-safe so long URLs, pasted text, and raw snippets do not hide content with the sidebar open.
 - Add Lever/Ashby adapters only after public, non-authenticated behavior is understood.

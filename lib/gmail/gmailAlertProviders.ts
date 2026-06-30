@@ -17,7 +17,7 @@ export const gmailAlertProviderLabels: Record<GmailAlertProvider, string> = {
   ALLJOBS: "AllJobs",
   GLASSDOOR: "Glassdoor",
   GOOGLE_JOBS: "Google Jobs",
-  OTHER: "Other"
+  OTHER: "אחר"
 };
 
 const providerPatterns: Record<GmailAlertProvider, string[]> = {

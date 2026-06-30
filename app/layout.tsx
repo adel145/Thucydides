@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Thucydides",
-  description: "Local-first strategic job-search command center for Adel."
+  description: "מרכז פיקוד מקומי לניהול חיפוש עבודה אסטרטגי עבור Adel."
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="he" dir="rtl" className="dark">
       <body className="font-sans antialiased">
         <AppShell>{children}</AppShell>
       </body>

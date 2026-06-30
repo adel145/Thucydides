@@ -13,15 +13,15 @@ export const JOB_STATUSES = [
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
 export const jobStatusLabels: Record<JobStatus, string> = {
-  FOUND: "Found",
-  ANALYZED: "Analyzed",
-  READY_TO_APPLY: "Ready",
-  APPLIED: "Applied",
-  REPLIED: "Replied",
-  INTERVIEW: "Interview",
-  REJECTED: "Rejected",
-  OFFER: "Offer",
-  ARCHIVED: "Archived"
+  FOUND: "נמצאה",
+  ANALYZED: "נבדקה",
+  READY_TO_APPLY: "מוכן להגשה",
+  APPLIED: "הוגשה",
+  REPLIED: "התקבלה תגובה",
+  INTERVIEW: "ראיון",
+  REJECTED: "נדחתה",
+  OFFER: "הצעה",
+  ARCHIVED: "ארכיון"
 };
 
 export function isJobStatus(value: string): value is JobStatus {

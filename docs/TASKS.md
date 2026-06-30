@@ -116,7 +116,7 @@
 - Added URL-only source intake for LinkedIn, GitHub, portfolio, certificate/course, and other career links.
 - Separated Sources intake into upload files, profile/link sources, and pasted text/notes.
 - Updated Source Detail to show URL sources with a manual Open source link action.
-- Refreshed Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail readability with clearer surfaces, stronger actions, and short Arabic/Hebrew helper labels.
+- Refreshed Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail readability with clearer surfaces, stronger actions, and short multilingual helper labels.
 - Updated source readiness wording so CV, LinkedIn, GitHub/projects, certificates, and academic evidence can be files, URLs, or notes where appropriate.
 
 ## Completed In Phase 5.4
@@ -228,8 +228,19 @@
 - Changed verified job cards to show large Hebrew state badges and put full descriptions behind expandable details.
 - Kept Phase 6.1E discovery eligibility, duplicate, forbidden, import, and Workday exact-job behavior unchanged.
 
+## Completed In Phase 6.1G
+
+- Set the global app document and shared shell to Hebrew-first RTL.
+- Translated core visible navigation/status copy in Sidebar, TopBar, and AppShell surfaces.
+- Translated core workflow pages: Dashboard, Profile, Job Inbox, Job detail/edit/delete, Application Packet, Resume Lab, Agent Council, Pipeline, Sources, Source Detail, Gmail, and Settings.
+- Kept technical terms, provider names, URLs, env vars, and enum/status badges in English where useful.
+- Removed old Arabic helper-label remnants from UI copy.
+- Added responsive containment and wrapping to core cards, forms, raw descriptions, URLs, pasted text, and source snippets.
+- Preserved Phase 6.1E/6.1F discovery/import/forbidden/Workday/backend behavior.
+
 ## Next Tasks
 
+- Manually QA global Hebrew RTL readability across Dashboard, Job Inbox, Application Packet, Resume Lab, Sources, Gmail, and Discovery.
 - Manually QA provider diagnostics, Markdown/URL candidate enumeration, discovery action clarity, and real Tavily/SerpApi runs.
 - Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.

@@ -3,10 +3,10 @@ export const JOB_PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
 export type JobPriority = (typeof JOB_PRIORITIES)[number];
 
 export const jobPriorityLabels: Record<JobPriority, string> = {
-  LOW: "Low",
-  MEDIUM: "Medium",
-  HIGH: "High",
-  CRITICAL: "Critical"
+  LOW: "עדיפות נמוכה",
+  MEDIUM: "עדיפות רגילה",
+  HIGH: "עדיפות גבוהה",
+  CRITICAL: "קריטי"
 };
 
 export function isJobPriority(value: string): value is JobPriority {

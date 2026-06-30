@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-30, Thucydides is in Phase 6.1F - Discovery Hebrew RTL + Responsive UX Cleanup state.
+As of 2026-06-30, Thucydides is in Phase 6.1G - Global Hebrew RTL UI Foundation state.
 
 ## What Exists
 
@@ -8,7 +8,7 @@ As of 2026-06-30, Thucydides is in Phase 6.1F - Discovery Hebrew RTL + Responsiv
 - Stitch reference folder preserved: `stitch_mission_matrix_web_design/`.
 - Official memory/spec docs exist in `docs/`.
 - A root-level Next.js App Router skeleton exists.
-- Shared layout and navigation exist.
+- Shared layout and navigation exist and now render as Hebrew-first RTL surfaces.
 - Pages exist for planned modules:
   - Dashboard
   - Profile Intelligence
@@ -23,6 +23,7 @@ As of 2026-06-30, Thucydides is in Phase 6.1F - Discovery Hebrew RTL + Responsiv
 - Dashboard shows manual Gmail alert leads awaiting review. This count comes from pasted local alert leads, not inbox scanning.
 - Dashboard shows internet discovery runs, review leads, enriched leads, and blocked leads. Copy says company career pages first, platforms second, Gmail alerts third.
 - UI reflects the Stitch-inspired dark navy, neon aqua, glass command-center style.
+- Core visible UI is Hebrew-first and RTL, while technical product terms, enum/status badges, URLs, and env vars remain English where useful.
 - Dependencies have been installed into `node_modules/`.
 - The dev server was started on `http://localhost:3000`.
 - Production build and lint checks pass.
@@ -78,7 +79,7 @@ As of 2026-06-30, Thucydides is in Phase 6.1F - Discovery Hebrew RTL + Responsiv
 - Dashboard shows honest planned/local cards for future job discovery, manual Gmail job-alert paste intake, and future CV/PDF packet export.
 - Application Packet explains that READY means packet/checklist completeness, while NEEDS_MANUAL_REVIEW means Adel still reviews job fit before applying.
 - Application Packet and Resume Lab mention DOCX/PDF export as planned only; current packet content remains manual text.
-- Job Inbox, Application Packet, Resume Lab, Sources, Source Detail, and Profile now use clearer surfaces, stronger borders/actions, and short Arabic/Hebrew helper labels where useful.
+- Job Inbox, Application Packet, Resume Lab, Sources, Source Detail, and Profile now use clearer Hebrew RTL surfaces, stronger borders/actions, and short action-oriented helper labels.
 - Source readiness can be 4/4 while profile text or evidence links remain incomplete; Resume Lab now separates those concepts.
 - `/gmail` supports local/manual Gmail job-alert paste intake.
 - `GmailJobAlert` stores pasted alert metadata and raw text locally.
@@ -88,7 +89,7 @@ As of 2026-06-30, Thucydides is in Phase 6.1F - Discovery Hebrew RTL + Responsiv
 - `/gmail` shows validation status, allowed signals, forbidden flags, risk notes, duplicate warnings, source URL, and raw snippets for lead review.
 - Safe non-forbidden leads can be manually imported into the normal Job Inbox.
 - Imported leads become normal local `Job` records and get an `ApplicationEvent`.
-- Forbidden leads remain blocked from normal import in Phase 6.1F.
+- Forbidden leads remain blocked from normal import in Phase 6.1G.
 - `/discovery` supports env-gated internet job discovery through Tavily and SerpApi.
 - `/discovery` separates source candidates from job leads. Search/listing/generic/company pages stay as source candidates; only verified single job postings become importable leads.
 - `/discovery` can test Tavily and SerpApi from the UI. Provider badges say key present/missing until a test verifies or fails them. SerpApi 401 is shown as "SerpApi authorization failed: check SERPAPI_API_KEY/account." without printing keys.
@@ -115,11 +116,15 @@ As of 2026-06-30, Thucydides is in Phase 6.1F - Discovery Hebrew RTL + Responsiv
 - Imported discovery leads create normal local `Job` records and `JOB_IMPORTED_FROM_DISCOVERY` events.
 - Forbidden discovery leads remain blocked from normal import.
 - The run action can skip non-imported leads from a run without touching already imported leads.
+- Phase 6.1G extends RTL/readability cleanup beyond `/discovery` into the global shell, Dashboard, Profile, Job Inbox, Job detail/edit/delete, Application Packet, Resume Lab, Agent Council, Pipeline, Sources, Source Detail, Gmail, and Settings.
+- Shared layout and core cards use `min-w-0`, overflow containment, wrapping, and `break-words`/`break-all` where needed so long URLs, pasted job descriptions, source text, and notes do not force horizontal scroll with the sidebar open.
+- Phase 6.1G QA polish fixed the `/sources` React dev warning caused by explicitly setting `encType` on a Server Action form; React now manages the upload form encoding.
+- Dynamic job titles, company names, URLs, snippets, raw descriptions, source text, notes, provider messages, and AI draft text now use `dir="auto"` or `dir="ltr"` where useful for mixed Hebrew/English readability.
 
 ## Latest UX Review Summary
 
 - The dark command-center direction and sidebar should stay.
-- The app feels too fully English in places; future UI should stay English but include helpful Hebrew job-market terms and simpler explanations.
+- The app felt too fully English in places; Phase 6.1G makes the visible app Hebrew-first/RTL while keeping technical terms and enum/status badges readable in English.
 - The dashboard has too many cards for first-open use. Future priority should be Today's Mission and Jobs Ready To Apply.
 - Job Inbox should move toward job cards and a paste-job-description workflow. The current Add Manual Job form is useful but should not dominate the experience.
 - Profile and Sources must be filled with real Adel data before serious AI, CV tailoring, or resume work.

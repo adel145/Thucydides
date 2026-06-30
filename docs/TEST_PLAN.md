@@ -237,6 +237,16 @@ Phase 6.1F coverage:
 - Manual QA should confirm long URLs, Markdown snippets, raw provider text, and descriptions wrap or stay inside clipped previews.
 - Manual QA should confirm source candidates clearly read as sources, not jobs, and verified posting state labels are clear in Hebrew.
 
+Phase 6.1G coverage:
+
+- Existing unit coverage remains unchanged because this is a UI/readability patch only.
+- Build/type verification covers global `dir="rtl"`, shared shell copy, core page translation, and responsive class changes.
+- Dev runtime QA confirmed `/sources` returns HTTP 200 without the prior React Server Action form `encType` warning.
+- Manual QA should confirm Dashboard, Profile, Job Inbox, Job detail/edit/delete, Application Packet, Resume Lab, Agent Council, Pipeline, Sources, Source Detail, Gmail, Settings, and Discovery are Hebrew-first and right-aligned.
+- Manual QA should confirm technical terms, provider names, env vars, URLs, and enum/status badges remain readable in English where useful.
+- Manual QA should confirm long URLs, pasted job descriptions, source text, raw snippets, and notes do not create horizontal page scroll with the sidebar open at 100% zoom.
+- Manual QA should confirm no discovery/import eligibility, forbidden-role blocking, Gmail behavior, AI scope, schema, or provider behavior changed.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

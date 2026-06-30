@@ -16,36 +16,36 @@ const agentLabels: Record<(typeof AGENT_IDS)[number], string> = {
 
 export default function AgentsPage() {
   return (
-    <div className="grid gap-6">
-      <GlassCard>
+    <div className="grid min-w-0 gap-6 overflow-hidden">
+      <GlassCard className="min-w-0 overflow-hidden">
         <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Agent Council</p>
-        <h2 className="mt-3 text-3xl font-semibold text-white">Agent contracts are defined, but agents are not running</h2>
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-          Phase 4.1 only defines local TypeScript contracts and safety rules for future agent output. No model calls, fake scores, applications, or emails happen here.
+        <h2 className="mt-3 break-words text-3xl font-semibold text-white">חוזי Agents מוגדרים, אבל Agents עדיין לא רצים</h2>
+        <p className="mt-4 max-w-3xl break-words text-sm leading-6 text-ink-200">
+          העמוד הזה מציג חוזי TypeScript וכללי בטיחות לשימוש עתידי. אין כאן model calls, אין ציונים מזויפים, אין שליחת הגשות ואין שליחת אימיילים.
         </p>
       </GlassCard>
 
-      <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Planned specialists</h3>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
+      <GlassCard className="min-w-0 overflow-hidden">
+        <h3 className="text-xl font-semibold text-white">מומחים מתוכננים</h3>
+        <div className="mt-4 grid min-w-0 gap-3 md:grid-cols-2">
           {AGENT_IDS.map((agentId) => (
-            <div key={agentId} className="rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm font-semibold text-white">
+            <div key={agentId} dir="ltr" className="min-w-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-3 text-left text-sm font-semibold text-white">
               {agentLabels[agentId]}
             </div>
           ))}
         </div>
       </GlassCard>
 
-      <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Safety rules</h3>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
+      <GlassCard className="min-w-0 overflow-hidden">
+        <h3 className="text-xl font-semibold text-white">כללי בטיחות</h3>
+        <div className="mt-4 grid min-w-0 gap-3 md:grid-cols-2">
           {[
-            "Local data first",
-            "Evidence required",
-            "Uncertainty required",
-            "No silent applications",
-            "No silent emails",
-            "Adel must review and confirm"
+            "קודם כל נתונים מקומיים",
+            "דרושה ראיה לפני ניסוח רציני",
+            "חובה להציג אי-ודאות",
+            "אין הגשות שקטות",
+            "אין אימיילים שקטים",
+            "Adel חייב לבדוק ולאשר"
           ].map((rule) => (
             <div key={rule} className="rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-ink-100">
               {rule}

@@ -8,19 +8,19 @@ export function TopBar() {
   return (
     <header className="border-b border-white/10 bg-navy-950/44 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-ink-400">Local-first command center</p>
-          <h1 className="mt-1 text-xl font-semibold text-white">Strategic job-search operating system</h1>
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-[0.18em] text-ink-400">מרכז פיקוד מקומי</p>
+          <h1 className="mt-1 break-words text-xl font-semibold text-white">מערכת אסטרטגית לניהול חיפוש עבודה</h1>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex min-w-0 flex-wrap gap-2">
           <ScoreBadge tone="muted" icon={<DatabaseZap className="h-3.5 w-3.5" />}>
-            Local SQLite active
+            SQLite מקומי פעיל
           </ScoreBadge>
           <ScoreBadge tone={aiConfig.enabled ? "aqua" : "warning"} icon={aiConfig.enabled ? <Sparkles className="h-3.5 w-3.5" /> : <CircleAlert className="h-3.5 w-3.5" />}>
-            {aiConfig.enabled ? "AI drafting configured" : "AI drafting not configured"}
+            {aiConfig.enabled ? "ניסוח AI מוגדר" : "ניסוח AI לא מוגדר"}
           </ScoreBadge>
           <ScoreBadge tone="warning" icon={<Mail className="h-3.5 w-3.5" />}>
-            Gmail not connected
+            Gmail לא מחובר
           </ScoreBadge>
         </div>
       </div>

@@ -89,7 +89,7 @@ export async function runJobDiscovery(formData: FormData) {
         status: "FINISHED",
         finishedAt: new Date(),
         resultCount: createdLeadCount,
-        error: missingProviders ? "No Tavily or SerpApi key configured; discovery run created no web/API leads." : result.errors.join("\n") || null
+        error: missingProviders ? "לא מוגדר מפתח Tavily או SerpApi; הרצת הגילוי לא יצרה לידי web/API." : result.errors.join("\n") || null
       }
     });
   } catch (error) {
@@ -251,7 +251,7 @@ export async function hideOldNonImportableDiscoveryLeads() {
     },
     data: {
       status: "SKIPPED",
-      notes: "Hidden from main discovery review because this old lead is not verified as an importable job posting."
+      notes: "הוסתר מהסקירה הראשית כי זה ליד ישן שלא אומת כמשרה שניתן לייבא."
     }
   });
   revalidatePath("/");
@@ -275,8 +275,8 @@ export async function importDiscoveryLeadToInbox(formData: FormData) {
         allowedSignals: prepared.validation.allowedSignals as Prisma.InputJsonValue,
         riskNotes: prepared.validation.riskNotes.join("\n"),
         notes: prepared.reason === "FORBIDDEN"
-          ? "Import blocked because deterministic validation marked this lead FORBIDDEN."
-          : "Import blocked because this source is not verified as a medium/high-confidence single job posting."
+          ? "הייבוא נחסם כי validation דטרמיניסטי סימן את הליד כ-FORBIDDEN."
+          : "הייבוא נחסם כי המקור לא אומת כמשרה יחידה בביטחון בינוני/גבוה."
       }
     });
     revalidatePath("/discovery");
@@ -307,7 +307,7 @@ export async function importDiscoveryLeadToInbox(formData: FormData) {
       events: {
         create: {
           type: "JOB_IMPORTED_FROM_DISCOVERY",
-          notes: `Imported manually from discovery lead ${lead.id}.`
+          notes: `יובא ידנית מליד גילוי ${lead.id}.`
         }
       }
     }

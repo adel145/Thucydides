@@ -94,7 +94,7 @@ export async function importJobLeadToInbox(formData: FormData) {
         forbiddenFlags: prepared.validation.forbiddenFlags as Prisma.InputJsonValue,
         allowedSignals: prepared.validation.allowedSignals as Prisma.InputJsonValue,
         riskNotes: prepared.validation.riskNotes.join("\n"),
-        notes: "Import blocked because deterministic validation marked this lead FORBIDDEN."
+        notes: "הייבוא נחסם כי validation דטרמיניסטי סימן את הליד כ-FORBIDDEN."
       }
     });
     revalidatePath("/gmail");
@@ -127,7 +127,7 @@ export async function importJobLeadToInbox(formData: FormData) {
       events: {
         create: {
           type: "JOB_IMPORTED_FROM_GMAIL_ALERT",
-          notes: `Imported manually from local Gmail alert lead ${lead.id}.`
+          notes: `יובא ידנית מליד מקומי של התראת Gmail ${lead.id}.`
         }
       }
     }
@@ -156,7 +156,7 @@ export async function skipJobLead(formData: FormData) {
   const id = requiredString(formData.get("leadId"));
   await db.jobDiscoveryLead.update({
     where: { id },
-    data: { status: "SKIPPED", notes: "Skipped during manual Gmail alert review." }
+    data: { status: "SKIPPED", notes: "דולג במהלך בדיקה ידנית של התראת Gmail." }
   });
 
   revalidatePath("/");
@@ -177,7 +177,7 @@ export async function markJobLeadDuplicate(formData: FormData) {
     data: {
       status: "DUPLICATE",
       duplicateOfJobId: duplicate?.id ?? null,
-      notes: duplicate ? "Marked duplicate of an existing local job." : "Marked duplicate during manual Gmail alert review."
+      notes: duplicate ? "סומן ככפול של משרה מקומית קיימת." : "סומן ככפול במהלך בדיקה ידנית של התראת Gmail."
     }
   });
 

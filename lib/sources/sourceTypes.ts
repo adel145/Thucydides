@@ -13,13 +13,13 @@ export type SourceType = (typeof SOURCE_TYPES)[number];
 
 export const sourceTypeLabels: Record<SourceType, string> = {
   CV: "CV",
-  LINKEDIN_TEXT: "LinkedIn Text",
-  GITHUB_PROJECTS: "GitHub Projects",
+  LINKEDIN_TEXT: "טקסט LinkedIn",
+  GITHUB_PROJECTS: "פרויקטי GitHub",
   PORTFOLIO: "Portfolio",
-  CERTIFICATE: "Certificate",
-  ACADEMIC_DOCUMENT: "Academic Document",
-  JOB_SEARCH_NOTES: "Job Search Notes",
-  OTHER: "Other"
+  CERTIFICATE: "תעודה",
+  ACADEMIC_DOCUMENT: "מסמך אקדמי",
+  JOB_SEARCH_NOTES: "הערות חיפוש עבודה",
+  OTHER: "אחר"
 };
 
 export function isSourceType(value: string): value is SourceType {

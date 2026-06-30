@@ -16,8 +16,8 @@ function validationTone(status: string) {
 }
 
 function formatDate(value: Date | string | null | undefined) {
-  if (!value) return "No date";
-  return new Date(value).toLocaleDateString();
+  if (!value) return "אין תאריך";
+  return new Date(value).toLocaleDateString("he-IL");
 }
 
 export default async function GmailPage({
@@ -42,78 +42,78 @@ export default async function GmailPage({
   const awaitingReview = countGmailAlertLeadsAwaitingReview(leads);
 
   return (
-    <div className="grid gap-6">
-      <GlassCard>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Gmail Job Alerts Intake / تنبيهات وظائف Gmail</p>
-            <h2 className="mt-3 text-3xl font-semibold text-white">Paste job-alert emails for local review</h2>
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-ink-200">
-              Manual paste intake only. Gmail OAuth is not connected, no inbox is read, no email is sent, and no application is submitted automatically.
+    <div className="grid min-w-0 gap-6 overflow-hidden">
+      <GlassCard className="min-w-0 overflow-hidden">
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">Gmail Job Alerts Intake</p>
+            <h2 className="mt-3 break-words text-3xl font-semibold text-white">הדבקת אימיילים של התראות משרה לבדיקה מקומית</h2>
+            <p className="mt-4 max-w-3xl break-words text-sm leading-6 text-ink-200">
+              Intake ידני בלבד. Gmail OAuth לא מחובר, אין קריאת Inbox, אין שליחת אימיילים ואין הגשה אוטומטית.
             </p>
           </div>
-          <ScoreBadge tone="warning">Gmail not connected</ScoreBadge>
+          <ScoreBadge tone="warning">Gmail לא מחובר</ScoreBadge>
         </div>
         <div className="mt-4">
-          <NeonButton href="/discovery" className="border-white/20 text-ink-100">Open internet discovery first</NeonButton>
+          <NeonButton href="/discovery" className="border-white/20 text-ink-100">פתח קודם גילוי באינטרנט</NeonButton>
         </div>
         <div className="mt-5 flex flex-wrap gap-2">
-          <ScoreBadge tone="muted">Local SQLite only</ScoreBadge>
-          <ScoreBadge tone="muted">No scraping</ScoreBadge>
-          <ScoreBadge tone="muted">No browser automation</ScoreBadge>
-          <ScoreBadge tone="aqua">{awaitingReview} manual leads awaiting review</ScoreBadge>
+          <ScoreBadge tone="muted">SQLite מקומי בלבד</ScoreBadge>
+          <ScoreBadge tone="muted">אין scraping</ScoreBadge>
+          <ScoreBadge tone="muted">אין browser automation</ScoreBadge>
+          <ScoreBadge tone="aqua">{awaitingReview} לידים ידניים לבדיקה</ScoreBadge>
         </div>
-        {notices?.saved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">Gmail alert saved locally. Extracted {notices.leads ?? "0"} candidate leads.</div> : null}
-        {notices?.blocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Import blocked: this lead is FORBIDDEN by deterministic rules.</div> : null}
-        {notices?.duplicate ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">Import blocked: this lead looks like an existing local job.</div> : null}
-        {notices?.missingLead ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">Lead not found.</div> : null}
+        {notices?.saved ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">ההתראה נשמרה מקומית. חולצו {notices.leads ?? "0"} לידים מועמדים.</div> : null}
+        {notices?.blocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">הייבוא נחסם: הליד FORBIDDEN לפי כללים דטרמיניסטיים.</div> : null}
+        {notices?.duplicate ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">הייבוא נחסם: הליד נראה כמו משרה קיימת.</div> : null}
+        {notices?.missingLead ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">הליד לא נמצא.</div> : null}
       </GlassCard>
 
-      <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Save pasted alert</h3>
-        <p className="mt-2 text-sm leading-6 text-ink-200">Paste one job-alert email body from LinkedIn, Indeed, Drushim, AllJobs, Glassdoor, Google Jobs, or another provider.</p>
-        <form action={createGmailJobAlertAndExtractLeads} className="mt-5 grid gap-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <label>
+      <GlassCard className="min-w-0 overflow-hidden">
+        <h3 className="text-xl font-semibold text-white">שמירת התראה מודבקת</h3>
+        <p className="mt-2 break-words text-sm leading-6 text-ink-200">הדבק גוף אימייל אחד של התראת משרות מ-LinkedIn, Indeed, Drushim, AllJobs, Glassdoor, Google Jobs או מקור אחר.</p>
+        <form action={createGmailJobAlertAndExtractLeads} className="mt-5 grid min-w-0 gap-4">
+          <div className="grid min-w-0 gap-4 md:grid-cols-2">
+            <label className="min-w-0">
               <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Provider</span>
-              <select name="provider" defaultValue={GMAIL_ALERT_PROVIDERS.OTHER} className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white">
+              <select name="provider" defaultValue={GMAIL_ALERT_PROVIDERS.OTHER} className="mt-2 min-h-11 w-full min-w-0 rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white">
                 {Object.values(GMAIL_ALERT_PROVIDERS).map((provider) => (
                   <option key={provider} value={provider}>{gmailAlertProviderLabels[provider]}</option>
                 ))}
               </select>
             </label>
-            <label>
-              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Received date</span>
-              <input name="receivedAt" type="date" className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white" />
+            <label className="min-w-0">
+              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">תאריך קבלה</span>
+              <input name="receivedAt" type="date" className="mt-2 min-h-11 w-full min-w-0 rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white" />
             </label>
-            <label>
-              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Sender optional</span>
-              <input name="sender" className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white" placeholder="jobs-noreply@linkedin.com" />
+            <label className="min-w-0">
+              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">שולח אופציונלי</span>
+              <input dir="ltr" name="sender" className="mt-2 min-h-11 w-full min-w-0 rounded-lg border border-white/20 bg-navy-950/60 px-3 text-left text-sm text-white" placeholder="jobs-noreply@linkedin.com" />
             </label>
-            <label>
-              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Subject optional</span>
-              <input name="subject" className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white" placeholder="New jobs for Junior Software Engineer" />
+            <label className="min-w-0">
+              <span className="text-xs uppercase tracking-[0.16em] text-ink-400">נושא אופציונלי</span>
+              <input dir="auto" name="subject" className="mt-2 min-h-11 w-full min-w-0 rounded-lg border border-white/20 bg-navy-950/60 px-3 text-sm text-white" placeholder="New jobs for Junior Software Engineer" />
             </label>
           </div>
-          <label>
-            <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Raw pasted email text required</span>
-            <textarea name="rawText" required className="mt-2 min-h-56 w-full rounded-lg border border-white/20 bg-navy-950/60 p-3 text-sm leading-6 text-white outline-none focus:border-aqua-400/70" />
+          <label className="min-w-0">
+            <span className="text-xs uppercase tracking-[0.16em] text-ink-400">טקסט אימייל מודבק</span>
+            <textarea dir="auto" name="rawText" required className="mt-2 min-h-56 w-full min-w-0 rounded-lg border border-white/20 bg-navy-950/60 p-3 text-sm leading-6 text-white outline-none focus:border-aqua-400/70" />
           </label>
-          <label>
-            <span className="text-xs uppercase tracking-[0.16em] text-ink-400">Notes optional</span>
-            <textarea name="notes" className="mt-2 min-h-20 w-full rounded-lg border border-white/20 bg-navy-950/60 p-3 text-sm leading-6 text-white outline-none focus:border-aqua-400/70" />
+          <label className="min-w-0">
+            <span className="text-xs uppercase tracking-[0.16em] text-ink-400">הערות אופציונליות</span>
+            <textarea dir="auto" name="notes" className="mt-2 min-h-20 w-full min-w-0 rounded-lg border border-white/20 bg-navy-950/60 p-3 text-sm leading-6 text-white outline-none focus:border-aqua-400/70" />
           </label>
-          <div><NeonButton>Save and extract leads</NeonButton></div>
+          <div><NeonButton>שמור וחלץ לידים</NeonButton></div>
         </form>
       </GlassCard>
 
-      <GlassCard>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-xl font-semibold text-white">Lead review cards</h3>
-          <ScoreBadge tone="muted">{leads.length} recent local leads</ScoreBadge>
+      <GlassCard className="min-w-0 overflow-hidden">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+          <h3 className="text-xl font-semibold text-white">כרטיסי בדיקת לידים</h3>
+          <ScoreBadge tone="muted">{leads.length} לידים מקומיים אחרונים</ScoreBadge>
         </div>
-        <div className="mt-5 grid gap-4">
-          {leads.length === 0 ? <p className="text-sm text-ink-400">No pasted Gmail alert leads yet.</p> : null}
+        <div className="mt-5 grid min-w-0 gap-4">
+          {leads.length === 0 ? <p className="text-sm text-ink-400">אין עדיין לידים מהתראות Gmail מודבקות.</p> : null}
           {leads.map((lead) => {
             const allowedSignals = jsonToStringArray(lead.allowedSignals);
             const forbiddenFlags = jsonToStringArray(lead.forbiddenFlags);
@@ -122,70 +122,70 @@ export default async function GmailPage({
             const imported = lead.status === "IMPORTED" && lead.importedJobId;
             const inactive = imported || lead.status === "SKIPPED" || lead.status === "DUPLICATE";
             return (
-              <div key={lead.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h4 className="text-lg font-semibold text-white">{lead.title}</h4>
-                    <p className="mt-1 text-sm text-ink-200">{[lead.company, lead.location].filter(Boolean).join(" | ") || "Company/location missing"}</p>
-                    <p className="mt-1 text-xs text-ink-400">{getGmailAlertProviderLabel(lead.provider)} | {lead.gmailAlert?.subject ?? "No subject"}</p>
+              <div key={lead.id} className="min-w-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h4 dir="auto" className="break-words text-lg font-semibold text-white">{lead.title}</h4>
+                    <p dir="auto" className="mt-1 break-words text-sm text-ink-200">{[lead.company, lead.location].filter(Boolean).join(" | ") || "חברה/מיקום חסרים"}</p>
+                    <p dir="auto" className="mt-1 break-words text-xs text-ink-400">{getGmailAlertProviderLabel(lead.provider)} | {lead.gmailAlert?.subject ?? "אין נושא"}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <ScoreBadge tone={validationTone(lead.validationStatus)}>{lead.validationStatus}</ScoreBadge>
                     <ScoreBadge tone="muted">{lead.status}</ScoreBadge>
                   </div>
                 </div>
-                {lead.sourceUrl ? <Link href={lead.sourceUrl} className="mt-3 inline-flex text-sm font-semibold text-aqua-400">Open source URL</Link> : null}
+                {lead.sourceUrl ? <Link dir="ltr" href={lead.sourceUrl} className="mt-3 inline-flex break-all text-left text-sm font-semibold text-aqua-400">פתח URL מקור</Link> : null}
                 <div className="mt-4 flex flex-wrap gap-2">
                   {allowedSignals.map((signal) => <ScoreBadge key={signal} tone="aqua">{signal}</ScoreBadge>)}
                   {forbiddenFlags.map((flag) => <ScoreBadge key={flag} tone="warning">{flag}</ScoreBadge>)}
-                  {duplicate && !imported ? <ScoreBadge tone="warning">Possible duplicate</ScoreBadge> : null}
+                  {duplicate && !imported ? <ScoreBadge tone="warning">כפילות אפשרית</ScoreBadge> : null}
                 </div>
-                {lead.riskNotes ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink-200">{lead.riskNotes}</p> : null}
-                {duplicate && !imported ? <p className="mt-3 text-sm text-signal-red">Looks like existing job: {duplicate.title}{duplicate.company ? ` at ${duplicate.company}` : ""}.</p> : null}
-                <p className="mt-4 whitespace-pre-wrap rounded-lg border border-white/10 bg-navy-950/40 p-3 text-sm leading-6 text-ink-200">{lead.rawSnippet}</p>
+                {lead.riskNotes ? <p dir="auto" className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-ink-200">{lead.riskNotes}</p> : null}
+                {duplicate && !imported ? <p dir="auto" className="mt-3 break-words text-sm text-signal-red">נראה כמו משרה קיימת: {duplicate.title}{duplicate.company ? ` ב-${duplicate.company}` : ""}.</p> : null}
+                <p dir="auto" className="mt-4 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-white/10 bg-navy-950/40 p-3 text-sm leading-6 text-ink-200">{lead.rawSnippet}</p>
                 <div className="mt-4 flex flex-wrap gap-3">
-                  {imported ? <NeonButton href={`/jobs/${lead.importedJobId}`}>Open imported job</NeonButton> : null}
+                  {imported ? <NeonButton href={`/jobs/${lead.importedJobId}`}>פתח משרה שיובאה</NeonButton> : null}
                   {!inactive ? (
                     <form action={importJobLeadToInbox}>
                       <input type="hidden" name="leadId" value={lead.id} />
-                      <NeonButton disabled={blocked || Boolean(duplicate)}>Import to Job Inbox</NeonButton>
+                      <NeonButton disabled={blocked || Boolean(duplicate)}>ייבא ל-Job Inbox</NeonButton>
                     </form>
                   ) : null}
                   {!inactive ? (
                     <form action={skipJobLead}>
                       <input type="hidden" name="leadId" value={lead.id} />
-                      <NeonButton className="border-white/20 text-ink-100">Skip</NeonButton>
+                      <NeonButton className="border-white/20 text-ink-100">דלג</NeonButton>
                     </form>
                   ) : null}
                   {!inactive ? (
                     <form action={markJobLeadDuplicate}>
                       <input type="hidden" name="leadId" value={lead.id} />
-                      <NeonButton className="border-white/20 text-ink-100">Mark duplicate</NeonButton>
+                      <NeonButton className="border-white/20 text-ink-100">סמן ככפול</NeonButton>
                     </form>
                   ) : null}
                 </div>
-                {blocked ? <p className="mt-3 text-sm text-signal-red">Forbidden leads stay here for review and cannot be imported in this phase.</p> : null}
+                {blocked ? <p className="mt-3 break-words text-sm text-signal-red">לידים FORBIDDEN נשארים לבדיקה ואי אפשר לייבא אותם בשלב הזה.</p> : null}
               </div>
             );
           })}
         </div>
       </GlassCard>
 
-      <GlassCard>
-        <h3 className="text-xl font-semibold text-white">Recent saved alerts</h3>
-        <div className="mt-5 grid gap-3">
-          {alerts.length === 0 ? <p className="text-sm text-ink-400">No saved pasted alerts yet.</p> : null}
+      <GlassCard className="min-w-0 overflow-hidden">
+        <h3 className="text-xl font-semibold text-white">התראות שמורות אחרונות</h3>
+        <div className="mt-5 grid min-w-0 gap-3">
+          {alerts.length === 0 ? <p className="text-sm text-ink-400">אין עדיין התראות מודבקות שמורות.</p> : null}
           {alerts.map((alert) => (
-            <div key={alert.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <div className="font-semibold text-white">{alert.subject ?? "No subject"}</div>
-                  <div className="mt-1 text-sm text-ink-200">{getGmailAlertProviderLabel(alert.provider)} | {alert.sender ?? "No sender"}</div>
-                  <div className="mt-1 text-xs text-ink-400">Received {formatDate(alert.receivedAt)} | Saved {formatDate(alert.createdAt)}</div>
+            <div key={alert.id} className="min-w-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div dir="auto" className="break-words font-semibold text-white">{alert.subject ?? "אין נושא"}</div>
+                  <div dir="auto" className="mt-1 break-words text-sm text-ink-200">{getGmailAlertProviderLabel(alert.provider)} | {alert.sender ?? "אין שולח"}</div>
+                  <div className="mt-1 text-xs text-ink-400">התקבל {formatDate(alert.receivedAt)} | נשמר {formatDate(alert.createdAt)}</div>
                 </div>
-                <ScoreBadge tone="muted">{alert.leads.length} leads</ScoreBadge>
+                <ScoreBadge tone="muted">{alert.leads.length} לידים</ScoreBadge>
               </div>
-              {alert.notes ? <p className="mt-3 text-sm text-ink-300">{alert.notes}</p> : null}
+              {alert.notes ? <p dir="auto" className="mt-3 break-words text-sm text-ink-300">{alert.notes}</p> : null}
             </div>
           ))}
         </div>

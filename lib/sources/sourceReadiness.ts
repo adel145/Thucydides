@@ -12,22 +12,22 @@ const requiredSourceGroups = [
   {
     label: "CV",
     types: ["CV"],
-    note: "Upload CV file or add CV text source."
+    note: "העלה קובץ CV או הוסף מקור טקסט CV."
   },
   {
     label: "LinkedIn",
     types: ["LINKEDIN_TEXT"],
-    note: "Add LinkedIn URL or pasted LinkedIn text."
+    note: "הוסף URL של LinkedIn או טקסט LinkedIn מודבק."
   },
   {
-    label: "GitHub / Projects",
+    label: "GitHub / פרויקטים",
     types: ["GITHUB_PROJECTS", "PORTFOLIO"],
-    note: "Add GitHub, portfolio, or project URL/note."
+    note: "הוסף GitHub, Portfolio או URL/הערה של פרויקט."
   },
   {
-    label: "Certificates / Academic",
+    label: "תעודות / אקדמי",
     types: ["CERTIFICATE", "ACADEMIC_DOCUMENT"],
-    note: "Upload certificate/academic file or add URL/note."
+    note: "העלה תעודה/מסמך אקדמי או הוסף URL/הערה."
   }
 ] as const;
 

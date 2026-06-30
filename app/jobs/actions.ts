@@ -32,7 +32,7 @@ export async function createJob(formData: FormData) {
       events: {
         create: {
           type: "JOB_CREATED",
-          notes: `Job created manually from source: ${input.source}.`
+          notes: `המשרה נוצרה ידנית ממקור: ${input.source}.`
         }
       }
     }
@@ -56,7 +56,7 @@ export async function updateJob(formData: FormData) {
       events: {
         create: {
           type: "JOB_UPDATED",
-          notes: "Job fields were edited manually; deterministic validation was rerun."
+          notes: "שדות המשרה נערכו ידנית; validation דטרמיניסטי הורץ מחדש."
         }
       }
     }
@@ -107,7 +107,7 @@ export async function archiveJob(formData: FormData) {
       events: {
         create: {
           type: "JOB_ARCHIVED",
-          notes: "Job was manually archived."
+          notes: "המשרה הועברה ידנית לארכיון."
         }
       }
     }
@@ -140,7 +140,7 @@ export async function updateJobPriority(formData: FormData) {
       events: {
         create: {
           type: "PRIORITY_CHANGED",
-          notes: `Priority changed to ${priority}.`
+          notes: `העדיפות שונתה ל-${priority}.`
         }
       }
     }
@@ -165,7 +165,7 @@ export async function setNextAction(formData: FormData) {
       events: {
         create: {
           type: "NEXT_ACTION_SET",
-          notes: nextActionAt ? `Next action set for ${nextActionAt.toLocaleDateString()}: ${nextActionNote ?? ""}` : "Next action cleared."
+          notes: nextActionAt ? `פעולה הבאה נקבעה ל-${nextActionAt.toLocaleDateString("he-IL")}: ${nextActionNote ?? ""}` : "הפעולה הבאה נוקתה."
         }
       }
     }

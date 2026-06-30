@@ -16,7 +16,7 @@ export function ScoreBadge({
   tone?: keyof typeof tones;
 }) {
   return (
-    <span className={clsx("inline-flex min-h-8 items-center gap-2 rounded-full border px-3 text-xs font-semibold", tones[tone])}>
+    <span dir="auto" className={clsx("inline-flex min-h-8 items-center gap-2 rounded-full border px-3 text-xs font-semibold", tones[tone])}>
       {icon}
       {children}
     </span>

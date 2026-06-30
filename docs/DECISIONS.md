@@ -188,7 +188,7 @@ Reason: Adel should not have to upload a file to record profile and career URLs.
 
 ## 2026-06-29: Clearer Dark UI Surfaces
 
-Decision: keep the dark sidebar command-center direction, but lighten card surfaces, strengthen borders/actions, and use short Arabic/Hebrew helper labels where they reduce confusion.
+Decision: keep the dark sidebar command-center direction, but lighten card surfaces, strengthen borders/actions, and use short multilingual helper labels where they reduce confusion.
 
 Reason: Adel likes the visual direction but needs clearer readability and less dense English on core workflow pages.
 
@@ -341,3 +341,15 @@ Reason: real QA showed the English discovery page was too confusing for Adel. Th
 Decision: long provider text, Markdown snippets, URLs, and job descriptions on `/discovery` should wrap or be clipped, with full text behind expandable details.
 
 Reason: raw provider content was forcing horizontal overflow and hiding content at normal browser zoom. The review board needs to stay readable with the sidebar open.
+
+## 2026-06-30: Global UI Should Be Hebrew-First RTL
+
+Decision: extend Hebrew-first RTL UI from `/discovery` into the shared shell and core workflow pages, while keeping technical terms, provider names, URLs, env vars, and enum/status badges in English where useful.
+
+Reason: real QA showed that Adel still felt lost when the rest of the app remained English-heavy. This is a readability foundation only; it must not change discovery eligibility, import safety, validation rules, schema, providers, AI scope, Gmail behavior, or application automation.
+
+## 2026-06-30: Core Pages Must Guard Against Horizontal Overflow
+
+Decision: core pages should use responsive containment such as `min-w-0`, overflow guards, and word wrapping for long URLs, pasted descriptions, raw snippets, source text, and notes.
+
+Reason: long external content can hide UI on the right at normal browser zoom, especially with the sidebar open.

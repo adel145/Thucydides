@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 6.1F - Discovery Hebrew RTL + Responsive UX Cleanup.
+Current state: Phase 6.1G - Global Hebrew RTL UI Foundation.
 
 ## What Works Now
 
@@ -55,6 +55,8 @@ Current state: Phase 6.1F - Discovery Hebrew RTL + Responsive UX Cleanup.
 - Discovery action guide and top cleanup action for old noisy leads
 - Discovery sections for verified job postings, sources to process, legacy/noisy leads, and skipped/unsupported records
 - Hebrew RTL `/discovery` page with action-oriented labels for source candidates and verified job states
+- Global Hebrew-first RTL app shell and core workflow pages, with technical terms and enum/status badges kept in English where useful
+- Responsive overflow guards across the shared shell and core pages so long URLs, pasted text, raw descriptions, and provider snippets stay inside cards
 - Responsive `/discovery` cards that wrap long URLs, Markdown snippets, provider text, and descriptions without horizontal overflow
 - Expandable source/job text previews so noisy raw provider text does not dominate cards
 - Verified job postings can show Ready to import, Blocked, Duplicate, Imported, or Needs review without falling into legacy/noisy
@@ -99,15 +101,15 @@ The desired product is an agent-assisted job-search command center that helps Ad
 
 Future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply. Automated application sending is not part of the plan.
 
-Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.1F keeps the Phase 6.1E discovery logic, but makes `/discovery` Hebrew/RTL and more readable. Tavily/search results remain `DiscoverySourceCandidate` records first; only verified single job postings or structured Google Jobs results become `JobDiscoveryLead` records that can be manually imported. Verified postings can still be blocked, duplicated, imported, or need review before import. Source candidates are not jobs yet. The cleanup action only marks old non-importable leads as `SKIPPED`; it does not delete data or touch imported jobs. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
+Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.1G preserves the Phase 6.1E/6.1F discovery logic, and extends Hebrew RTL readability from `/discovery` into the shared shell and core app pages. Tavily/search results remain `DiscoverySourceCandidate` records first; only verified single job postings or structured Google Jobs results become `JobDiscoveryLead` records that can be manually imported. Verified postings can still be blocked, duplicated, imported, or need review before import. Source candidates are not jobs yet. The cleanup action only marks old non-importable leads as `SKIPPED`; it does not delete data or touch imported jobs. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
 
 Future export goals include DOCX/PDF CV and cover-letter outputs, TXT recruiter messages/notes, local per-job folders, and RTL/LTR support. Exports are not implemented yet.
 
-The UI should stay dark, local-first, and sidebar-based. It should remain mostly English, but use helpful Hebrew job-market terms and simple explanations. The first-open flow should increasingly focus on Today's Mission and Jobs Ready To Apply.
+The UI should stay dark, local-first, and sidebar-based. The visible product UI is now Hebrew-first and RTL for Adel's day-to-day workflow, while technical terms such as Thucydides, SQLite, OpenAI, AI, Gmail, Tavily, SerpApi, Workday, Greenhouse, Job Inbox, DOCX/PDF/TXT, URLs, env vars, and enum/status badges can remain English. The first-open flow should increasingly focus on Today's Mission and Jobs Ready To Apply.
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 6.1F uses local SQLite data, deterministic validation, manual job/source intake, discovery source candidates and verified job postings, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. A provider key being present does not mean the provider is verified. Workday support is safe/public and limited; JS-only or blocked pages remain candidates with errors, and search/listing URLs are not treated as exact postings. SerpApi 401 means `SERPAPI_API_KEY` or account access must be fixed outside the app. Gmail OAuth, automatic inbox reading, login-gated scraping, browser automation, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
+Current limitation: Phase 6.1G uses local SQLite data, deterministic validation, manual job/source intake, discovery source candidates and verified job postings, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. A provider key being present does not mean the provider is verified. Workday support is safe/public and limited; JS-only or blocked pages remain candidates with errors, and search/listing URLs are not treated as exact postings. SerpApi 401 means `SERPAPI_API_KEY` or account access must be fixed outside the app. Gmail OAuth, automatic inbox reading, login-gated scraping, browser automation, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
 
 ## Local Setup
 
@@ -185,7 +187,7 @@ Future work should read and update these files after each phase.
 
 ## Roadmap
 
-Next planned phase: manually QA provider diagnostics and candidate enumeration with real Tavily/SerpApi/career-page results before adding more ATS adapters.
+Next planned phase: manually QA global Hebrew RTL readability plus provider diagnostics and candidate enumeration with real Tavily/SerpApi/career-page results before adding more ATS adapters.
 
 Planned work:
 

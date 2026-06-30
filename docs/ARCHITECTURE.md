@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.1F Architecture
+## Phase 6.1G Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -39,6 +39,13 @@ The app uses a shared `AppShell` wrapping every page. Navigation lives in `Sideb
 - `ScoreBadge`
 
 Visual effects are CSS-first and lightweight. The Stitch WebGL shader and Three.js prototype were not copied into production code.
+
+Phase 6.1G extends the UI foundation:
+
+- `app/layout.tsx` sets the document to Hebrew RTL.
+- `components/layout/AppShell.tsx`, `Sidebar`, and `TopBar` provide Hebrew-first global navigation/status copy.
+- Core workflow pages keep technical tokens such as Thucydides, SQLite, OpenAI, AI, Gmail, Tavily, SerpApi, Workday, Greenhouse, Job Inbox, DOCX/PDF/TXT, URLs, env vars, and enum/status badges in English where useful.
+- Page containers and cards use responsive containment and wrapping for long URLs, pasted text, provider snippets, source text, and job descriptions.
 
 ## Data Architecture
 
@@ -205,6 +212,13 @@ Phase 6.1F is a discovery UX/readability patch with no backend behavior change:
 - Source candidate cards show short previews and put full source text behind expandable details.
 - Verified posting cards show large Hebrew state labels while preserving Phase 6.1E import eligibility and forbidden-role blocking.
 
+Phase 6.1G is a global UI/readability patch with no backend behavior change:
+
+- The shared shell and core user-facing pages are Hebrew-first and RTL.
+- Dashboard, Profile, Job Inbox, Job detail/edit/delete, Application Packet, Resume Lab, Agent Council, Pipeline, Sources, Source Detail, Gmail, and Settings use Hebrew action-oriented copy.
+- Overflow containment from the discovery review is applied broadly to prevent long external text from causing horizontal page scroll.
+- Discovery backend logic, import eligibility, Workday classification, forbidden-role blocking, schema, providers, AI scope, and Gmail behavior are unchanged.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -225,7 +239,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.1F
+## Non-Goals in Phase 6.1G
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

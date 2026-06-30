@@ -2,7 +2,7 @@
 
 Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. The repo and docs are the official project memory.
 
-As of Phase 6.1F, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, Hebrew RTL discovery review, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, and a source-candidate quality gate.
+As of Phase 6.1G, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, a Hebrew RTL global UI foundation, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, and a source-candidate quality gate.
 
 ## Product Mission
 
@@ -15,6 +15,7 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 ## Current Behavior
 
 - Dashboard first view is Today's Mission and now links to `/discovery` with "Find suitable jobs".
+- The shared shell and core visible pages are Hebrew-first and RTL, while technical terms, enum/status badges, URLs, env vars, and provider names remain English where useful.
 - Discovery priority is company career pages first, job platforms second, Gmail alerts third.
 - `/discovery` shows Tavily/SerpApi/Gmail provider status, a Hebrew "מה לעשות עכשיו" guide, a top safe cleanup action, discovery run form, run history, sources to process, counts, verified job postings, legacy/noisy leads, and skipped/unsupported records.
 - `/discovery` is RTL and uses responsive overflow guards (`min-w-0`, max-width, wrapping, clipped previews, and expandable details) so long URLs, Markdown snippets, provider text, and descriptions do not force horizontal page scroll.
@@ -109,7 +110,8 @@ OPENAI_MODEL=
 
 ## Recommended Next Work
 
-1. Manually QA `/discovery` provider tests, source candidate enumeration, and SerpApi account/key status.
-2. Add more public ATS adapters only after inspecting real public behavior, likely Lever and Ashby first.
-3. Add a dedicated discovery lead detail page if cards become too dense.
-4. Keep imports manual and forbidden leads blocked unless a future override flow is explicitly designed.
+1. Manually QA global Hebrew RTL readability across Dashboard, Job Inbox, Application Packet, Resume Lab, Sources, Gmail, and `/discovery`.
+2. Manually QA `/discovery` provider tests, source candidate enumeration, and SerpApi account/key status.
+3. Add more public ATS adapters only after inspecting real public behavior, likely Lever and Ashby first.
+4. Add a dedicated discovery lead detail page if cards become too dense.
+5. Keep imports manual and forbidden leads blocked unless a future override flow is explicitly designed.

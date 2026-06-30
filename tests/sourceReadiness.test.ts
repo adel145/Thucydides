@@ -11,6 +11,6 @@ describe("source readiness", () => {
 
     expect(readiness.readyCount).toBe(3);
     expect(readiness.missing.map((item) => item.label)).toEqual(["LinkedIn"]);
-    expect(readiness.missing[0].note).toBe("Add LinkedIn URL or pasted LinkedIn text.");
+    expect(readiness.missing[0].note).toBe("הוסף URL של LinkedIn או טקסט LinkedIn מודבק.");
   });
 });

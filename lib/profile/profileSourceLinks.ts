@@ -3,56 +3,56 @@ import type { SourceType } from "../sources/sourceTypes";
 export const PROFILE_SOURCE_TARGET_FIELDS = [
   {
     key: "languages",
-    label: "Languages",
-    description: "Language evidence from CV, LinkedIn, or notes.",
+    label: "שפות",
+    description: "ראיות שפה מתוך CV, LinkedIn או הערות.",
     likelySourceTypes: ["CV", "LINKEDIN_TEXT", "JOB_SEARCH_NOTES"]
   },
   {
     key: "technicalSkills",
-    label: "Technical skills",
-    description: "Technical stack, tools, and practical skills.",
+    label: "כישורים טכניים",
+    description: "טכנולוגיות, כלים וכישורים מעשיים.",
     likelySourceTypes: ["CV", "LINKEDIN_TEXT", "GITHUB_PROJECTS", "PORTFOLIO"]
   },
   {
     key: "softSkills",
-    label: "Soft skills",
-    description: "Teamwork, communication, ownership, and support signals.",
+    label: "כישורים רכים",
+    description: "עבודת צוות, תקשורת, אחריות וסימני support.",
     likelySourceTypes: ["CV", "LINKEDIN_TEXT", "JOB_SEARCH_NOTES"]
   },
   {
     key: "fieldExperience",
-    label: "Field experience",
-    description: "Work, project, support, implementation, or practical experience.",
+    label: "ניסיון מעשי",
+    description: "עבודה, פרויקטים, support, implementation או ניסיון מעשי.",
     likelySourceTypes: ["CV", "LINKEDIN_TEXT"]
   },
   {
     key: "education",
-    label: "Education",
-    description: "Degree, academic status, and coursework evidence.",
+    label: "השכלה",
+    description: "תואר, סטטוס אקדמי וראיות לקורסים.",
     likelySourceTypes: ["CV", "LINKEDIN_TEXT", "CERTIFICATE", "ACADEMIC_DOCUMENT"]
   },
   {
     key: "certificates",
-    label: "Certificates",
-    description: "Certificates, courses, and formal completion evidence.",
+    label: "תעודות",
+    description: "תעודות, קורסים וראיות השלמה רשמיות.",
     likelySourceTypes: ["CV", "CERTIFICATE", "ACADEMIC_DOCUMENT"]
   },
   {
     key: "githubProjects",
-    label: "GitHub projects",
-    description: "GitHub repositories and project evidence.",
+    label: "פרויקטי GitHub",
+    description: "Repositories ב-GitHub וראיות לפרויקטים.",
     likelySourceTypes: ["GITHUB_PROJECTS", "PORTFOLIO"]
   },
   {
     key: "portfolioLinks",
-    label: "Portfolio links",
-    description: "Portfolio, project pages, and public proof links.",
+    label: "קישורי Portfolio",
+    description: "Portfolio, עמודי פרויקט וקישורי הוכחה ציבוריים.",
     likelySourceTypes: ["GITHUB_PROJECTS", "PORTFOLIO"]
   },
   {
     key: "sourceNotes",
-    label: "Source notes",
-    description: "General notes that support future profile and CV work.",
+    label: "הערות מקור",
+    description: "הערות כלליות שתומכות בעבודת פרופיל ו-CV בהמשך.",
     likelySourceTypes: ["CV", "LINKEDIN_TEXT", "JOB_SEARCH_NOTES"]
   }
 ] as const;

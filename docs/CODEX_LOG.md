@@ -333,7 +333,7 @@ Updated:
 
 - Sources now separates upload files, profile/link sources, and pasted text/notes.
 - Source readiness wording now describes files, URLs, pasted text, and notes where appropriate.
-- Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail now use clearer surfaces, stronger actions, and short Arabic/Hebrew helper labels where useful.
+- Job Inbox, Application Packet, Resume Lab, Sources, and Source Detail now use clearer surfaces, stronger actions, and short multilingual helper labels where useful.
 - Docs now record the correction patch and the rule that URL sources are not scraped, fetched, parsed, or sent to OpenAI.
 
 Not implemented:
@@ -560,3 +560,35 @@ Verified:
 Not implemented:
 
 - No schema changes, new providers, Gmail OAuth, automatic inbox reading, browser automation, login/captcha bypass, fake descriptions, automatic applications, automatic emails, or weakened forbidden-role blocking.
+
+## 2026-06-30 Phase 6.1G - Global Hebrew RTL UI Foundation
+
+Updated:
+
+- Set the global document and shared app shell to Hebrew-first RTL.
+- Translated visible copy across the shared shell and core workflow pages: Dashboard, Profile, Job Inbox, Job detail/edit/delete, Application Packet, Resume Lab, Agent Council, Pipeline, Sources, Source Detail, Gmail, and Settings.
+- Kept technical terms, provider names, URLs, env vars, and enum/status badges in English where useful.
+- Removed old Arabic helper-label remnants from UI copy.
+- Added responsive overflow containment and word wrapping across core cards, forms, URLs, pasted descriptions, source text, notes, and raw snippets.
+- Preserved Phase 6.1E/6.1F discovery lead semantics, import eligibility, duplicate handling, forbidden-role blocking, Workday exact-job classification, and cleanup behavior.
+
+Verification:
+
+- `npm run test`, `npm run build`, `npm run lint`, and `npm run verify` are required for this patch.
+
+Not implemented:
+
+- No schema changes, new providers, Gmail OAuth, automatic inbox reading, browser automation, login/captcha bypass, fake descriptions, automatic applications, automatic emails, real autonomous agents, upload parsing, DOCX/PDF export, auth, deployment, or backend behavior changes.
+
+## 2026-06-30 Phase 6.1G QA Polish - Hebrew Consistency + Runtime Issue Check
+
+Updated:
+
+- Fixed the `/sources` React dev issue by removing explicit `encType` from the file-upload form that uses a Server Action; React supplies the form encoding automatically.
+- Polished remaining visible Hebrew labels for quick filters, provider configured badges, source/provider "Other" labels, status/priority labels, source readiness, and profile evidence field names.
+- Added `dir="auto"` or `dir="ltr"` to dynamic job titles, companies, URLs, snippets, descriptions, source text, notes, provider text, and AI draft text where appropriate.
+- Kept native browser file-input text as-is because localizing "Choose File / No file chosen" would require a custom client upload component outside this small QA patch.
+
+Not changed:
+
+- No backend discovery behavior, schema, import eligibility, validation rules, providers, Gmail OAuth, browser automation, auto apply/email, real agents, upload parsing, or resume export.
