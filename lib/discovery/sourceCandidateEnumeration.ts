@@ -4,7 +4,7 @@ import { extractJobDescriptionFromHtml, extractJsonLdJobPosting } from "./jobDes
 import { fetchPublicJobPage } from "./jobPageFetcher";
 import { prepareDiscoveryLeadForCreate, type PreparedDiscoveryLead, type PreparedDiscoverySourceCandidate } from "./jobDiscoveryEngine";
 import { classifyDiscoverySource, isImportableSourceClassification, SOURCE_CLASSIFICATIONS } from "./pageClassifier";
-import { extractWorkdayJobLinks, isLikelyJsOnlyWorkdayPage, isWorkdayUrl, prepareWorkdayLeadFromHtml } from "./workdayDiscovery";
+import { extractWorkdayJobLinks, isLikelyJsOnlyWorkdayPage, isWorkdayExactJobUrl, isWorkdayUrl, prepareWorkdayLeadFromHtml } from "./workdayDiscovery";
 import type { DiscoverySearchLead } from "./tavilySearchClient";
 
 export type SourceCandidateForEnumeration = {
@@ -94,7 +94,11 @@ function candidateFromLink(parent: SourceCandidateForEnumeration, link: Extracte
     title: link.title,
     snippet: link.snippet,
     rawText: link.snippet,
-    classification: isWorkdayUrl(link.url) ? SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING : SOURCE_CLASSIFICATIONS.UNKNOWN,
+    classification: isWorkdayExactJobUrl(link.url)
+      ? SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING
+      : isWorkdayUrl(link.url)
+        ? SOURCE_CLASSIFICATIONS.ATS_BOARD
+        : SOURCE_CLASSIFICATIONS.UNKNOWN,
     confidence: link.preferredLocationSignal ? "MEDIUM" : "LOW",
     reason: "Specific job-like link extracted from a public career listing; verify before import.",
     extractedJobCount: 0,

@@ -66,11 +66,13 @@ function titleFromNearbyText(content: string, index: number) {
     .split(/[\n\r.?!|\u2022]/)
     .at(-1)
     ?.trim() ?? "";
-  const marker = before.match(/(?:^|\s)(open\s+role|role|job|position)\s*:?\s*(.{3,})$/i);
+  const marker =
+    before.match(/(?:^|\s)(open\s+role|role|job|position)\s*:?\s*(.{3,})$/i) ??
+    before.match(/(?:^|\s)(careers?(?:\s+listing)?)\s*:?\s*(.{3,})$/i);
   const candidate = marker?.[2] && targetRolePattern.test(marker[2]) ? marker[2] : before;
   if (!targetRolePattern.test(candidate)) return null;
   return candidate
-    .replace(/^(see|apply|open\s+role|role|job|position)\s*:?\s*/i, "")
+    .replace(/^(see|apply|open\s+role|role|job|position|careers?)\s*:?\s*/i, "")
     .slice(-110)
     .trim() || null;
 }

@@ -209,6 +209,16 @@
 - Improved Workday/plain-URL title cleanup so readable Markdown/nearby titles are preferred over raw ids.
 - Added tests for title cleanup, source-candidate title preservation, verified posting action states, legacy/noisy separation, and safe hide behavior.
 
+## Completed In Phase 6.1E
+
+- Made discovery lead view helpers distinguish verified posting visibility from ready-to-import readiness.
+- Kept low-confidence, duplicate, imported, and blocked verified postings in the Verified job postings section.
+- Added explicit state labels for Ready to import, Blocked, Duplicate, Imported, and Needs review.
+- Kept legacy/noisy leads reserved for non-job sources, search/listing/generic/noisy old leads.
+- Tightened Workday extracted-link candidate classification so only exact public Workday job URLs become `ATS_JOB_POSTING`.
+- Kept Workday search/listing URLs as ATS board/source candidates requiring enumeration.
+- Added tests for low-confidence verified postings, duplicate/imported verified states, Workday search candidate classification, exact Workday verification, and cleanup safety.
+
 ## Next Tasks
 
 - Manually QA provider diagnostics, Markdown/URL candidate enumeration, discovery action clarity, and real Tavily/SerpApi runs.

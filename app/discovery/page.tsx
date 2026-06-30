@@ -330,11 +330,11 @@ export default async function DiscoveryPage({
             const verifiedPosting = isImportableSourceClassification(lead.sourceClassification);
             const enoughConfidence = lead.confidence === "MEDIUM" || lead.confidence === "HIGH";
             const importBlockedReason = !verifiedPosting
-              ? "Not importable: source is a listing/search/career page, not a single job posting."
+              ? "Not verified as a single job posting."
               : !enoughConfidence
-                ? "Not importable: confidence is too low."
+                ? "Low confidence."
                 : !meaningfulDescription || meaningfulDescription.trim().length < 80
-                  ? "Not importable: meaningful job description is missing."
+                  ? "Missing meaningful job description."
                   : null;
             const imported = lead.status === "IMPORTED" && lead.importedJobId;
             const inactive = imported || lead.status === "SKIPPED" || lead.status === "DUPLICATE";

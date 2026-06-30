@@ -15,18 +15,47 @@ export function hasMeaningfulDiscoveryDescription(lead: DiscoveryLeadViewItem) {
   return Boolean(description && description.trim().length >= 80);
 }
 
-export function isVerifiedImportableDiscoveryLead(lead: DiscoveryLeadViewItem) {
+export function isVerifiedDiscoveryPostingLead(lead: DiscoveryLeadViewItem) {
+  return isImportableSourceClassification(lead.sourceClassification) && lead.status !== "SKIPPED";
+}
+
+export function isDuplicateDiscoveryPostingLead(lead: DiscoveryLeadViewItem, duplicate = false) {
+  return isVerifiedDiscoveryPostingLead(lead) && (duplicate || lead.status === "DUPLICATE");
+}
+
+export function isImportedDiscoveryPostingLead(lead: DiscoveryLeadViewItem) {
+  return isVerifiedDiscoveryPostingLead(lead) && lead.status === "IMPORTED" && Boolean(lead.importedJobId);
+}
+
+export function isBlockedDiscoveryPostingLead(lead: DiscoveryLeadViewItem) {
+  return isVerifiedDiscoveryPostingLead(lead) && lead.validationStatus === "FORBIDDEN";
+}
+
+export function isReadyToImportDiscoveryLead(lead: DiscoveryLeadViewItem, options: { duplicate?: boolean } = {}) {
   return (
-    isImportableSourceClassification(lead.sourceClassification) &&
+    isVerifiedDiscoveryPostingLead(lead) &&
+    !isBlockedDiscoveryPostingLead(lead) &&
+    !isDuplicateDiscoveryPostingLead(lead, options.duplicate) &&
+    !isImportedDiscoveryPostingLead(lead) &&
     (lead.confidence === "MEDIUM" || lead.confidence === "HIGH") &&
-    hasMeaningfulDiscoveryDescription(lead) &&
-    lead.status !== "SKIPPED" &&
-    lead.status !== "DUPLICATE"
+    hasMeaningfulDiscoveryDescription(lead)
   );
 }
 
+export function discoveryPostingReviewReason(lead: DiscoveryLeadViewItem) {
+  if (!isVerifiedDiscoveryPostingLead(lead)) return "Not verified as a single job posting.";
+  if (lead.confidence !== "MEDIUM" && lead.confidence !== "HIGH") return "Low confidence.";
+  if (!hasMeaningfulDiscoveryDescription(lead)) return "Missing meaningful job description.";
+  return "Needs manual review before import.";
+}
+
+// Backward-compatible name: this now means a verified single posting visible in the verified section.
+export function isVerifiedImportableDiscoveryLead(lead: DiscoveryLeadViewItem) {
+  return isVerifiedDiscoveryPostingLead(lead);
+}
+
 export function isLegacyOrNoisyDiscoveryLead(lead: DiscoveryLeadViewItem) {
-  return !isVerifiedImportableDiscoveryLead(lead) && lead.status !== "SKIPPED" && lead.status !== "IMPORTED";
+  return !isVerifiedDiscoveryPostingLead(lead) && lead.status !== "SKIPPED" && lead.status !== "IMPORTED";
 }
 
 export function shouldHideOldNonImportableLead(lead: DiscoveryLeadViewItem) {
@@ -34,7 +63,7 @@ export function shouldHideOldNonImportableLead(lead: DiscoveryLeadViewItem) {
     !lead.importedJobId &&
     lead.status !== "IMPORTED" &&
     lead.status !== "SKIPPED" &&
-    (!isImportableSourceClassification(lead.sourceClassification) || lead.confidence === "LOW")
+    !isVerifiedDiscoveryPostingLead(lead)
   );
 }
 
@@ -42,30 +71,37 @@ export function discoveryPostingActionState(
   lead: DiscoveryLeadViewItem,
   options: { duplicate?: boolean } = {}
 ) {
-  if (lead.validationStatus === "FORBIDDEN") {
+  if (isImportedDiscoveryPostingLead(lead)) {
+    return {
+      label: "Imported",
+      tone: "aqua" as const,
+      reason: "Already imported into Job Inbox."
+    };
+  }
+  if (isBlockedDiscoveryPostingLead(lead)) {
     return {
       label: "Blocked — cannot import",
       tone: "warning" as const,
       reason: "Blocked by deterministic role rules."
     };
   }
-  if (options.duplicate) {
+  if (isDuplicateDiscoveryPostingLead(lead, options.duplicate)) {
     return {
       label: "Duplicate",
       tone: "warning" as const,
       reason: "Looks like an existing local job."
     };
   }
-  if (!isVerifiedImportableDiscoveryLead(lead)) {
+  if (isReadyToImportDiscoveryLead(lead, options)) {
     return {
-      label: "Needs review",
-      tone: "muted" as const,
-      reason: "Missing import confidence, verified posting classification, or meaningful description."
+      label: "Ready to import",
+      tone: "aqua" as const,
+      reason: null
     };
   }
   return {
-    label: "Ready to import",
-    tone: "aqua" as const,
-    reason: null
+    label: "Needs review — not ready",
+    tone: "muted" as const,
+    reason: discoveryPostingReviewReason(lead)
   };
 }

@@ -2,7 +2,7 @@
 
 Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. The repo and docs are the official project memory.
 
-As of Phase 6.1D, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, clearer discovery action flow, Markdown/plain URL extraction, Workday/plain-URL title cleanup, and a source-candidate quality gate.
+As of Phase 6.1E, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, clearer discovery action flow, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, and a source-candidate quality gate.
 
 ## Product Mission
 
@@ -25,8 +25,9 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 - `JobDiscoveryLead` stores both Gmail/manual leads and verified internet discovery leads, including source/evidence fields, extracted content, confidence, fit score, and reasons.
 - Only verified single job postings, exact ATS job postings, or structured SerpApi Google Jobs results can become importable discovery leads. Verified postings can still be blocked by deterministic role rules.
 - Broad Glassdoor/listing/search pages remain source candidates and are not importable.
-- Workday support is safe/public and limited: search pages are ATS board candidates, visible specific links become source candidates, exact public job pages can create ATS job leads only when title and meaningful description are available, and JS-only/blocked pages stay candidates with errors.
-- Candidate enumeration extracts HTML anchors, Markdown links like `[Title](https://...)`, and plain public job URLs from fetched content plus saved candidate raw text/snippets. Markdown titles are preserved; plain Workday/career URLs prefer readable surrounding text and fall back to "Untitled job link from Workday" or "Untitled job link from career page" instead of raw ids when no title exists. Repeated enumeration dedupes candidates and leads.
+- Verified job postings can be Ready to import, Blocked, Duplicate, Imported, or Needs review. Low-confidence and duplicate verified postings stay in the verified section rather than legacy/noisy.
+- Workday support is safe/public and limited: search/listing pages are ATS board candidates, visible exact job links become source candidates, exact public job pages can create ATS job leads only when title and meaningful description are available, and JS-only/blocked pages stay candidates with errors.
+- Candidate enumeration extracts HTML anchors, Markdown links like `[Title](https://...)`, and plain public job URLs from fetched content plus saved candidate raw text/snippets. Markdown titles are preserved; plain Workday/career URLs prefer readable surrounding text and fall back to "Untitled job link from Workday" or "Untitled job link from career page" instead of raw ids when no title exists. Workday search URLs are not classified as ATS job postings. Repeated enumeration dedupes candidates and leads.
 - Safe non-forbidden discovery leads can be manually imported into normal local `Job` records.
 - Imported discovery leads create `JOB_IMPORTED_FROM_DISCOVERY` events.
 - Forbidden discovery leads stay blocked from normal import.

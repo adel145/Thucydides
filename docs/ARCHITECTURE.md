@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.1D Architecture
+## Phase 6.1E Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -188,6 +188,15 @@ Phase 6.1D improves discovery action clarity and candidate titles without changi
 - Career-link extraction preserves Markdown titles, uses readable nearby text for plain Workday/career URLs when possible, and avoids showing raw hash-like ids unless no better title exists.
 - Cleanup still marks old non-importable leads `SKIPPED`; it does not delete data or touch imported jobs.
 
+Phase 6.1E tightens discovery lead state semantics without changing the schema:
+
+- `lib/discovery/discoveryLeadViews.ts` separates verified posting visibility from ready-to-import status.
+- Verified postings include actual job postings and exact ATS job postings unless skipped.
+- Ready-to-import requires verified posting classification, medium/high confidence, meaningful description, not forbidden, not duplicate, and not imported.
+- Duplicate, imported, blocked, and low-confidence verified postings remain in the verified posting section with explicit state labels.
+- Legacy/noisy leads are reserved for non-job sources, search/listing/generic/noisy old leads.
+- Workday candidate creation uses exact public job URL detection before assigning `ATS_JOB_POSTING`; Workday search/listing URLs remain ATS board candidates.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -208,7 +217,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.1D
+## Non-Goals in Phase 6.1E
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

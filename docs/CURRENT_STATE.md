@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-30, Thucydides is in Phase 6.1D - Discovery UX Action Clarity + Candidate Title Cleanup state.
+As of 2026-06-30, Thucydides is in Phase 6.1E - Discovery Lead State Consistency + Workday Exact-Job Safety state.
 
 ## What Exists
 
@@ -88,7 +88,7 @@ As of 2026-06-30, Thucydides is in Phase 6.1D - Discovery UX Action Clarity + Ca
 - `/gmail` shows validation status, allowed signals, forbidden flags, risk notes, duplicate warnings, source URL, and raw snippets for lead review.
 - Safe non-forbidden leads can be manually imported into the normal Job Inbox.
 - Imported leads become normal local `Job` records and get an `ApplicationEvent`.
-- Forbidden leads remain blocked from normal import in Phase 6.1D.
+- Forbidden leads remain blocked from normal import in Phase 6.1E.
 - `/discovery` supports env-gated internet job discovery through Tavily and SerpApi.
 - `/discovery` separates source candidates from job leads. Search/listing/generic/company pages stay as source candidates; only verified single job postings become importable leads.
 - `/discovery` can test Tavily and SerpApi from the UI. Provider badges say key present/missing until a test verifies or fails them. SerpApi 401 is shown as "SerpApi authorization failed: check SERPAPI_API_KEY/account." without printing keys.
@@ -96,6 +96,7 @@ As of 2026-06-30, Thucydides is in Phase 6.1D - Discovery UX Action Clarity + Ca
 - `/discovery` now separates verified job postings, sources to process, legacy/noisy leads, and skipped/unsupported candidates.
 - `/discovery` has a top "What to do next" guide and a top "Clean old noisy leads" action near provider tests.
 - `/discovery` can hide old non-importable discovery leads by setting them to SKIPPED without deleting data or touching imported jobs.
+- `/discovery` keeps verified postings visible for review when they are ready, blocked, duplicate, imported, or need review; duplicate/low-confidence verified postings do not fall into legacy/noisy.
 - `/discovery` keeps verified forbidden postings visible for review, but marks them as blocked and disables import.
 - Candidate enumeration supports Greenhouse boards, safe public Workday pages, and generic public career HTML link extraction.
 - Candidate enumeration extracts HTML links, Markdown links, and plain job URLs from fetched content plus saved candidate text/snippets, deduping by URL.
@@ -103,7 +104,7 @@ As of 2026-06-30, Thucydides is in Phase 6.1D - Discovery UX Action Clarity + Ca
 - `JobDiscoveryRun` stores discovery run status, provider/query metadata, counts, and errors.
 - Discovery helpers support company-career queries, platform queries, Greenhouse public board detection/mapping, safe public page fetch, source classification, JSON-LD JobPosting extraction, HTML fallback extraction, deterministic fit scoring, and duplicate checks.
 - Greenhouse exact job URLs map only that job; Greenhouse boards are enumerated and filtered for Israel/remote target roles instead of blindly taking the first listing.
-- Workday search pages are ATS board candidates, exact public Workday job pages can become ATS job leads only after title and meaningful description are visible, and JS-only/blocked Workday pages remain candidates with errors.
+- Workday search/listing pages are ATS board candidates, exact public Workday job pages can become ATS job leads only after title and meaningful description are visible, and JS-only/blocked Workday pages remain candidates with errors.
 - Generic career listing pages can create specific job-link source candidates, not direct job leads, unless a fetched page verifies as a single posting.
 - Pressing try enumerate repeatedly avoids duplicate source candidates and duplicate leads.
 - Unsafe URLs, generic company pages, search result pages, ATS boards, career listings, and noisy pages are not directly importable.

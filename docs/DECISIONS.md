@@ -317,3 +317,15 @@ Reason: "Verified" means the source looks like a real individual job posting, no
 Decision: Markdown titles should be preserved, and plain Workday/career URLs should prefer readable surrounding text before falling back to neutral untitled labels instead of raw hash-like ids.
 
 Reason: Workday and company-career URLs often contain opaque ids that confuse review. Human-readable titles make source candidates easier to process without pretending the candidate is a verified job.
+
+## 2026-06-30: Verified Posting State Is Separate From Import Readiness
+
+Decision: a verified discovery posting means the source is an actual single job posting or exact ATS job posting and is not skipped. Ready to import is stricter: verified, medium/high confidence, meaningful description, not forbidden, not duplicate, and not already imported.
+
+Reason: low-confidence, duplicate, imported, and blocked postings are still real postings and should stay in the verified section with clear state labels instead of falling into legacy/noisy.
+
+## 2026-06-30: Workday Search URLs Are Not Exact Job Postings
+
+Decision: `myworkdayjobs.com` URLs must not all become `ATS_JOB_POSTING`. Search/listing Workday URLs remain ATS board/source candidates, and only exact public Workday job URLs can become ATS job postings after verification.
+
+Reason: Workday domains mix boards and individual jobs. Treating every Workday URL as a posting creates noisy import states and can bypass the intended enumerate-before-import workflow.

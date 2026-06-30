@@ -218,6 +218,17 @@ Phase 6.1D coverage:
 - Manual QA should confirm "Clean old noisy leads" marks old non-importable leads skipped without deletion and without touching imported jobs.
 - Manual QA should confirm source candidates are not presented as jobs, and verified postings can still be blocked by role rules.
 
+Phase 6.1E coverage:
+
+- Unit tests cover low-confidence actual job postings staying in Verified job postings as Needs review.
+- Unit tests cover duplicate verified postings staying in Verified job postings with Duplicate state.
+- Unit tests cover imported verified postings staying in Verified job postings with Imported state.
+- Unit tests cover Workday search URLs becoming ATS board source candidates, not ATS job postings.
+- Unit tests cover exact public Workday job URLs still becoming ATS job postings after verification.
+- Unit tests cover Clean old noisy leads safety so imported jobs and verified postings are not hidden.
+- Build/type verification covers `/discovery` state labels and import disabled states.
+- Manual QA should confirm the import button appears only for non-imported active verified postings and is disabled unless the posting is truly ready.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

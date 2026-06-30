@@ -70,4 +70,6 @@
 - Extract public career links from HTML, Markdown, and plain URLs, but keep them as candidates until verified.
 - Keep discovery cleanup safe: mark old noisy leads as skipped without deleting or touching imported jobs.
 - Prefer readable career-link titles over raw Workday/hash ids during review.
+- Keep verified posting state separate from import readiness so duplicate, imported, blocked, and needs-review postings remain understandable.
+- Keep Workday search/listing URLs as ATS board candidates unless an exact public job URL is verified.
 - Add Lever/Ashby adapters only after public, non-authenticated behavior is understood.

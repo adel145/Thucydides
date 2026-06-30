@@ -521,3 +521,22 @@ Verified:
 Not implemented:
 
 - No Gmail OAuth, automatic inbox reading, Calendar, login/captcha bypass, authenticated scraping, browser automation, OpenAI discovery scoring/parsing, automatic applications, automatic emails, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.
+
+## 2026-06-30 Phase 6.1E - Discovery Lead State Consistency + Workday Exact-Job Safety
+
+Updated:
+
+- `lib/discovery/discoveryLeadViews.ts` now separates verified posting visibility from ready-to-import readiness.
+- Verified postings can show Ready to import, Blocked, Duplicate, Imported, or Needs review without duplicate/low-confidence/imported postings falling into legacy/noisy.
+- Legacy/noisy lead logic is reserved for non-job source, search/listing, generic, and noisy old leads.
+- Old noisy cleanup still skips only non-imported non-posting leads and does not delete anything.
+- Workday extracted-link candidate creation now assigns `ATS_JOB_POSTING` only for exact public Workday job URLs.
+- Workday search/listing URLs remain ATS board source candidates that require enumeration.
+
+Verified:
+
+- Added tests for low-confidence verified postings, duplicate verified postings, imported verified postings, Workday search URL classification, exact Workday job verification, and cleanup safety.
+
+Not implemented:
+
+- No Gmail OAuth, automatic inbox reading, Calendar, login/captcha bypass, authenticated scraping, browser automation, OpenAI discovery scoring/parsing, automatic applications, automatic emails, DOCX/PDF export, real autonomous agents, auth, deployment, or fake job descriptions.
