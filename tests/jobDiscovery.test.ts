@@ -9,7 +9,7 @@ import { prepareJobCreateFromDiscoveryLead } from "../lib/discovery/jobDiscovery
 import { discoveryPostingActionState, groupDiscoveryPostingLeadsForDisplay, isLegacyOrNoisyDiscoveryLead, isReadyToImportDiscoveryLead, isVerifiedImportableDiscoveryLead, rankDiscoveryPostingLeads, shouldHideOldNonImportableLead } from "../lib/discovery/discoveryLeadViews";
 import { scoreDiscoveryLead } from "../lib/discovery/jobDiscoveryScoring";
 import { isSafePublicHttpUrl } from "../lib/discovery/jobPageFetcher";
-import { cleanJobDescriptionText, extractJobDescriptionFromHtml, extractJsonLdJobPosting, extractRequirementsSection, isMeaningfulJobDescription } from "../lib/discovery/jobDescriptionExtractor";
+import { cleanJobDescriptionText, extractJobDescriptionFromHtml, extractJsonLdJobPosting, extractRequirementsSection, hasExcessivePageChrome, isImportQualityJobDescription, isMeaningfulJobDescription } from "../lib/discovery/jobDescriptionExtractor";
 import { classifyDiscoverySource, SOURCE_CLASSIFICATIONS } from "../lib/discovery/pageClassifier";
 import { dedupeProviderMessages, formatProviderDiagnosticError, providerStatusLabel } from "../lib/discovery/providerDiagnostics";
 import { extractCareerJobLinks, isReadableLinkTitle } from "../lib/discovery/careerLinkExtractor";
@@ -49,12 +49,15 @@ describe("discovery provider config", () => {
 });
 
 describe("discovery lead view semantics 6.1E", () => {
+  const strongDescription = "Backend Developer role in Israel. Responsibilities include building Python APIs, SQL-backed services, production integrations, and automated tests for a software product team. Requirements include backend development experience, API design, databases, and ownership.";
   const verifiedPosting = {
     sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
     confidence: "HIGH",
-    extractedDescription: "Backend Developer role using Python, APIs, databases, testing, and distributed systems in Israel.",
+    extractedDescription: strongDescription,
     status: "NEW",
-    validationStatus: "ALLOWED"
+    validationStatus: "ALLOWED",
+    fitScore: 78,
+    allowedSignals: ["Junior Developer"]
   };
 
   it("keeps low-confidence actual job postings in verified review instead of legacy/noisy", () => {
@@ -84,6 +87,23 @@ describe("discovery lead view semantics 6.1E", () => {
     expect(discoveryPostingActionState(imported)).toMatchObject({
       label: "Imported",
       reason: "Already imported into Job Inbox."
+    });
+  });
+
+  it("keeps medium-confidence risky low-score leads out of ready-to-import", () => {
+    const risky = {
+      ...verifiedPosting,
+      confidence: "MEDIUM",
+      validationStatus: "RISKY",
+      fitScore: 33,
+      allowedSignals: [],
+      riskNotes: "No explicit allowed technical role signal was detected."
+    };
+
+    expect(isReadyToImportDiscoveryLead(risky)).toBe(false);
+    expect(discoveryPostingActionState(risky)).toMatchObject({
+      label: "Needs review — not ready",
+      reason: "Risky validation."
     });
   });
 
@@ -694,6 +714,22 @@ describe("job description extraction", () => {
     expect(extracted.reason).toBe("NO_MEANINGFUL_JOB_DESCRIPTION");
   });
 
+  it("rejects page-chrome-heavy Applied Materials Metaintro text for import quality", () => {
+    const noisy = "Application Engineer at Applied Materials Israel | Metaintro Skip to main content metaintro Menu Job Search Search jobs Similar jobs Find jobs similar to Application Engineer Apply on employer site opens in new tab Applied Materials Israel Rehovot";
+    const cleaned = cleanJobDescriptionText(noisy);
+    expect(cleaned).not.toContain("Skip to main content");
+    expect(cleaned).not.toContain("Job Search");
+    expect(hasExcessivePageChrome(noisy)).toBe(true);
+    expect(isMeaningfulJobDescription(noisy)).toBe(true);
+    expect(isImportQualityJobDescription(noisy)).toBe(false);
+  });
+
+  it("allows strong JSON-LD-style job bodies through import-quality checks", () => {
+    const description = "Full stack software engineering role. Responsibilities include building production APIs, React interfaces, backend services, and automated tests for customers in Israel. Requirements include React, Node.js, API design, SQL, and production software experience.";
+    expect(isMeaningfulJobDescription(description)).toBe(true);
+    expect(isImportQualityJobDescription(description)).toBe(true);
+  });
+
   it("extracts Greenhouse static public job HTML", () => {
     const extracted = extractJobDescriptionFromHtml(`
       <html><head><title>Backend Engineer</title><meta property="og:site_name" content="Greenhouse Acme"></head>
@@ -784,7 +820,7 @@ describe("discovery lead preparation and import", () => {
       location: "Israel",
       sourceUrl: "https://example.com/job",
       rawSnippet: "Click here and unsubscribe footer",
-      extractedDescription: "Backend Developer role using Python, APIs, and databases for production software systems in Israel.",
+      extractedDescription: "Backend Developer role in Israel. Responsibilities include building Python APIs, SQL-backed services, production integrations, and automated tests for a software product team. Requirements include backend development experience, API design, databases, and ownership.",
       discoveryProvider: "GREENHOUSE",
       discoverySource: "COMPANY_CAREERS",
       sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
@@ -793,7 +829,7 @@ describe("discovery lead preparation and import", () => {
     expect(prepared.ok).toBe(true);
     if (prepared.ok) {
       expect(prepared.data.source).toBe("Company careers: Acme");
-      expect(prepared.data.rawDescription).toContain("Backend Developer role using Python");
+      expect(prepared.data.rawDescription).toContain("Backend Developer role in Israel");
       expect(prepared.data.rawDescription).not.toContain("Click here and unsubscribe footer");
     }
   });
@@ -803,7 +839,7 @@ describe("discovery lead preparation and import", () => {
       title: "Backend Developer",
       company: "Acme",
       rawSnippet: "Backend role",
-      extractedDescription: "Backend Developer role using Python, APIs, and databases for production software systems in Israel.",
+      extractedDescription: "Backend Developer role in Israel. Responsibilities include building Python APIs, SQL-backed services, production integrations, and automated tests for a software product team. Requirements include backend development experience, API design, databases, and ownership.",
       sourceClassification: SOURCE_CLASSIFICATIONS.ACTUAL_JOB_POSTING,
       confidence: "LOW"
     });
@@ -813,11 +849,24 @@ describe("discovery lead preparation and import", () => {
       title: "Open Positions",
       company: "Acme",
       rawSnippet: "Browse jobs",
-      extractedDescription: "Backend Developer role using Python, APIs, and databases for production software systems in Israel.",
+      extractedDescription: "Backend Developer role in Israel. Responsibilities include building Python APIs, SQL-backed services, production integrations, and automated tests for a software product team. Requirements include backend development experience, API design, databases, and ownership.",
       sourceClassification: SOURCE_CLASSIFICATIONS.CAREERS_LISTING,
       confidence: "HIGH"
     });
     expect(listing).toMatchObject({ ok: false, reason: "NOT_IMPORTABLE" });
+  });
+
+  it("refuses risky low-score discovery leads during import", () => {
+    const prepared = prepareJobCreateFromDiscoveryLead({
+      title: "Application Engineer",
+      company: "Applied Materials",
+      location: "Israel",
+      rawSnippet: "Application Engineer",
+      extractedDescription: "Application Engineer at Applied Materials Israel | Metaintro Skip to main content metaintro Menu Job Search Search jobs Similar jobs Find jobs similar to Application Engineer Apply on employer site opens in new tab Applied Materials Israel Rehovot",
+      sourceClassification: SOURCE_CLASSIFICATIONS.ACTUAL_JOB_POSTING,
+      confidence: "MEDIUM"
+    });
+    expect(prepared).toMatchObject({ ok: false, reason: "NOT_IMPORTABLE" });
   });
 
   it("still blocks verified technical postings with hard forbidden requirements", () => {
@@ -827,7 +876,7 @@ describe("discovery lead preparation and import", () => {
       location: "Israel",
       sourceUrl: "https://example.com/backend",
       rawSnippet: "Backend developer",
-      extractedDescription: "Backend Developer role using Python, APIs, and distributed systems. Mandatory security clearance is required before starting this role.",
+      extractedDescription: "Backend Developer role in Israel. Responsibilities include building Python APIs, SQL-backed services, production integrations, and automated tests for a software product team. Mandatory security clearance is required before starting this role.",
       sourceClassification: SOURCE_CLASSIFICATIONS.ACTUAL_JOB_POSTING,
       confidence: "HIGH"
     });
@@ -854,6 +903,8 @@ describe("discovery dashboard counts", () => {
 });
 
 describe("discovery run bulk safety", () => {
+  const importQualityBackendDescription = "Backend Developer role in Israel. Responsibilities include building Python APIs, SQL-backed services, production integrations, and automated tests for a software product team. Requirements include backend development experience, API design, databases, and ownership.";
+
   it("skips only non-imported leads from a run", () => {
     expect(isSkippableNonImportedDiscoveryLead({ status: "NEW", importedJobId: null })).toBe(true);
     expect(isSkippableNonImportedDiscoveryLead({ status: "SKIPPED", importedJobId: null })).toBe(true);
@@ -865,8 +916,11 @@ describe("discovery run bulk safety", () => {
     const verified = {
       sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
       confidence: "HIGH",
-      extractedDescription: "Backend Developer role using Python, APIs, databases, testing, and distributed systems in Israel.",
-      status: "NEW"
+      extractedDescription: importQualityBackendDescription,
+      status: "NEW",
+      validationStatus: "ALLOWED",
+      fitScore: 78,
+      allowedSignals: ["Junior Developer"]
     };
     const noisy = {
       sourceClassification: SOURCE_CLASSIFICATIONS.CAREERS_LISTING,
@@ -890,8 +944,10 @@ describe("discovery run bulk safety", () => {
     const baseLead = {
       sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
       confidence: "HIGH",
-      extractedDescription: "Backend Developer role using Python, APIs, databases, testing, and distributed systems in Israel.",
-      status: "NEW"
+      extractedDescription: importQualityBackendDescription,
+      status: "NEW",
+      fitScore: 78,
+      allowedSignals: ["Junior Developer"]
     };
 
     expect(discoveryPostingActionState({ ...baseLead, validationStatus: "FORBIDDEN" })).toMatchObject({
@@ -917,9 +973,11 @@ describe("discovery run bulk safety", () => {
       id: "ready",
       sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
       confidence: "HIGH",
-      extractedDescription: "Backend Developer role using Python, APIs, databases, testing, and distributed systems in Israel.",
+      extractedDescription: importQualityBackendDescription,
       status: "NEW",
-      validationStatus: "ALLOWED"
+      validationStatus: "ALLOWED",
+      fitScore: 78,
+      allowedSignals: ["Junior Developer"]
     };
     const review = { ...ready, id: "review", confidence: "LOW" };
     const duplicate = { ...ready, id: "duplicate", status: "DUPLICATE" };
@@ -943,7 +1001,7 @@ describe("discovery run bulk safety", () => {
       sourceUrl: "https://example.com/backend",
       sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
       confidence: "HIGH",
-      extractedDescription: "Backend Developer role using Python, APIs, databases, testing, and distributed systems in Israel.",
+      extractedDescription: importQualityBackendDescription,
       status: "NEW",
       validationStatus: "FORBIDDEN"
     };

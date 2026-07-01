@@ -76,7 +76,11 @@ function hebrewImportReason(input: {
   }
   if (input.duplicate) return "נראה כמו משרה שכבר קיימת במערכת.";
   if (input.importBlockedReason === "Low confidence.") return "דורש בדיקה: ביטחון נמוך במידע.";
-  if (input.importBlockedReason === "Missing meaningful job description.") return "דורש בדיקה: חסר תיאור משרה ברור.";
+  if (input.importBlockedReason === "Low fit score.") return "דורש בדיקה: ציון התאמה נמוך";
+  if (input.importBlockedReason === "Missing allowed technical signal.") return "דורש בדיקה: חסר סימן טכני מותר";
+  if (input.importBlockedReason === "Description contains excessive page chrome.") return "דורש בדיקה: התיאור מכיל יותר מדי טקסט של עמוד/ניווט";
+  if (input.importBlockedReason === "Risky validation.") return "דורש בדיקה: המשרה סומנה RISKY";
+  if (input.importBlockedReason === "Missing meaningful job description." || input.importBlockedReason === "Missing clear job description.") return "דורש בדיקה: חסר תיאור משרה ברור";
   if (input.importBlockedReason) return "דורש בדיקה: המקור עדיין לא אומת כמשרה יחידה.";
   return null;
 }
@@ -116,6 +120,7 @@ export default async function DiscoveryPage({
     blocked?: string;
     duplicate?: string;
     enriched?: string;
+    enrichedNeedsReview?: string;
     enrichFailed?: string;
     missingLead?: string;
     missingCandidate?: string;
@@ -226,6 +231,7 @@ export default async function DiscoveryPage({
         {notices?.duplicate ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">הייבוא נחסם: הליד נראה כמו משרה שכבר קיימת.</div> : null}
         {notices?.notImportable ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">לא ניתן לייבא: זה מקור/רשימה/חיפוש, לא משרה יחידה.</div> : null}
         {notices?.enriched ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">בוצע ניסיון העשרה מחדש מה־URL הציבורי.</div> : null}
+        {notices?.enrichedNeedsReview ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">בוצעה העשרה, אבל המשרה עדיין דורשת בדיקה לפני ייבוא.</div> : null}
         {notices?.enrichFailed ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">העמוד נראה דינמי/חסום או שחסר תיאור משרה ברור. הליד נשאר לבדיקה ידנית ולא הומצא תיאור.</div> : null}
         {notices?.missingLead ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">הליד לא נמצא.</div> : null}
         {notices?.missingCandidate ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">המקור לא נמצא.</div> : null}
@@ -474,19 +480,11 @@ export default async function DiscoveryPage({
             const fitReasons = jsonToStringArray(lead.fitReasons);
             const duplicate = findDuplicateJobForLead(lead, existingJobs);
             const blocked = lead.validationStatus === "FORBIDDEN";
-            const meaningfulDescription = lead.extractedDescription ?? lead.rawText;
             const verifiedPosting = isImportableSourceClassification(lead.sourceClassification);
-            const enoughConfidence = lead.confidence === "MEDIUM" || lead.confidence === "HIGH";
-            const importBlockedReason = !verifiedPosting
-              ? "Not verified as a single job posting."
-              : !enoughConfidence
-                ? "Low confidence."
-                : !meaningfulDescription || meaningfulDescription.trim().length < 80
-                  ? "Missing meaningful job description."
-                  : null;
             const imported = lead.status === "IMPORTED" && lead.importedJobId;
             const inactive = imported || lead.status === "SKIPPED" || lead.status === "DUPLICATE";
             const postingState = discoveryPostingActionState(lead, { duplicate: Boolean(duplicate && !imported) });
+            const importBlockedReason = postingState.label === "Ready to import" ? null : postingState.reason;
             const state = hebrewPostingState(lead, Boolean(duplicate && !imported), postingState.label);
             const hebrewReason = hebrewImportReason({
               blocked,
@@ -498,7 +496,9 @@ export default async function DiscoveryPage({
               ? "Blocked by deterministic role rules."
               : duplicate && !imported
                 ? "Looks like an existing local job."
-                : importBlockedReason;
+                : postingState.label === "Ready to import"
+                  ? null
+                  : importBlockedReason;
             return (
               <div key={group.key} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">

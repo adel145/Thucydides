@@ -1,4 +1,5 @@
 import { isImportableSourceClassification } from "./pageClassifier";
+import { hasExcessivePageChrome, isImportQualityJobDescription } from "./jobDescriptionExtractor";
 
 export type DiscoveryLeadViewItem = {
   title?: string | null;
@@ -11,6 +12,8 @@ export type DiscoveryLeadViewItem = {
   status?: string | null;
   importedJobId?: string | null;
   validationStatus?: string | null;
+  fitScore?: number | null;
+  allowedSignals?: unknown;
 };
 
 export type GroupedDiscoveryPostingLead<T extends DiscoveryLeadViewItem> = {
@@ -40,6 +43,18 @@ export function hasMeaningfulDiscoveryDescription(lead: DiscoveryLeadViewItem) {
   return Boolean(description && description.trim().length >= 80);
 }
 
+function arrayLength(value: unknown) {
+  return Array.isArray(value) ? value.length : 0;
+}
+
+export function hasDeterministicAllowedTechnicalSignal(lead: DiscoveryLeadViewItem) {
+  return arrayLength(lead.allowedSignals) > 0;
+}
+
+export function hasImportQualityDiscoveryDescription(lead: DiscoveryLeadViewItem) {
+  return isImportQualityJobDescription(lead.extractedDescription ?? lead.rawText);
+}
+
 export function isVerifiedDiscoveryPostingLead(lead: DiscoveryLeadViewItem) {
   return isImportableSourceClassification(lead.sourceClassification) && lead.status !== "SKIPPED";
 }
@@ -63,14 +78,23 @@ export function isReadyToImportDiscoveryLead(lead: DiscoveryLeadViewItem, option
     !isDuplicateDiscoveryPostingLead(lead, options.duplicate) &&
     !isImportedDiscoveryPostingLead(lead) &&
     (lead.confidence === "MEDIUM" || lead.confidence === "HIGH") &&
-    hasMeaningfulDiscoveryDescription(lead)
+    hasImportQualityDiscoveryDescription(lead) &&
+    lead.validationStatus === "ALLOWED" &&
+    (lead.fitScore ?? 0) >= 50 &&
+    hasDeterministicAllowedTechnicalSignal(lead)
   );
 }
 
 export function discoveryPostingReviewReason(lead: DiscoveryLeadViewItem) {
   if (!isVerifiedDiscoveryPostingLead(lead)) return "Not verified as a single job posting.";
+  if (lead.validationStatus === "FORBIDDEN") return "Blocked by deterministic role rules.";
+  if (lead.validationStatus === "RISKY") return "Risky validation.";
   if (lead.confidence !== "MEDIUM" && lead.confidence !== "HIGH") return "Low confidence.";
-  if (!hasMeaningfulDiscoveryDescription(lead)) return "Missing meaningful job description.";
+  if ((lead.fitScore ?? 0) < 50) return "Low fit score.";
+  if (!hasDeterministicAllowedTechnicalSignal(lead)) return "Missing allowed technical signal.";
+  if (hasExcessivePageChrome(lead.extractedDescription ?? lead.rawText)) return "Description contains excessive page chrome.";
+  if (!hasImportQualityDiscoveryDescription(lead)) return "Missing clear job description.";
+  if (lead.validationStatus !== "ALLOWED") return "Validation is not allowed.";
   return "Needs manual review before import.";
 }
 

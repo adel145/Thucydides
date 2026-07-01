@@ -1,5 +1,6 @@
 import { getDiscoveryProviderLabel } from "./discoveryProviders";
-import { isImportableSourceClassification } from "./pageClassifier";
+import { discoveryPostingReviewReason, isReadyToImportDiscoveryLead } from "./discoveryLeadViews";
+import { scoreDiscoveryLead } from "./jobDiscoveryScoring";
 import { validateJob } from "../rules/validateJob";
 
 export type DiscoveryLeadForImport = {
@@ -18,6 +19,9 @@ export type DiscoveryLeadForImport = {
   extractedLanguage?: string | null;
   confidence?: string | null;
   sourceClassification?: string | null;
+  fitScore?: number | null;
+  validationStatus?: string | null;
+  allowedSignals?: unknown;
 };
 
 function sourceLabel(lead: DiscoveryLeadForImport) {
@@ -49,15 +53,48 @@ export function buildDiscoveryLeadRawDescription(lead: DiscoveryLeadForImport) {
 
 export function prepareJobCreateFromDiscoveryLead(lead: DiscoveryLeadForImport) {
   const meaningfulDescription = lead.extractedDescription ?? lead.rawText;
-  if (!isImportableSourceClassification(lead.sourceClassification) || lead.confidence === "LOW" || !meaningfulDescription || meaningfulDescription.trim().length < 80) {
+  const earlyValidation = validateJob({
+    title: lead.title,
+    company: lead.company,
+    location: lead.location,
+    rawDescription: meaningfulDescription ?? lead.rawSnippet
+  });
+  const scoring = scoreDiscoveryLead({
+    title: lead.title,
+    company: lead.company,
+    location: lead.location,
+    description: meaningfulDescription ?? lead.rawSnippet,
+    validationStatus: earlyValidation.validationStatus,
+    allowedSignals: earlyValidation.allowedSignals,
+    forbiddenFlags: earlyValidation.forbiddenFlags,
+    riskNotes: earlyValidation.riskNotes.join("\n")
+  });
+  if (earlyValidation.validationStatus === "FORBIDDEN") {
+    return {
+      ok: false as const,
+      reason: "FORBIDDEN" as const,
+      validation: earlyValidation
+    };
+  }
+
+  const readyForImport = isReadyToImportDiscoveryLead({
+    ...lead,
+    extractedDescription: meaningfulDescription,
+    validationStatus: earlyValidation.validationStatus,
+    allowedSignals: earlyValidation.allowedSignals,
+    fitScore: scoring.score
+  });
+  if (!readyForImport) {
     return {
       ok: false as const,
       reason: "NOT_IMPORTABLE" as const,
-      validation: validateJob({
-        title: lead.title,
-        company: lead.company,
-        location: lead.location,
-        rawDescription: meaningfulDescription ?? lead.rawSnippet
+      validation: earlyValidation,
+      reviewReason: discoveryPostingReviewReason({
+        ...lead,
+        extractedDescription: meaningfulDescription,
+        validationStatus: earlyValidation.validationStatus,
+        allowedSignals: earlyValidation.allowedSignals,
+        fitScore: scoring.score
       })
     };
   }

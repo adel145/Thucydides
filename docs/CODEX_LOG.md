@@ -646,3 +646,26 @@ Verified:
 Not changed:
 
 - No schema changes, new providers, Gmail OAuth, automatic inbox reading, browser automation, login/captcha bypass, scraping behind auth, fake descriptions, AI-generated descriptions, import eligibility weakening, forbidden-role weakening, automatic applications, automatic emails, real agents, or resume export.
+
+## 2026-07-01 Phase 6.3A - Enrichment Import-Readiness Quality Gate
+
+Updated:
+
+- Added strict import-quality description helpers for page-chrome detection and strong job-body signals.
+- Kept broad meaningful-description extraction separate from ready-to-import eligibility.
+- Tightened discovery lead readiness so Ready to import requires verified single-job classification, active non-duplicate/non-imported state, medium/high confidence, `ALLOWED` validation, fit score at least 50, deterministic allowed technical signal, and import-quality description.
+- Updated `/discovery` Hebrew needs-review reasons and import button disablement to use the shared readiness state.
+- Updated enrichment retry so real extracted content that still fails import readiness redirects with `enrichedNeedsReview=1`.
+- Enforced the same strict readiness gate in server-side discovery import.
+
+Verified:
+
+- Added tests for page-chrome-heavy Applied Materials/Metaintro text, MEDIUM 33/100 `RISKY` no-signal leads, strict import refusal, and strong ALLOWED import-ready leads.
+- `npm run test` passed: 18 files, 151 tests.
+- `npm run build` passed.
+- `npm run lint` passed with the existing Next.js deprecation notice.
+- `npm run verify` passed.
+
+Not changed:
+
+- No schema changes, new providers, Gmail OAuth, inbox reading, browser automation, login/captcha bypass, fake descriptions, AI-generated descriptions, automatic applications, automatic emails, forbidden-role weakening, or commits.

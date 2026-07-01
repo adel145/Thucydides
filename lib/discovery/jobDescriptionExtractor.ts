@@ -13,19 +13,41 @@ export type ExtractedJobDescription = {
 
 const noiseLinePatterns = [
   /^skip to main content$/i,
+  /^job search$/i,
   /^search jobs?$/i,
+  /^find jobs similar to/i,
   /^search$/i,
   /^menu$/i,
   /^navigation$/i,
+  /^similar jobs$/i,
   /^cookie/i,
   /^privacy policy$/i,
+  /^footer$/i,
   /^terms of use$/i,
   /^sign in$/i,
   /^log in$/i,
   /^share this job$/i,
   /^apply now$/i,
+  /^apply on employer site$/i,
+  /^opens in new tab$/i,
   /^back to jobs$/i,
   /^see all jobs$/i
+];
+
+const pageChromePhrasePatterns = [
+  /skip to main content/gi,
+  /\bjob search\b/gi,
+  /\bsearch jobs?\b/gi,
+  /\bfind jobs similar to\b/gi,
+  /\bsimilar jobs\b/gi,
+  /\bapply on employer site\b/gi,
+  /\bopens in new tab\b/gi,
+  /\bcookie(?:s| settings| preferences)?\b/gi,
+  /\bprivacy(?: policy)?\b/gi,
+  /\bfooter\b/gi,
+  /\bnavigation\b/gi,
+  /\bmenu\b/gi,
+  /\bmetaintro\b/gi
 ];
 
 const requirementHeadingPattern =
@@ -111,12 +133,16 @@ function visibleTextFromHtml(html: string) {
   return stripHtml(main);
 }
 
+function stripInlinePageChrome(value: string) {
+  return pageChromePhrasePatterns.reduce((text, pattern) => text.replace(pattern, " "), value);
+}
+
 export function cleanJobDescriptionText(value: string | null | undefined) {
   const decoded = decodeHtml(value ?? "");
   const lines = decoded
     .replace(/\r/g, "\n")
     .split(/\n|(?<=\.)\s{2,}/)
-    .map((line) => line.replace(/\s+/g, " ").trim())
+    .map((line) => stripInlinePageChrome(line).replace(/\s+/g, " ").trim())
     .filter(Boolean)
     .filter((line) => !noiseLinePatterns.some((pattern) => pattern.test(line)));
 
@@ -152,6 +178,38 @@ export function isMeaningfulJobDescription(value: string | null | undefined) {
   const noiseSignals = /(search jobs|cookie|privacy policy|menu|sign in)/gi;
   const noiseCount = text.match(noiseSignals)?.length ?? 0;
   return roleSignals.test(text) && noiseCount < 4;
+}
+
+export function hasExcessivePageChrome(value: string | null | undefined) {
+  const raw = decodeHtml(value ?? "").replace(/\s+/g, " ").trim();
+  if (!raw) return false;
+  const matches = pageChromePhrasePatterns.flatMap((pattern) => raw.match(pattern) ?? []);
+  const uniqueMatches = new Set(matches.map((match) => match.toLocaleLowerCase()));
+  const startsWithChrome = /^(?:[^a-z0-9\u0590-\u05ff]{0,10})?(skip to main content|job search|menu|search jobs?|metaintro)\b/i.test(raw);
+  if (matches.length >= 6) return true;
+  if (uniqueMatches.size >= 4) return true;
+  return startsWithChrome && matches.length >= 3;
+}
+
+export function hasStrongJobBodySignals(value: string | null | undefined) {
+  const text = cleanJobDescriptionText(value);
+  if (text.length < 140) return false;
+  if (/(responsibilities|requirements|qualifications|what you(?:'|â€™)ll do|what you(?:'|â€™)ll bring|\u05d0\u05d7\u05e8\u05d9\u05d5\u05ea|\u05d3\u05e8\u05d9\u05e9\u05d5\u05ea)/i.test(text)) {
+    return true;
+  }
+  const signals = [
+    /\b(?:experience|years?|background)\b/i,
+    /\b(?:skill|skills|python|java|javascript|typescript|react|node|sql|api|apis|cloud|linux|automation|qa|backend|frontend|full stack|machine learning|computer vision|data)\b/i,
+    /\b(?:team|product|platform|customer|production)\b/i,
+    /\b(?:develop|build|design|implement|support|maintain|test|integrate|troubleshoot)\b/i,
+    /\b(?:software|engineer|developer|technical|systems|services)\b/i,
+    /[\u0590-\u05ff]*(?:\u05e0\u05d9\u05e1\u05d9\u05d5\u05df|\u05e4\u05d9\u05ea\u05d5\u05d7|\u05ea\u05d5\u05db\u05e0\u05d4|\u05e6\u05d5\u05d5\u05ea|\u05de\u05d5\u05e6\u05e8)[\u0590-\u05ff]*/i
+  ];
+  return signals.filter((pattern) => pattern.test(text)).length >= 4;
+}
+
+export function isImportQualityJobDescription(value: string | null | undefined) {
+  return isMeaningfulJobDescription(value) && !hasExcessivePageChrome(value) && hasStrongJobBodySignals(value);
 }
 
 function confidenceFor(input: {

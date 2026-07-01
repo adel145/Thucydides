@@ -377,3 +377,9 @@ Reason: real QA showed repeated `Search for Jobs - Myworkdayjobs.com` boards mad
 Decision: public job-page enrichment should follow a deterministic extraction order: JSON-LD JobPosting, safe static ATS/public HTML extraction, then cleaned visible HTML fallback. Weak, JS-only, blocked, or noisy pages must remain needs-review instead of receiving invented descriptions.
 
 Reason: verified leads need better real descriptions before import, but the product must not fake job details, use AI to fill gaps, bypass login/captcha, or loosen import eligibility.
+
+## 2026-07-01: Enrichment Is Not Import Readiness
+
+Decision: enriching a discovery lead may save real extracted fields, but "Ready to import" requires a stricter gate: verified single-job classification, active non-duplicate/non-imported state, medium/high confidence, `ALLOWED` validation, fit score at least 50, at least one deterministic allowed technical signal, and an import-quality job description without excessive page chrome.
+
+Reason: real QA showed a MEDIUM, 33/100, `RISKY` lead with no allowed technical signal and page-chrome-heavy text becoming "Ready to import." Enrichment success and import readiness must stay separate so weak/noisy leads remain manual review instead of entering Job Inbox.

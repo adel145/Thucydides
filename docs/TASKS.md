@@ -267,9 +267,19 @@
 - Updated enrichment retry to keep existing lead data when no meaningful static description is available and show Hebrew needs-review feedback.
 - Added tests for JSON-LD requirements, noise cleanup, requirements extraction, weak HTML rejection, Workday static/JS-only behavior, Greenhouse static extraction, Lever static extraction, and existing import/forbidden safety.
 
+## Completed In Phase 6.3A
+
+- Added stricter import-quality description helpers for page-chrome detection and strong job-body signals.
+- Kept broad meaningful-description extraction separate from strict import readiness.
+- Tightened ready-to-import state so it requires verified posting classification, active non-duplicate/non-imported state, medium/high confidence, `ALLOWED` validation, fit score at least 50, deterministic allowed technical signal, and import-quality description.
+- Updated `/discovery` Hebrew state/reason copy and import button disablement to use the strict readiness state.
+- Updated enrichment retry so real-but-insufficient extracted content redirects with `enrichedNeedsReview=1`.
+- Enforced the same readiness gate in server-side discovery import.
+- Added regression tests for page-chrome-heavy Applied Materials/Metaintro text, MEDIUM 33/100 `RISKY` no-signal leads, strict import refusal, and strong allowed import-ready leads.
+
 ## Next Tasks
 
-- Manually QA real public job-page enrichment after Phase 6.3.
+- Manually QA real public job-page enrichment screenshots after Phase 6.3A.
 - Manually QA weak/blocked/JS-only pages show needs-review feedback and do not overwrite useful lead data.
 - Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.

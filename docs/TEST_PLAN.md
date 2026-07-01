@@ -274,6 +274,17 @@ Phase 6.3 coverage:
 - Build/type verification covers the extractor, enrichment action feedback, Workday exact-page handling, and source candidate enumeration.
 - Manual QA should confirm enrichment retry does not overwrite useful lead data when public page extraction fails.
 
+Phase 6.3A coverage:
+
+- Unit tests cover page-chrome-heavy Applied Materials/Metaintro text remaining non-import-quality.
+- Unit tests cover strong JSON-LD-style job bodies still passing import-quality checks.
+- Unit tests cover MEDIUM, 33/100, `RISKY`, no-allowed-signal verified leads staying Needs review instead of Ready to import.
+- Unit tests cover strict server-side import refusal for risky/noisy leads.
+- Unit tests keep ALLOWED leads with strong deterministic technical signals, fit score at least 50, and import-quality descriptions ready to import.
+- Existing tests keep JSON-LD, Greenhouse, Lever, Workday, extraction failure, and hard-forbidden blocking behavior intact.
+- Verification completed with `npm run test`, `npm run build`, `npm run lint`, and `npm run verify`.
+- Manual QA should confirm the import button is disabled for RISKY, low-score, no-allowed-signal, and page-chrome-heavy enriched leads.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

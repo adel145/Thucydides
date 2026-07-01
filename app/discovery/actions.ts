@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { optionalString, requiredString } from "@/lib/formParsing";
 import { enrichDiscoveryLeadFromUrl, prepareDiscoveryLeadForCreate, runInternetJobDiscovery, asPrismaDiscoveryLeadCreate, asPrismaSourceCandidateCreate, type PreparedDiscoverySourceCandidate } from "@/lib/discovery/jobDiscoveryEngine";
 import { isMeaningfulJobDescription } from "@/lib/discovery/jobDescriptionExtractor";
+import { isReadyToImportDiscoveryLead } from "@/lib/discovery/discoveryLeadViews";
 import { prepareJobCreateFromDiscoveryLead } from "@/lib/discovery/jobDiscoveryImport";
 import { testDiscoveryProvider } from "@/lib/discovery/providerDiagnostics";
 import { dedupePreparedDiscoveryLeads, dedupePreparedSourceCandidates, enumerateDiscoverySourceCandidate, retryClassifyDiscoverySourceCandidate } from "@/lib/discovery/sourceCandidateEnumeration";
@@ -138,24 +139,30 @@ export async function enrichDiscoveryLead(formData: FormData) {
     revalidatePath("/discovery");
     redirect("/discovery?enrichFailed=1");
   }
-  const prepared = prepareDiscoveryLeadForCreate(enriched);
+  const prepared = prepareDiscoveryLeadForCreate({
+    ...enriched,
+    sourceClassification: lead.sourceClassification
+  });
+  const existingConfidenceRank = lead.confidence === "HIGH" ? 3 : lead.confidence === "MEDIUM" ? 2 : 1;
+  const preparedConfidenceRank = prepared.confidence === "HIGH" ? 3 : prepared.confidence === "MEDIUM" ? 2 : 1;
+  const updatedConfidence = preparedConfidenceRank >= existingConfidenceRank ? prepared.confidence : lead.confidence;
 
   await db.jobDiscoveryLead.update({
     where: { id },
     data: {
-      title: prepared.title,
-      company: prepared.company,
-      location: prepared.location,
-      rawSnippet: prepared.rawSnippet,
-      rawText: prepared.rawText,
-      extractedTitle: prepared.extractedTitle,
-      extractedCompany: prepared.extractedCompany,
-      extractedLocation: prepared.extractedLocation,
+      title: prepared.extractedTitle ?? lead.title,
+      company: prepared.extractedCompany ?? lead.company,
+      location: prepared.extractedLocation ?? lead.location,
+      rawSnippet: prepared.rawSnippet || lead.rawSnippet,
+      rawText: prepared.rawText || lead.rawText,
+      extractedTitle: prepared.extractedTitle ?? lead.extractedTitle,
+      extractedCompany: prepared.extractedCompany ?? lead.extractedCompany,
+      extractedLocation: prepared.extractedLocation ?? lead.extractedLocation,
       extractedDescription: prepared.extractedDescription,
       extractedRequirements: prepared.extractedRequirements,
       extractedRemotePolicy: prepared.extractedRemotePolicy,
       extractedLanguage: prepared.extractedLanguage,
-      confidence: prepared.confidence,
+      confidence: updatedConfidence,
       fitScore: prepared.fitScore,
       fitReasons: prepared.fitReasons as Prisma.InputJsonValue,
       validationStatus: prepared.validationStatus,
@@ -167,7 +174,7 @@ export async function enrichDiscoveryLead(formData: FormData) {
   });
 
   revalidatePath("/discovery");
-  redirect("/discovery?enriched=1");
+  redirect(isReadyToImportDiscoveryLead({ ...prepared, confidence: updatedConfidence }) ? "/discovery?enriched=1" : "/discovery?enrichedNeedsReview=1");
 }
 
 export async function retryClassifySourceCandidate(formData: FormData) {

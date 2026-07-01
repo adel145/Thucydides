@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 6.3 - Real Job Enrichment Quality.
+Current state: Phase 6.3A - Enrichment Import-Readiness Quality Gate.
 
 ## What Works Now
 
@@ -70,7 +70,8 @@ Current state: Phase 6.3 - Real Job Enrichment Quality.
 - Stronger public job-page enrichment from JSON-LD JobPosting, static Greenhouse/Workday/Lever pages, and cleaned semantic HTML fallback
 - Requirements/qualifications extraction when clear headings exist
 - Weak, JS-only, blocked, or noisy pages stay needs-review instead of getting fake descriptions
-- Import quality gate for verified single job postings only
+- Strict import-readiness gate for verified single job postings only: `ALLOWED`, medium/high confidence, fit score at least 50, deterministic allowed technical signal, and import-quality description
+- Enriched but weak, noisy, `RISKY`, low-score, or no-allowed-signal leads stay needs-review with import disabled
 - Deterministic discovery fit scoring for review leads
 - Manual evidence review on Application Packets and Resume Lab
 - Manual Resume Lab MVP
@@ -108,7 +109,7 @@ The desired product is an agent-assisted job-search command center that helps Ad
 
 Future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply. Automated application sending is not part of the plan.
 
-Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.3 keeps the Hebrew RTL workflow, deterministic source quality ranking, and display-only deduping, and improves real public job-page enrichment. Tavily/search results remain `DiscoverySourceCandidate` records first; only verified single job postings or structured Google Jobs results become `JobDiscoveryLead` records that can be manually imported. Enrichment now prefers JSON-LD JobPosting, then safe static ATS/public HTML patterns, then cleaned visible HTML. Weak, JS-only, blocked, or noisy pages stay needs-review; the app does not invent descriptions. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
+Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.3A keeps the Hebrew RTL workflow, deterministic source quality ranking, display-only deduping, and real public job-page enrichment, while tightening import readiness. Tavily/search results remain `DiscoverySourceCandidate` records first; only verified single job postings or structured Google Jobs results become `JobDiscoveryLead` records, and they are ready to import only when the strict quality gate passes. Enrichment now prefers JSON-LD JobPosting, then safe static ATS/public HTML patterns, then cleaned visible HTML. Weak, JS-only, blocked, noisy, low-score, `RISKY`, or no-allowed-signal pages stay needs-review; the app does not invent descriptions. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
 
 Future export goals include DOCX/PDF CV and cover-letter outputs, TXT recruiter messages/notes, local per-job folders, and RTL/LTR support. Exports are not implemented yet.
 
@@ -116,7 +117,7 @@ The UI should stay dark, local-first, and sidebar-based. The visible product UI 
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 6.3 uses local SQLite data, deterministic validation, manual job/source intake, discovery source candidates and verified job postings, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. A provider key being present does not mean the provider is verified. Workday support is safe/public and limited; JS-only or blocked pages remain candidates with errors, search/listing URLs are not treated as exact postings, and obvious non-target job links are filtered conservatively from extracted candidates. SerpApi 401 means `SERPAPI_API_KEY` or account access must be fixed outside the app. Gmail OAuth, automatic inbox reading, login-gated scraping, browser automation, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
+Current limitation: Phase 6.3A uses local SQLite data, deterministic validation, manual job/source intake, discovery source candidates and verified job postings, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. A provider key being present does not mean the provider is verified. Workday support is safe/public and limited; JS-only or blocked pages remain candidates with errors, search/listing URLs are not treated as exact postings, and obvious non-target job links are filtered conservatively from extracted candidates. SerpApi 401 means `SERPAPI_API_KEY` or account access must be fixed outside the app. Gmail OAuth, automatic inbox reading, login-gated scraping, browser automation, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
 
 ## Local Setup
 
@@ -194,7 +195,7 @@ Future work should read and update these files after each phase.
 
 ## Roadmap
 
-Next planned phase: manually QA real discovery enrichment on public job posting URLs, especially Workday/Greenhouse/Lever/static company pages, then consider more ATS adapters only after public behavior is verified.
+Next planned phase: manually QA Phase 6.3A screenshots on real discovery enrichment results, especially weak/noisy pages and strong JSON-LD/Greenhouse/Lever/static company pages, then consider more ATS adapters only after public behavior is verified.
 
 Planned work:
 

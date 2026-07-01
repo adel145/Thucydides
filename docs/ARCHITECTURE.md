@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.3 Architecture
+## Phase 6.3A Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -238,6 +238,15 @@ Phase 6.3 improves deterministic public job-page enrichment without schema chang
 - Enrichment retry keeps existing lead data when extraction is weak and shows a needs-review notice instead of overwriting with page chrome.
 - Import eligibility, forbidden-role blocking, schema, providers, AI scope, Gmail behavior, browser automation, scraping boundaries, and no-fake-description rules are unchanged.
 
+Phase 6.3A tightens enrichment import-readiness without schema changes:
+
+- `lib/discovery/jobDescriptionExtractor.ts` keeps broad `isMeaningfulJobDescription` for extraction, and adds stricter import-quality helpers for page-chrome detection and strong job-body signals.
+- `lib/discovery/discoveryLeadViews.ts` owns the ready-to-import gate used by badges, sorting, and UI button state.
+- Ready-to-import requires verified single-job classification, not forbidden/duplicate/imported/skipped, medium/high confidence, `ALLOWED` validation, fit score at least 50, at least one deterministic allowed technical signal, and an import-quality description.
+- `lib/discovery/jobDiscoveryImport.ts` enforces the same gate server-side, so a disabled UI button is not the only protection.
+- Enrichment may save real extracted fields, validation, and scoring, but weak/noisy/RISKY/low-score/no-signal results redirect with a needs-review notice instead of becoming import-ready.
+- Page chrome such as "Skip to main content", "Job Search", "Menu", "Similar jobs", "Apply on employer site", "opens in new tab", cookie/privacy/footer/navigation, and broad search/listing text blocks import quality.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -258,7 +267,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.3
+## Non-Goals in Phase 6.3A
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

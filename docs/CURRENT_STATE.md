@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-07-01, Thucydides is in Phase 6.3 - Real Job Enrichment Quality state.
+As of 2026-07-01, Thucydides is in Phase 6.3A - Enrichment Import-Readiness Quality Gate state.
 
 ## What Exists
 
@@ -117,13 +117,16 @@ As of 2026-07-01, Thucydides is in Phase 6.3 - Real Job Enrichment Quality state
 - Workday search/listing pages are ATS board candidates, exact public Workday job pages can become ATS job leads only after title and meaningful description are visible, and JS-only/blocked Workday pages remain candidates with errors.
 - Workday extracted links no longer become candidates merely because they are on `myworkdayjobs.com`; exact/listing handling still follows the Phase 6.1E safety rule, with clear non-target links filtered out before candidate creation.
 - Public job-page enrichment now uses a deterministic extraction order: JSON-LD JobPosting, safe static ATS patterns for Greenhouse/Workday/Lever-style pages, then cleaned visible HTML fallback.
-- Extracted descriptions are cleaned to remove common navigation, menu, search, cookie, and footer noise, and weak page chrome is not treated as a meaningful job description.
+- Extracted descriptions are cleaned to remove common navigation, menu, search, cookie, footer, "opens in new tab", and employer-site apply noise, including page chrome embedded inside longer lines.
+- Broad meaningful-description extraction remains available, but import readiness now requires stricter import-quality body evidence.
+- Ready-to-import discovery postings require verified single-job classification, not forbidden/duplicate/imported/skipped, medium/high confidence, `ALLOWED` validation, fit score at least 50, at least one deterministic allowed technical signal, and an import-quality description with strong job-body signals and without excessive page chrome.
+- Enriched leads that are real but still weak, noisy, `RISKY`, low-score, or missing allowed technical signals stay visible as needs-review and have import disabled.
 - Requirements/qualifications can be extracted separately when clear headings exist, including English and Hebrew requirement headings.
 - Enrichment attempts that cannot find meaningful public static job text keep the existing lead data and show a Hebrew needs-review notice instead of inventing a description.
 - Generic career listing pages can create specific job-link source candidates, not direct job leads, unless a fetched page verifies as a single posting.
 - Pressing try enumerate repeatedly avoids duplicate source candidates and duplicate leads.
 - Unsafe URLs, generic company pages, search result pages, ATS boards, career listings, and noisy pages are not directly importable.
-- Safe non-forbidden discovery leads can be manually imported into the normal Job Inbox.
+- Only strict ready-to-import discovery leads can be manually imported into the normal Job Inbox.
 - Imported discovery leads create normal local `Job` records and `JOB_IMPORTED_FROM_DISCOVERY` events.
 - Forbidden discovery leads remain blocked from normal import.
 - The run action can skip non-imported leads from a run without touching already imported leads.

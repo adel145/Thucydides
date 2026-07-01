@@ -81,4 +81,5 @@
 - Filter clear non-target Workday/career links before candidate creation while keeping strong unknown-location technical links reviewable.
 - Improve public single-job-page enrichment from JSON-LD, safe static ATS pages, and cleaned visible HTML without inventing missing descriptions.
 - Keep JS-only, blocked, or noisy pages in needs-review instead of making them importable.
+- Keep enrichment success separate from import readiness: weak/noisy/RISKY/low-score/no-allowed-signal leads stay needs-review, and only strict import-quality verified postings can be imported.
 - Add Lever/Ashby adapters only after public, non-authenticated behavior is understood.
