@@ -289,9 +289,28 @@
 - Collapsed processed sources, normal run history, old/noisy leads, and low-priority/skipped sources by default.
 - Added tests for provider failure grouping, SerpApi auth stop behavior, stale source cleanup eligibility, useful work counts, and preserved 6.3A readiness.
 
+## Completed In Phase 6.4A
+
+- Treated current successful SerpApi diagnostics as fresher than old SerpApi 401 run history.
+- Moved old SerpApi 401/auth failures to collapsed stale provider history after current SerpApi verification.
+- Kept current SerpApi failures as active warnings when no newer success is present.
+- Added UI copy: `SerpApi אומת. כשלי הרשאה ישנים הועברו להיסטוריה ואינם חוסמים את הגילוי.`
+- Added a disabled/display-only `הסתר בעיות ספקים ישנות` control explaining that run history has no safe mutable hidden status.
+- Documented that SerpApi was fixed externally with a real SerpApi.com key and Serper was not added.
+- Added tests for stale-vs-active SerpApi provider issue behavior and unchanged non-SerpApi issue behavior.
+
+## Completed In Phase 6.4B
+
+- Persisted latest provider test status locally in an HTTP-only cookie without schema changes.
+- Kept SerpApi verified after navigation, refresh, and later Tavily tests.
+- Kept old SerpApi 401/auth run records audit-visible only in collapsed stale provider history after persisted SerpApi success.
+- Restored active SerpApi auth warning when a newer persisted SerpApi test fails authorization.
+- Kept SerpApi.com as the only SerpApi provider path; Serper and `SERPER_API_KEY` were not added.
+- Added tests for persisted SerpApi success, Tavily not erasing SerpApi state, persisted auth-failure override, stale provider grouping, and preserved readiness behavior.
+
 ## Next Tasks
 
-- Manually QA Phase 6.4 Discovery screenshots and cleanup actions.
+- Manually QA Phase 6.4B Discovery screenshots and provider freshness after SerpApi success, Tavily test, and refresh.
 - Manually QA weak/blocked/JS-only pages show needs-review feedback and do not overwrite useful lead data.
 - Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.

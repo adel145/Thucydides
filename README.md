@@ -6,7 +6,7 @@ It is built as a disciplined, specification-driven project rather than a one-sho
 
 ## Current Phase
 
-Current state: Phase 6.4 - Discovery Cleanup, Run History Hygiene, and Provider Failure Clarity.
+Current state: Phase 6.4B - Persisted Provider Test Status + True Stale Failure Suppression.
 
 ## What Works Now
 
@@ -74,6 +74,7 @@ Current state: Phase 6.4 - Discovery Cleanup, Run History Hygiene, and Provider 
 - Enriched but weak, noisy, `RISKY`, low-score, or no-allowed-signal leads stay needs-review with import disabled
 - Discovery cleanup/hygiene board that prioritizes current verified jobs and actionable sources over old runs/noise
 - Compact provider issue grouping for repeated SerpApi 401 failures, with Tavily positioned as the active fallback until SerpApi is fixed externally
+- Provider status freshness: successful SerpApi tests persist locally so older 401 failures stay in stale/collapsed history after navigation, Tavily tests, and refreshes
 - Safe stale-source cleanup that marks only low-priority non-posting source candidates as `SKIPPED`
 - Deterministic discovery fit scoring for review leads
 - Manual evidence review on Application Packets and Resume Lab
@@ -112,7 +113,7 @@ The desired product is an agent-assisted job-search command center that helps Ad
 
 Future safe workflow: Find jobs -> Review jobs -> Select jobs -> Generate packets -> Review -> Export -> Manual apply. Automated application sending is not part of the plan.
 
-Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.4 keeps the Hebrew RTL workflow, deterministic source quality ranking, display-only deduping, real public job-page enrichment, and strict import readiness, while making `/discovery` behave more like a daily review board. Tavily/search results remain `DiscoverySourceCandidate` records first; only verified single job postings or structured Google Jobs results become `JobDiscoveryLead` records, and they are ready to import only when the strict quality gate passes. Repeated SerpApi 401 failures are grouped into one provider issue, and Discovery tells Adel to continue mainly with Tavily until the SerpApi key/account is fixed outside the app. Weak, JS-only, blocked, noisy, low-score, `RISKY`, or no-allowed-signal pages stay needs-review; the app does not invent descriptions. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
+Discovery sources prioritize company career pages first, then job platforms, then Gmail job-alert intake as fallback. Phase 6.4B keeps the Hebrew RTL workflow, deterministic source quality ranking, display-only deduping, real public job-page enrichment, strict import readiness, and the daily review board cleanup. SerpApi is now externally fixed with a real SerpApi.com key; Serper was not added and `SERPER_API_KEY` is not used. Provider test state is persisted locally in an HTTP-only cookie, so older SerpApi 401 failures remain collapsed as stale history after a successful SerpApi test even after navigation, a Tavily test, or refresh. Tavily/search results remain `DiscoverySourceCandidate` records first; only verified single job postings or structured Google Jobs results become `JobDiscoveryLead` records, and they are ready to import only when the strict quality gate passes. Weak, JS-only, blocked, noisy, low-score, `RISKY`, or no-allowed-signal pages stay needs-review; the app does not invent descriptions. The app does not login, bypass restrictions, read Gmail automatically, send email, or apply through APIs.
 
 Future export goals include DOCX/PDF CV and cover-letter outputs, TXT recruiter messages/notes, local per-job folders, and RTL/LTR support. Exports are not implemented yet.
 
@@ -120,7 +121,7 @@ The UI should stay dark, local-first, and sidebar-based. The visible product UI 
 
 The final agent vision is a council of specialists, including career strategy, Israeli job market, ATS optimization, CV tailoring, Hebrew and English language, job-fit scoring, hidden-market sourcing, risk/compliance, and a Final Decision Chief. Agents must not silently apply to jobs or send emails; Adel must review and confirm.
 
-Current limitation: Phase 6.4 uses local SQLite data, deterministic validation, manual job/source intake, discovery source candidates and verified job postings, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, and optional controlled OpenAI drafting for packet text only. A provider key being present does not mean the provider is verified. Workday support is safe/public and limited; JS-only or blocked pages remain candidates with errors, search/listing URLs are not treated as exact postings, and obvious non-target job links are filtered conservatively from extracted candidates. SerpApi 401 means `SERPAPI_API_KEY` or account access must be fixed outside the app; repeated failures are grouped visually instead of becoming many urgent cards. Gmail OAuth, automatic inbox reading, login-gated scraping, browser automation, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
+Current limitation: Phase 6.4B uses local SQLite data, deterministic validation, manual job/source intake, discovery source candidates and verified job postings, manual pasted Gmail alert intake, local file upload storage, URL-only source records, manual evidence links, manual application packets, persisted local provider-test status, and optional controlled OpenAI drafting for packet text only. A provider key being present does not mean the provider is verified, but a successful SerpApi test persists and wins over older failed run history until a newer SerpApi test fails. Workday support is safe/public and limited; JS-only or blocked pages remain candidates with errors, search/listing URLs are not treated as exact postings, and obvious non-target job links are filtered conservatively from extracted candidates. Gmail OAuth, automatic inbox reading, login-gated scraping, browser automation, automatic profile updates from sources, real agents, resume generation, DOCX/PDF export, automatic applications, and automatic communication are intentionally not connected.
 
 ## Local Setup
 
@@ -198,7 +199,7 @@ Future work should read and update these files after each phase.
 
 ## Roadmap
 
-Next planned phase: manually QA Phase 6.4 screenshots on the Discovery board, especially SerpApi 401 grouping, collapsed old/noisy sections, stale-source cleanup, and strict 6.3A import-readiness behavior.
+Next planned phase: manually QA Phase 6.4B screenshots on the Discovery board, especially persisted SerpApi verified state after Tavily tests/refresh, stale 401 history collapse, and strict 6.3A import-readiness behavior.
 
 Planned work:
 

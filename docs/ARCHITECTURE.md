@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.4 Architecture
+## Phase 6.4B Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -257,6 +257,23 @@ Phase 6.4 cleans up Discovery review hygiene without schema changes:
 - Existing old-noisy lead cleanup still marks only non-imported, non-verified, non-importable leads as `SKIPPED`.
 - Failed-run compaction is display-only; no run records are hard-deleted or hidden by schema mutation.
 
+Phase 6.4A adds provider status freshness without schema changes:
+
+- Current provider diagnostics can override older run history in display.
+- When the current SerpApi test succeeds, older SerpApi 401/auth failures are classified as stale and shown only under collapsed provider-history UI.
+- Active SerpApi auth failures still show the clear warning when there is no current success.
+- SerpApi remains the provider. Serper/Serper.dev is not added and no `SERPER_API_KEY` path exists.
+- Stale failed-run cleanup remains display-only because `JobDiscoveryRun` has no safe hidden/archive status field.
+
+Phase 6.4B persists provider test status without schema changes:
+
+- `testDiscoveryProviderAction` stores the latest provider diagnostic in an HTTP-only `thucydides_discovery_provider_status` cookie with `sameSite: "lax"`, path `/`, and a 30-day max age.
+- The cookie is keyed by provider and stores provider, status (`verified`, `auth_failed`, or `failed`), safe diagnostic message, and timestamp.
+- `/discovery` reads the cookie and combines it with current query notices; a same-provider query notice wins for the immediate redirect, otherwise the persisted provider state is used.
+- SerpApi verified state survives refreshes and later Tavily tests, so old SerpApi 401 run records stay collapsed as stale history.
+- A newer SerpApi auth failure updates the same cookie and makes the active SerpApi warning return.
+- No database schema, provider ordering, Serper integration, import readiness, or discovery safety rules change.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -277,7 +294,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.4
+## Non-Goals in Phase 6.4B
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

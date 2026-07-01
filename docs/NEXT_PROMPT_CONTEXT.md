@@ -2,7 +2,7 @@
 
 Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. The repo and docs are the official project memory.
 
-As of Phase 6.4, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet discovery with provider diagnostics, a Hebrew RTL global UI foundation, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, deterministic source-candidate quality ranking, processed-source separation, stronger deterministic public job-page enrichment, strict enrichment import-readiness, and discovery-board cleanup/hygiene.
+As of Phase 6.4B, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet discovery with provider diagnostics, a Hebrew RTL global UI foundation, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, deterministic source-candidate quality ranking, processed-source separation, stronger deterministic public job-page enrichment, strict enrichment import-readiness, discovery-board cleanup/hygiene, and persisted provider status freshness.
 
 ## Product Mission
 
@@ -20,7 +20,7 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 - `/discovery` shows Tavily/SerpApi/Gmail provider status, a Hebrew "מה לעשות עכשיו" guide, a top safe cleanup action, discovery run form, run history, sources to process, counts, verified job postings, legacy/noisy leads, and skipped/unsupported records.
 - `/discovery` is RTL and uses responsive overflow guards (`min-w-0`, max-width, wrapping, clipped previews, and expandable details) so long URLs, Markdown snippets, provider text, and descriptions do not force horizontal page scroll.
 - `/discovery` source candidates clearly say "זה מקור, לא משרה"; verified postings show large Hebrew state labels such as "מוכן לייבוא", "חסום — לא ניתן לייבא", "כפול", "כבר יובא", and "דורש בדיקה — עדיין לא מוכן".
-- `/discovery` provider badges say key present/missing until a provider test verifies or fails them. SerpApi 401 maps to "SerpApi authorization failed: check SERPAPI_API_KEY/account." and never prints API keys.
+- `/discovery` provider badges say key present/missing until a provider test verifies or fails them, then use the latest local persisted provider-test state. SerpApi 401 maps to "SerpApi authorization failed: check SERPAPI_API_KEY/account." and never prints API keys.
 - `/discovery` source candidates can be retried, enumerated, or skipped.
 - `/discovery` ranks source candidates by deterministic quality signals: verified/source classification, trusted careers/ATS source, target technical role wording, Israel/remote location signals, confidence, errors, processed counts, and clear non-target location signals.
 - `/discovery` primary "sources to process" now shows only candidates with a real next action. Already-processed sources move to a secondary processed-source section. Low-quality/noisy/skipped/unsupported candidates stay out of the primary action list.
@@ -39,6 +39,8 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 - Enriched but weak, noisy, `RISKY`, low-score, or no-allowed-signal leads show needs-review and keep import disabled.
 - `/discovery` now prioritizes the daily queue: recommended actions, verified postings, actionable sources, processed sources, provider issues, old/noisy leads, and low-priority/skipped records.
 - Repeated SerpApi 401 failures are grouped into one compact provider issue with details behind an expander. The app clearly says to continue mainly with Tavily until SerpApi is fixed outside the app.
+- SerpApi was fixed externally with a real SerpApi.com key. Serper was not added. When SerpApi test succeeds, the verified state is persisted locally in an HTTP-only cookie and older SerpApi 401 failures move to stale collapsed history instead of returning as active blockers after navigation, Tavily tests, or refresh.
+- If a newer SerpApi test fails authorization, the persisted provider state changes to auth failed and the active warning returns.
 - The discovery engine stops trying additional SerpApi queries after an auth failure in the same run.
 - Safe cleanup can mark old noisy non-importable leads and low-priority stale non-posting source candidates as `SKIPPED`; imported jobs/leads and verified postings are not touched.
 - Requirements/qualifications are extracted separately only when clear headings exist.
@@ -63,6 +65,7 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 - `lib/discovery/tavilySearchClient.ts`: Tavily search client with timeout and result caps.
 - `lib/discovery/serpApiJobsClient.ts`: SerpApi Google Jobs client with timeout and result caps.
 - `lib/discovery/providerDiagnostics.ts`: lightweight Tavily/SerpApi test helpers, key-present/verified status labels, deduped provider messages, and safe provider error messages.
+- `lib/discovery/providerTestStatusCookie.ts`: no-schema provider test state persistence helpers for the local provider-status cookie.
 - `lib/discovery/companyCareerDiscovery.ts`: Greenhouse board token/job-id detection, public board fetch, target-role filtering, and mapping.
 - `lib/discovery/workdayDiscovery.ts`: safe public Workday URL/link/job-page helpers; no browser automation.
 - `lib/discovery/careerLinkExtractor.ts`: target-role public career-link extraction from HTML, Markdown links, and plain URLs, including conservative candidate title cleanup and clear non-target location filtering.
@@ -125,7 +128,7 @@ OPENAI_MODEL=
 
 ## Recommended Next Work
 
-1. Manually QA `/discovery` screenshots after Phase 6.4, especially section order, SerpApi 401 grouping, collapsed old/noisy sections, and stale-source cleanup.
+1. Manually QA `/discovery` screenshots after Phase 6.4B, especially persisted SerpApi verified state after refresh and after a Tavily test, stale 401 history collapse, and collapsed old/noisy sections.
 2. Confirm weak/JS-only/blocked/noisy pages remain needs-review with clear Hebrew feedback instead of fake descriptions or import-ready badges.
 3. Add more public ATS adapters only after inspecting real public behavior, likely Lever and Ashby first.
 4. Add a dedicated discovery lead detail page if cards become too dense.

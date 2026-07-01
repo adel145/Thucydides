@@ -690,3 +690,46 @@ Verified:
 Not changed:
 
 - No schema changes, new providers, Gmail OAuth, inbox reading, browser automation, login/captcha bypass, fake descriptions, AI-generated descriptions, import-readiness weakening, forbidden-role weakening, automatic applications, automatic emails, hard deletion, or commits.
+
+## 2026-07-01 Phase 6.4A - Provider Status Freshness + Stale Failure Cleanup
+
+Updated:
+
+- Treated current SerpApi verification as fresher than old SerpApi 401 run history.
+- Moved older SerpApi auth failures into collapsed stale provider history after a successful current SerpApi test.
+- Kept active SerpApi auth warnings when no current success exists.
+- Added Hebrew success copy explaining old auth failures no longer block discovery.
+- Added display-only stale provider cleanup control with explanation that run records are not safely mutable without schema support.
+- Documented that SerpApi was fixed externally with a real SerpApi.com key and Serper was not added.
+
+Verified:
+
+- Added tests for current SerpApi success suppressing old 401 failures as active issues, stale history preservation, current failure warnings, and unchanged non-SerpApi issue behavior.
+- `npm run test` passed during implementation: 18 files, 157 tests.
+- `npm run build` passed during implementation.
+
+Not changed:
+
+- No Serper provider, no `SERPER_API_KEY`, no schema changes, no import-readiness changes, no forbidden-rule changes, no fake descriptions, no Gmail OAuth, no browser automation, no automatic applications, and no commits.
+
+## 2026-07-01 Phase 6.4B - Persisted Provider Test Status + True Stale Failure Suppression
+
+Updated:
+
+- Persisted provider test diagnostics in a local HTTP-only cookie keyed by provider, with status, message, and timestamp.
+- `/discovery` now uses same-provider query notices first and otherwise falls back to persisted provider status.
+- SerpApi verified state now survives refreshes and later Tavily tests, so old SerpApi 401 run records stay collapsed as stale history.
+- A newer SerpApi auth failure updates the persisted status and returns the active warning.
+- Kept SerpApi.com as the provider; Serper and `SERPER_API_KEY` were not added.
+
+Verified:
+
+- Added tests for persisted provider status, Tavily not erasing SerpApi state, persisted SerpApi success staling old 401 failures, and persisted auth failure returning active warnings.
+- `npm run test` passed: 18 files, 162 tests.
+- `npm run build` passed.
+- `npm run lint` passed with the existing Next.js 15 `next lint` deprecation notice.
+- `npm run verify` passed.
+
+Not changed:
+
+- No schema changes, provider order changes, import-readiness changes, forbidden-role changes, fake descriptions, Gmail OAuth, browser automation, automatic applications, automatic emails, or commits.

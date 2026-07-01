@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-07-01, Thucydides is in Phase 6.4 - Discovery Cleanup, Run History Hygiene, and Provider Failure Clarity state.
+As of 2026-07-01, Thucydides is in Phase 6.4B - Persisted Provider Test Status + True Stale Failure Suppression state.
 
 ## What Exists
 
@@ -92,7 +92,7 @@ As of 2026-07-01, Thucydides is in Phase 6.4 - Discovery Cleanup, Run History Hy
 - Forbidden leads remain blocked from normal import in Phase 6.3.
 - `/discovery` supports env-gated internet job discovery through Tavily and SerpApi.
 - `/discovery` separates source candidates from job leads. Search/listing/generic/company pages stay as source candidates; only verified single job postings become importable leads.
-- `/discovery` can test Tavily and SerpApi from the UI. Provider badges say key present/missing until a test verifies or fails them. SerpApi 401 is shown as "SerpApi authorization failed: check SERPAPI_API_KEY/account." without printing keys.
+- `/discovery` can test Tavily and SerpApi from the UI. Provider badges say key present/missing until a test verifies or fails them, and then use the latest persisted local test state. SerpApi 401 is shown as "SerpApi authorization failed: check SERPAPI_API_KEY/account." without printing keys.
 - `/discovery` source candidates now have retry classify, try enumerate jobs, and skip candidate actions.
 - `/discovery` now separates verified job postings, sources to process, legacy/noisy leads, and skipped/unsupported candidates.
 - `/discovery` now ranks source candidates with deterministic quality signals and keeps the primary sources-to-process section focused on records with a real next action.
@@ -124,6 +124,10 @@ As of 2026-07-01, Thucydides is in Phase 6.4 - Discovery Cleanup, Run History Hy
 - `/discovery` is organized as a daily review board: recommended actions, verified postings, actionable sources, processed sources, provider/run issues, old/noisy leads, and low-priority/skipped records.
 - Repeated SerpApi 401/auth failures are grouped into one provider issue card with details behind an expander. Normal run history is compact and no longer repeats failed SerpApi cards.
 - SerpApi support remains present, but after an auth failure in the current run the engine stops trying more SerpApi queries. The UI tells Adel to continue mainly with Tavily until SerpApi is fixed externally.
+- SerpApi has now been fixed externally with a real SerpApi.com key. Serper was not added.
+- Provider test state is persisted locally in an HTTP-only cookie without schema changes, keyed by provider with status, message, and timestamp.
+- After a successful SerpApi test, older SerpApi 401/auth failures are treated as stale run history and stay collapsed instead of returning as active provider blockers after navigation, Tavily tests, or refresh.
+- If a newer SerpApi test fails authorization, the persisted state updates and the active SerpApi warning returns.
 - Low-priority stale source candidates can be safely hidden by marking eligible non-posting, non-processed, low-quality candidates `SKIPPED`.
 - Old noisy discovery leads can still be safely hidden without touching imported jobs, imported leads, or verified postings.
 - Requirements/qualifications can be extracted separately when clear headings exist, including English and Hebrew requirement headings.

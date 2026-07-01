@@ -8,13 +8,15 @@ export type DiscoveryRunIssueItem = {
   provider?: string | null;
   query?: string | null;
   error?: string | null;
+  createdAt?: Date | string | null;
   resultCount?: number | null;
   startedAt?: Date | string | null;
   finishedAt?: Date | string | null;
 };
 
 export type DiscoveryProviderIssueGroup<T extends DiscoveryRunIssueItem> = {
-  key: "SERPAPI_AUTH_FAILED" | "OTHER_PROVIDER_ISSUES";
+  key: "SERPAPI_AUTH_FAILED" | "STALE_SERPAPI_AUTH_FAILED" | "OTHER_PROVIDER_ISSUES";
+  freshness: "ACTIVE" | "STALE";
   title: string;
   message: string;
   actionHint: string;
@@ -26,25 +28,66 @@ function hasSerpApiAuthFailure(run: DiscoveryRunIssueItem) {
   return /serpapi/i.test(`${run.provider ?? ""} ${run.error ?? ""}`) && isProviderAuthFailureMessage(run.error ?? "");
 }
 
-export function groupDiscoveryProviderIssues<T extends DiscoveryRunIssueItem>(runs: T[]): DiscoveryProviderIssueGroup<T>[] {
+function issueTimeMs(run: DiscoveryRunIssueItem) {
+  const value = run.finishedAt ?? run.startedAt ?? run.createdAt;
+  if (!value) return null;
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function providerIssueGroup<T extends DiscoveryRunIssueItem>(
+  key: "SERPAPI_AUTH_FAILED" | "STALE_SERPAPI_AUTH_FAILED",
+  runs: T[]
+): DiscoveryProviderIssueGroup<T> {
+  const stale = key === "STALE_SERPAPI_AUTH_FAILED";
+  return {
+    key,
+    freshness: stale ? "STALE" : "ACTIVE",
+    title: stale ? "בעיות SerpApi ישנות" : "SerpApi נכשל בגלל הרשאה",
+    message: stale
+      ? "SerpApi אומת כעת. כשלי הרשאה ישנים נשמרים כהיסטוריית ריצות ואינם חוסמים את הגילוי."
+      : "המפתח קיים אבל SerpApi מחזיר 401. תקן את המפתח/החשבון מחוץ לאפליקציה, או המשך עם Tavily בלבד בינתיים.",
+    actionHint: stale
+      ? "המידע הזה מוצג רק לביקורת. Discovery יכול להמשיך עם SerpApi ו־Tavily."
+      : "בינתיים Discovery יסתמך בעיקר על Tavily ולא יציף את הלוח בכשלונות SerpApi.",
+    runs,
+    count: runs.length
+  };
+}
+
+export function groupDiscoveryProviderIssues<T extends DiscoveryRunIssueItem>(
+  runs: T[],
+  options: { serpApiCurrentlyVerified?: boolean; serpApiVerifiedAt?: Date | string | null } = {}
+): DiscoveryProviderIssueGroup<T>[] {
   const serpApiAuthRuns = runs.filter(hasSerpApiAuthFailure);
   const otherRuns = runs.filter((run) => Boolean(run.error) && !hasSerpApiAuthFailure(run));
   const groups: DiscoveryProviderIssueGroup<T>[] = [];
 
   if (serpApiAuthRuns.length > 0) {
-    groups.push({
-      key: "SERPAPI_AUTH_FAILED",
-      title: "SerpApi נכשל בגלל הרשאה",
-      message: "המפתח קיים אבל SerpApi מחזיר 401. תקן את המפתח/החשבון מחוץ לאפליקציה, או המשך עם Tavily בלבד בינתיים.",
-      actionHint: "בינתיים Discovery יסתמך בעיקר על Tavily ולא יציף את הלוח בכשלונות SerpApi.",
-      runs: serpApiAuthRuns,
-      count: serpApiAuthRuns.length
-    });
+    const verifiedAtMs = options.serpApiVerifiedAt ? new Date(options.serpApiVerifiedAt).getTime() : null;
+    if (options.serpApiCurrentlyVerified && (!verifiedAtMs || !Number.isFinite(verifiedAtMs))) {
+      groups.push(providerIssueGroup("STALE_SERPAPI_AUTH_FAILED", serpApiAuthRuns));
+    } else if (options.serpApiCurrentlyVerified) {
+      const verifiedAtTime = Number(verifiedAtMs);
+      const staleRuns = serpApiAuthRuns.filter((run) => {
+        const runTime = issueTimeMs(run);
+        return runTime === null || runTime <= verifiedAtTime;
+      });
+      const activeRuns = serpApiAuthRuns.filter((run) => {
+        const runTime = issueTimeMs(run);
+        return runTime !== null && runTime > verifiedAtTime;
+      });
+      if (activeRuns.length > 0) groups.push(providerIssueGroup("SERPAPI_AUTH_FAILED", activeRuns));
+      if (staleRuns.length > 0) groups.push(providerIssueGroup("STALE_SERPAPI_AUTH_FAILED", staleRuns));
+    } else {
+      groups.push(providerIssueGroup("SERPAPI_AUTH_FAILED", serpApiAuthRuns));
+    }
   }
 
   if (otherRuns.length > 0) {
     groups.push({
       key: "OTHER_PROVIDER_ISSUES",
+      freshness: "ACTIVE",
       title: "בעיות ספקים / ריצות כושלות",
       message: "נמצאו ריצות עם שגיאות ספק או fetch. הן נשמרות לביקורת, אבל לא מוצגות כעבודה דחופה.",
       actionHint: "פתח את הפרטים רק אם צריך להבין למה ריצה מסוימת לא החזירה תוצאות.",

@@ -84,4 +84,5 @@
 - Keep enrichment success separate from import readiness: weak/noisy/RISKY/low-score/no-allowed-signal leads stay needs-review, and only strict import-quality verified postings can be imported.
 - Keep Discovery as a clean daily review board by grouping provider failures, compacting old/processed sections, and safely hiding stale low-priority source candidates.
 - Treat repeated SerpApi 401 as a provider issue to fix externally while continuing mainly with Tavily.
+- After SerpApi is verified with a real SerpApi.com key, persist that provider-test state locally so older 401 failures stay stale/collapsed after refresh or Tavily tests; do not add Serper.
 - Add Lever/Ashby adapters only after public, non-authenticated behavior is understood.

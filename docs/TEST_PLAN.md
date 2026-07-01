@@ -296,6 +296,23 @@ Phase 6.4 coverage:
 - Build/type verification covers `/discovery` section compaction, stale-source cleanup action, provider issue grouping, and helper imports.
 - Manual QA should confirm SerpApi 401 appears once, old/noisy sections are collapsed, and cleanup actions do not touch imported jobs/leads or verified postings.
 
+Phase 6.4A coverage:
+
+- Unit tests cover current SerpApi success moving old SerpApi 401 failures to stale provider history.
+- Unit tests cover old SerpApi failures staying active when no current success exists.
+- Unit tests cover non-SerpApi provider issues remaining active after SerpApi success.
+- Existing tests keep Tavily diagnostics, stale source cleanup, provider grouping, and Phase 6.3A readiness behavior intact.
+- Build/type verification covers the Discovery UI stale-history branch and current-success notice.
+
+Phase 6.4B coverage:
+
+- Unit tests cover provider-test status cookie serialization/parsing and per-provider persistence.
+- Unit tests cover Tavily success not erasing persisted SerpApi verified state.
+- Unit tests cover persisted SerpApi success moving old SerpApi 401 failures to stale history without query params.
+- Unit tests cover a newer persisted SerpApi auth failure returning the active warning state.
+- Existing tests continue to cover Tavily diagnostics, cleanup safety, source-candidate eligibility, and Phase 6.3A import readiness.
+- Manual QA should click Test SerpApi, then Test Tavily, then refresh `/discovery`; SerpApi should remain verified and old 401 cards should stay only in collapsed stale history.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

@@ -389,3 +389,15 @@ Reason: real QA showed a MEDIUM, 33/100, `RISKY` lead with no allowed technical 
 Decision: Phase 6.4 cleanup may mark eligible old/noisy leads or low-priority stale source candidates as `SKIPPED`, but failed discovery runs are grouped display-only instead of deleted or schema-hidden. Repeated SerpApi 401 failures are shown as one provider issue with details behind an expander, and Tavily remains the practical active provider until SerpApi is fixed externally.
 
 Reason: Adel needs a clean daily review board, but discovery history is still useful audit context. Cleanup must reduce visual noise without deleting runs, leads, imported jobs, or exact verified postings.
+
+## 2026-07-01: Current Provider Health Wins Over Stale Failure History
+
+Decision: a current successful SerpApi diagnostic should suppress older SerpApi 401 run failures as active provider issues and move them to collapsed stale history. The integration remains SerpApi.com only; Serper is not added.
+
+Reason: after Adel fixed the SerpApi.com key externally, old failed runs should remain auditable but must not keep warning that the provider is currently broken.
+
+## 2026-07-01: Provider Test Status Is Persisted Locally Without Schema Changes
+
+Decision: provider test Server Actions persist the latest safe diagnostic per provider in an HTTP-only local cookie instead of adding a database table. `/discovery` uses same-provider query notices first, then the persisted provider status. A successful SerpApi test remains verified across refreshes and Tavily tests, while a newer SerpApi auth failure returns the active warning.
+
+Reason: the QA issue was display freshness, not durable domain data. Cookie persistence fixes stale SerpApi 401 blockers without deleting run history, changing provider order, adding Serper, or touching import/readiness safety.

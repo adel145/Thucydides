@@ -14,6 +14,7 @@ import { classifyDiscoverySource, SOURCE_CLASSIFICATIONS } from "../lib/discover
 import { dedupeProviderMessages, formatProviderDiagnosticError, providerStatusLabel } from "../lib/discovery/providerDiagnostics";
 import { providerStatusKind, shouldDisableProviderForRunAfterError } from "../lib/discovery/providerDiagnostics";
 import { discoveryUsefulWorkCounts, groupDiscoveryProviderIssues, isLowPriorityStaleSourceCandidate } from "../lib/discovery/discoveryReviewHygiene";
+import { getEffectiveProviderTestState, parseProviderTestStatusCookie, providerStatusFromDiagnostic, serializeProviderTestStatusCookie, updateProviderTestStatuses } from "../lib/discovery/providerTestStatusCookie";
 import { extractCareerJobLinks, isReadableLinkTitle } from "../lib/discovery/careerLinkExtractor";
 import { dedupePreparedSourceCandidates, enumerateCandidateFromHtml } from "../lib/discovery/sourceCandidateEnumeration";
 import { collapseSourceCandidateGroups, groupSourceCandidatesForDiscoveryReview, hasClearNonTargetLocationSignal, scoreSourceCandidateQuality } from "../lib/discovery/sourceCandidateQuality";
@@ -51,6 +52,50 @@ describe("discovery provider config", () => {
     expect(providerStatusKind("SERPAPI_GOOGLE_JOBS", true, undefined, { disabledForRun: true })).toBe("DISABLED_FOR_RUN");
     expect(shouldDisableProviderForRunAfterError("SERPAPI_GOOGLE_JOBS", authMessage)).toBe(true);
     expect(shouldDisableProviderForRunAfterError("TAVILY", "Tavily authorization failed: check TAVILY_API_KEY/account.")).toBe(false);
+  });
+
+  it("persists provider test status per provider without Tavily erasing SerpApi", () => {
+    const serpVerified = updateProviderTestStatuses({}, {
+      ok: true,
+      provider: "SERPAPI_GOOGLE_JOBS",
+      message: "SerpApi test succeeded."
+    }, "2026-07-01T10:00:00.000Z");
+    const withTavily = updateProviderTestStatuses(serpVerified, {
+      ok: true,
+      provider: "TAVILY",
+      message: "Tavily test succeeded."
+    }, "2026-07-01T10:05:00.000Z");
+    const parsed = parseProviderTestStatusCookie(serializeProviderTestStatusCookie(withTavily));
+
+    expect(parsed.SERPAPI_GOOGLE_JOBS?.status).toBe("verified");
+    expect(parsed.TAVILY?.status).toBe("verified");
+    expect(getEffectiveProviderTestState("SERPAPI_GOOGLE_JOBS", {
+      queryProvider: "TAVILY",
+      queryState: { ok: true, message: "Tavily test succeeded." },
+      persistedStatuses: parsed
+    })).toMatchObject({ ok: true, message: "SerpApi test succeeded." });
+  });
+
+  it("lets newer SerpApi auth failure override persisted verified status", () => {
+    const verified = updateProviderTestStatuses({}, {
+      ok: true,
+      provider: "SERPAPI_GOOGLE_JOBS",
+      message: "SerpApi test succeeded."
+    }, "2026-07-01T10:00:00.000Z");
+    const failed = updateProviderTestStatuses(verified, {
+      ok: false,
+      provider: "SERPAPI_GOOGLE_JOBS",
+      message: "SerpApi authorization failed: check SERPAPI_API_KEY/account."
+    }, "2026-07-01T10:10:00.000Z");
+
+    expect(providerStatusFromDiagnostic({
+      ok: false,
+      provider: "SERPAPI_GOOGLE_JOBS",
+      message: "SerpApi authorization failed: check SERPAPI_API_KEY/account."
+    })).toBe("auth_failed");
+    expect(getEffectiveProviderTestState("SERPAPI_GOOGLE_JOBS", {
+      persistedStatuses: failed
+    })).toMatchObject({ ok: false, message: "SerpApi authorization failed: check SERPAPI_API_KEY/account." });
   });
 });
 
@@ -671,8 +716,116 @@ describe("discovery review hygiene 6.4", () => {
     expect(groups).toHaveLength(1);
     expect(groups[0]).toMatchObject({
       key: "SERPAPI_AUTH_FAILED",
+      freshness: "ACTIVE",
       count: 2,
       title: "SerpApi נכשל בגלל הרשאה"
+    });
+  });
+
+  it("moves old SerpApi 401 failures to stale history after current SerpApi success", () => {
+    const groups = groupDiscoveryProviderIssues([
+      { id: "run-1", provider: "TAVILY_SERPAPI_OPTIONAL", error: "SerpApi authorization failed: check SERPAPI_API_KEY/account.", resultCount: 0 },
+      { id: "run-2", provider: "TAVILY_SERPAPI_OPTIONAL", error: "SerpApi authorization failed: check SERPAPI_API_KEY/account.", resultCount: 0 }
+    ], { serpApiCurrentlyVerified: true });
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]).toMatchObject({
+      key: "STALE_SERPAPI_AUTH_FAILED",
+      freshness: "STALE",
+      count: 2
+    });
+    expect(groups[0].message).toContain("SerpApi אומת");
+  });
+
+  it("uses persisted SerpApi success to stale old 401 failures after refresh without query params", () => {
+    const persisted = updateProviderTestStatuses({}, {
+      ok: true,
+      provider: "SERPAPI_GOOGLE_JOBS",
+      message: "SerpApi test succeeded."
+    }, "2026-07-01T10:00:00.000Z");
+    const serpApiState = getEffectiveProviderTestState("SERPAPI_GOOGLE_JOBS", {
+      persistedStatuses: parseProviderTestStatusCookie(serializeProviderTestStatusCookie(persisted))
+    });
+    const groups = groupDiscoveryProviderIssues([
+      { id: "run-1", provider: "TAVILY_SERPAPI_OPTIONAL", error: "SerpApi authorization failed: check SERPAPI_API_KEY/account.", resultCount: 0 }
+    ], { serpApiCurrentlyVerified: serpApiState?.ok === true });
+
+    expect(groups[0]).toMatchObject({
+      key: "STALE_SERPAPI_AUTH_FAILED",
+      freshness: "STALE"
+    });
+  });
+
+  it("keeps SerpApi auth runs newer than the persisted success active", () => {
+    const groups = groupDiscoveryProviderIssues([
+      {
+        id: "old-run",
+        provider: "TAVILY_SERPAPI_OPTIONAL",
+        error: "SerpApi authorization failed: check SERPAPI_API_KEY/account.",
+        createdAt: "2026-07-01T09:55:00.000Z",
+        resultCount: 0
+      },
+      {
+        id: "new-run",
+        provider: "TAVILY_SERPAPI_OPTIONAL",
+        error: "SerpApi authorization failed: check SERPAPI_API_KEY/account.",
+        createdAt: "2026-07-01T10:20:00.000Z",
+        resultCount: 0
+      }
+    ], {
+      serpApiCurrentlyVerified: true,
+      serpApiVerifiedAt: "2026-07-01T10:00:00.000Z"
+    });
+
+    expect(groups.map((group) => group.key)).toEqual(["SERPAPI_AUTH_FAILED", "STALE_SERPAPI_AUTH_FAILED"]);
+    expect(groups[0].runs.map((run) => run.id)).toEqual(["new-run"]);
+    expect(groups[1].runs.map((run) => run.id)).toEqual(["old-run"]);
+  });
+
+  it("keeps old SerpApi 401 failures active when the persisted latest SerpApi test failed auth", () => {
+    const persistedVerified = updateProviderTestStatuses({}, {
+      ok: true,
+      provider: "SERPAPI_GOOGLE_JOBS",
+      message: "SerpApi test succeeded."
+    }, "2026-07-01T10:00:00.000Z");
+    const persistedAuthFailed = updateProviderTestStatuses(persistedVerified, {
+      ok: false,
+      provider: "SERPAPI_GOOGLE_JOBS",
+      message: "SerpApi authorization failed: check SERPAPI_API_KEY/account."
+    }, "2026-07-01T10:15:00.000Z");
+    const serpApiState = getEffectiveProviderTestState("SERPAPI_GOOGLE_JOBS", {
+      persistedStatuses: persistedAuthFailed
+    });
+    const groups = groupDiscoveryProviderIssues([
+      { id: "run-1", provider: "TAVILY_SERPAPI_OPTIONAL", error: "SerpApi authorization failed: check SERPAPI_API_KEY/account.", resultCount: 0 }
+    ], { serpApiCurrentlyVerified: serpApiState?.ok === true });
+
+    expect(providerStatusKind("SERPAPI_GOOGLE_JOBS", true, serpApiState)).toBe("AUTH_FAILED");
+    expect(groups[0]).toMatchObject({
+      key: "SERPAPI_AUTH_FAILED",
+      freshness: "ACTIVE"
+    });
+  });
+
+  it("keeps current SerpApi failures active when there is no newer success", () => {
+    const groups = groupDiscoveryProviderIssues([
+      { id: "run-1", provider: "TAVILY_SERPAPI_OPTIONAL", error: "SerpApi authorization failed: check SERPAPI_API_KEY/account.", resultCount: 0 }
+    ], { serpApiCurrentlyVerified: false });
+
+    expect(groups[0]).toMatchObject({
+      key: "SERPAPI_AUTH_FAILED",
+      freshness: "ACTIVE"
+    });
+  });
+
+  it("does not stale non-SerpApi provider issues after SerpApi success", () => {
+    const groups = groupDiscoveryProviderIssues([
+      { id: "run-1", provider: "TAVILY_SERPAPI_OPTIONAL", error: "Tavily platform search failed.", resultCount: 0 }
+    ], { serpApiCurrentlyVerified: true });
+
+    expect(groups[0]).toMatchObject({
+      key: "OTHER_PROVIDER_ISSUES",
+      freshness: "ACTIVE"
     });
   });
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
@@ -10,6 +11,7 @@ import { isMeaningfulJobDescription } from "@/lib/discovery/jobDescriptionExtrac
 import { isReadyToImportDiscoveryLead } from "@/lib/discovery/discoveryLeadViews";
 import { prepareJobCreateFromDiscoveryLead } from "@/lib/discovery/jobDiscoveryImport";
 import { testDiscoveryProvider } from "@/lib/discovery/providerDiagnostics";
+import { DISCOVERY_PROVIDER_STATUS_COOKIE, parseProviderTestStatusCookie, serializeProviderTestStatusCookie, updateProviderTestStatuses } from "@/lib/discovery/providerTestStatusCookie";
 import { dedupePreparedDiscoveryLeads, dedupePreparedSourceCandidates, enumerateDiscoverySourceCandidate, retryClassifyDiscoverySourceCandidate } from "@/lib/discovery/sourceCandidateEnumeration";
 import { isLowPriorityStaleSourceCandidate } from "@/lib/discovery/discoveryReviewHygiene";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
@@ -53,6 +55,14 @@ export async function testDiscoveryProviderAction(formData: FormData) {
   const provider = requiredString(formData.get("provider"));
   const normalized = provider === "SERPAPI_GOOGLE_JOBS" ? "SERPAPI_GOOGLE_JOBS" : "TAVILY";
   const result = await testDiscoveryProvider(normalized);
+  const cookieStore = await cookies();
+  const existing = parseProviderTestStatusCookie(cookieStore.get(DISCOVERY_PROVIDER_STATUS_COOKIE)?.value);
+  cookieStore.set(DISCOVERY_PROVIDER_STATUS_COOKIE, serializeProviderTestStatusCookie(updateProviderTestStatuses(existing, result)), {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30
+  });
   redirect(providerNoticeUrl(normalized, result.ok, result.message));
 }
 

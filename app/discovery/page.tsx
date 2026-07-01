@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { enrichDiscoveryLead, enumerateSourceCandidate, hideLowPriorityStaleSourceCandidates, hideOldNonImportableDiscoveryLeads, importDiscoveryLeadToInbox, markDiscoveryLeadDuplicate, retryClassifySourceCandidate, runJobDiscovery, skipDiscoveryLead, skipNonImportedLeadsFromRun, skipSourceCandidate, testDiscoveryProviderAction } from "@/app/discovery/actions";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonButton } from "@/components/ui/NeonButton";
@@ -11,6 +12,7 @@ import { groupSourceCandidatesForDiscoveryReview, scoreSourceCandidateQuality } 
 import { isImportableSourceClassification } from "@/lib/discovery/pageClassifier";
 import { isProviderAuthFailureMessage } from "@/lib/discovery/providerDiagnostics";
 import { discoveryUsefulWorkCounts, groupDiscoveryProviderIssues } from "@/lib/discovery/discoveryReviewHygiene";
+import { DISCOVERY_PROVIDER_STATUS_COOKIE, getEffectiveProviderTestState, parseProviderTestStatusCookie } from "@/lib/discovery/providerTestStatusCookie";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
 import { jsonToStringArray } from "@/lib/formParsing";
 
@@ -139,6 +141,8 @@ export default async function DiscoveryPage({
 }) {
   const notices = await searchParams;
   const providerStatus = getDiscoveryProviderStatus();
+  const cookieStore = await cookies();
+  const persistedProviderStatuses = parseProviderTestStatusCookie(cookieStore.get(DISCOVERY_PROVIDER_STATUS_COOKIE)?.value);
   const [runs, candidates, leads, existingJobs] = await Promise.all([
     db.jobDiscoveryRun.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
     db.discoverySourceCandidate.findMany({ orderBy: { createdAt: "desc" }, take: 40, include: { discoveryRun: true } }),
@@ -153,6 +157,20 @@ export default async function DiscoveryPage({
   const counts = countDiscoveryLeads(leads);
   const providerTest = notices?.providerTest === "SERPAPI_GOOGLE_JOBS" || notices?.providerTest === "TAVILY" ? notices.providerTest : null;
   const providerTestState = notices?.providerMessage ? { ok: notices.providerOk === "1", message: notices.providerMessage } : undefined;
+  const tavilyEffectiveTestState = getEffectiveProviderTestState("TAVILY", {
+    queryProvider: providerTest,
+    queryState: providerTestState,
+    persistedStatuses: persistedProviderStatuses
+  });
+  const serpApiEffectiveTestState = getEffectiveProviderTestState("SERPAPI_GOOGLE_JOBS", {
+    queryProvider: providerTest,
+    queryState: providerTestState,
+    persistedStatuses: persistedProviderStatuses
+  });
+  const serpApiCurrentlyVerified = serpApiEffectiveTestState?.ok === true;
+  const serpApiVerifiedAt = persistedProviderStatuses.SERPAPI_GOOGLE_JOBS?.status === "verified"
+    ? persistedProviderStatuses.SERPAPI_GOOGLE_JOBS.timestamp
+    : null;
   const sourceCandidateGroups = groupSourceCandidatesForDiscoveryReview(candidates);
   const maxPrimarySourceGroups = 10;
   const primarySourceGroups = sourceCandidateGroups.primaryGroups;
@@ -173,12 +191,14 @@ export default async function DiscoveryPage({
   const readyImportCount = verifiedLeads.filter((lead) => discoveryPostingActionState(lead, {
     duplicate: Boolean(findDuplicateJobForLead(lead, existingJobs) && !(lead.status === "IMPORTED" && lead.importedJobId))
   }).label === "Ready to import").length;
-  const providerIssueGroups = groupDiscoveryProviderIssues(runs);
+  const providerIssueGroups = groupDiscoveryProviderIssues(runs, { serpApiCurrentlyVerified, serpApiVerifiedAt });
+  const activeProviderIssueGroups = providerIssueGroups.filter((group) => group.freshness === "ACTIVE");
+  const staleProviderIssueGroups = providerIssueGroups.filter((group) => group.freshness === "STALE");
   const visibleRuns = runs.filter((run) => !run.error);
   const usefulCounts = discoveryUsefulWorkCounts({
     leads: verifiedLeads,
     candidates,
-    providerIssueCount: providerIssueGroups.length
+    providerIssueCount: activeProviderIssueGroups.length
   });
 
   return (
@@ -196,10 +216,10 @@ export default async function DiscoveryPage({
         </div>
         <div className="mt-5 flex min-w-0 flex-wrap gap-2">
           <ScoreBadge tone={providerStatus.tavilyConfigured ? "aqua" : "warning"}>
-            <span>{hebrewProviderStatusLabel("TAVILY", providerStatus.tavilyConfigured, providerTest === "TAVILY" ? providerTestState : undefined)}</span>
+            <span>{hebrewProviderStatusLabel("TAVILY", providerStatus.tavilyConfigured, tavilyEffectiveTestState)}</span>
           </ScoreBadge>
           <ScoreBadge tone={providerStatus.serpApiConfigured ? "aqua" : "warning"}>
-            <span>{hebrewProviderStatusLabel("SERPAPI_GOOGLE_JOBS", providerStatus.serpApiConfigured, providerTest === "SERPAPI_GOOGLE_JOBS" ? providerTestState : undefined)}</span>
+            <span>{hebrewProviderStatusLabel("SERPAPI_GOOGLE_JOBS", providerStatus.serpApiConfigured, serpApiEffectiveTestState)}</span>
           </ScoreBadge>
           <ScoreBadge tone="warning">Gmail לא מחובר</ScoreBadge>
           <ScoreBadge tone="muted"><LtrText>Max {providerStatus.maxResults}</LtrText></ScoreBadge>
@@ -215,7 +235,12 @@ export default async function DiscoveryPage({
             <NeonButton className="border-white/20 text-ink-100">בדוק SerpApi</NeonButton>
           </form>
         </div>
-        {providerIssueGroups.some((group) => group.key === "SERPAPI_AUTH_FAILED") ? (
+        {serpApiCurrentlyVerified && staleProviderIssueGroups.some((group) => group.key === "STALE_SERPAPI_AUTH_FAILED") ? (
+          <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-4 text-sm text-aqua-400">
+            SerpApi אומת. כשלי הרשאה ישנים הועברו להיסטוריה ואינם חוסמים את הגילוי.
+          </div>
+        ) : null}
+        {activeProviderIssueGroups.some((group) => group.key === "SERPAPI_AUTH_FAILED") ? (
           <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-4 text-sm text-ink-100">
             <div className="font-semibold text-signal-red">SerpApi נכשל בגלל הרשאה</div>
             <p className="mt-2 break-words leading-6">המפתח קיים אבל SerpApi מחזיר 401. תקן את המפתח/החשבון מחוץ לאפליקציה, או המשך עם Tavily בלבד בינתיים.</p>
@@ -337,8 +362,8 @@ export default async function DiscoveryPage({
         <details className="mt-5 min-w-0">
           <summary className="cursor-pointer font-semibold text-aqua-400">הצג בעיות ספקים</summary>
           <div className="mt-4 grid min-w-0 gap-3">
-          {providerIssueGroups.length === 0 ? <p className="text-sm text-ink-400">אין כרגע בעיות ספקים להצגה.</p> : null}
-          {providerIssueGroups.map((group) => (
+          {activeProviderIssueGroups.length === 0 ? <p className="text-sm text-ink-400">אין כרגע בעיות ספקים פעילות להצגה.</p> : null}
+          {activeProviderIssueGroups.map((group) => (
             <div key={group.key} className="min-w-0 rounded-lg border border-white/10 bg-white/[0.03] p-4">
               <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 max-w-3xl">
@@ -362,6 +387,43 @@ export default async function DiscoveryPage({
               </details>
             </div>
           ))}
+          {staleProviderIssueGroups.length > 0 ? (
+            <details className="min-w-0 rounded-lg border border-white/10 bg-white/[0.02] p-4">
+              <summary className="cursor-pointer font-semibold text-aqua-400">בעיות ספקים ישנות / היסטוריית הרצות</summary>
+              <p className="mt-2 break-words text-sm leading-6 text-ink-200">
+                SerpApi אומת כעת. כשלי הרשאה ישנים נשמרים לביקורת ואינם מוצגים כחסימה פעילה.
+              </p>
+              <div className="mt-4 grid gap-3">
+                {staleProviderIssueGroups.map((group) => (
+                  <div key={group.key} className="rounded-lg border border-white/10 bg-navy-950/40 p-3">
+                    <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="break-words font-semibold text-white">{group.title}</div>
+                        <p className="mt-1 break-words text-sm leading-6 text-ink-200">{group.message}</p>
+                      </div>
+                      <ScoreBadge tone="muted">{group.count} ריצות</ScoreBadge>
+                    </div>
+                    <details className="mt-3 text-sm text-ink-300">
+                      <summary className="cursor-pointer font-semibold text-aqua-400">הצג פרטי היסטוריה</summary>
+                      <div className="mt-3 grid gap-2">
+                        {group.runs.map((run) => (
+                          <div key={run.id ?? `${run.startedAt}`} className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                            <div className="break-words font-semibold text-ink-100">{run.query ?? "הרצת גילוי"}</div>
+                            <div className="mt-1 text-xs text-ink-400">{formatDate(run.startedAt)} | {run.resultCount ?? 0} לידים</div>
+                            {run.error ? <p dir="ltr" className="mt-2 max-w-full break-words text-left text-xs text-ink-300">{run.error}</p> : null}
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                    <div className="mt-3 flex flex-wrap gap-3">
+                      <NeonButton className="border-white/20 text-ink-100" disabled>הסתר בעיות ספקים ישנות</NeonButton>
+                      <p className="break-words text-xs leading-5 text-ink-400">היסטוריית ריצות היא תצוגה בלבד בשלב זה, לכן אין מחיקה או שינוי סטטוס לריצות ישנות.</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : null}
           </div>
         </details>
       </GlassCard>
