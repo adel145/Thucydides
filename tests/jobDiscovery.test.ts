@@ -6,7 +6,7 @@ import { buildCompanyCareerQueries, buildPlatformDiscoveryQueries } from "../lib
 import { countDiscoveryLeads } from "../lib/discovery/jobDiscoveryCounts";
 import { prepareDiscoveryLeadForCreate } from "../lib/discovery/jobDiscoveryEngine";
 import { prepareJobCreateFromDiscoveryLead } from "../lib/discovery/jobDiscoveryImport";
-import { discoveryPostingActionState, isLegacyOrNoisyDiscoveryLead, isReadyToImportDiscoveryLead, isVerifiedImportableDiscoveryLead, shouldHideOldNonImportableLead } from "../lib/discovery/discoveryLeadViews";
+import { discoveryPostingActionState, groupDiscoveryPostingLeadsForDisplay, isLegacyOrNoisyDiscoveryLead, isReadyToImportDiscoveryLead, isVerifiedImportableDiscoveryLead, rankDiscoveryPostingLeads, shouldHideOldNonImportableLead } from "../lib/discovery/discoveryLeadViews";
 import { scoreDiscoveryLead } from "../lib/discovery/jobDiscoveryScoring";
 import { isSafePublicHttpUrl } from "../lib/discovery/jobPageFetcher";
 import { extractJobDescriptionFromHtml, extractJsonLdJobPosting } from "../lib/discovery/jobDescriptionExtractor";
@@ -14,6 +14,7 @@ import { classifyDiscoverySource, SOURCE_CLASSIFICATIONS } from "../lib/discover
 import { dedupeProviderMessages, formatProviderDiagnosticError, providerStatusLabel } from "../lib/discovery/providerDiagnostics";
 import { extractCareerJobLinks, isReadableLinkTitle } from "../lib/discovery/careerLinkExtractor";
 import { dedupePreparedSourceCandidates, enumerateCandidateFromHtml } from "../lib/discovery/sourceCandidateEnumeration";
+import { collapseSourceCandidateGroups, groupSourceCandidatesForDiscoveryReview, hasClearNonTargetLocationSignal, scoreSourceCandidateQuality } from "../lib/discovery/sourceCandidateQuality";
 import { isWorkdayExactJobUrl, isWorkdaySearchUrl, prepareWorkdayLeadFromHtml } from "../lib/discovery/workdayDiscovery";
 import { validateJob } from "../lib/rules/validateJob";
 
@@ -360,6 +361,25 @@ describe("career listing and Workday enumeration", () => {
     });
   });
 
+  it("does not keep clear non-target Workday links as extracted candidates", () => {
+    const url = "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Senior-Software-Engineer_JR111";
+    const links = extractCareerJobLinks(`Senior Software Engineer Santa Clara ${url}`, "https://nvidia.com/careers");
+    expect(links).toHaveLength(0);
+    expect(hasClearNonTargetLocationSignal(`Senior Software Engineer Santa Clara ${url}`)).toBe(true);
+  });
+
+  it("keeps Israel and remote Workday links while preserving unknown-location technical links at lower priority", () => {
+    const israelUrl = "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/Israel/Python-Developer_JR222";
+    const unknownUrl = "https://acme.wd5.myworkdayjobs.com/acme_external/job/RD/Backend-Developer_JR333";
+    const links = extractCareerJobLinks(`
+      [Python Developer - Israel](${israelUrl})
+      [Backend Developer](${unknownUrl})
+    `, "https://nvidia.com/careers");
+    expect(links.map((link) => link.url)).toEqual([israelUrl, unknownUrl]);
+    expect(links[0].preferredLocationSignal).toBe(true);
+    expect(links[1].preferredLocationSignal).toBe(false);
+  });
+
   it("preserves readable titles for source candidates created from extracted links", () => {
     const url = "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/Israel/Computer-Vision-Engineer_JR789";
     const result = enumerateCandidateFromHtml({
@@ -419,6 +439,190 @@ describe("career listing and Workday enumeration", () => {
     expect(result.newCandidates).toHaveLength(0);
     expect(result.candidateUpdate.status).toBe("UNSUPPORTED");
     expect(result.candidateUpdate.error).toContain("JS-only");
+  });
+});
+
+describe("source candidate quality ranking", () => {
+  it("does not score generic Workday search boards as HIGH 100 without Israel or remote evidence", () => {
+    const quality = scoreSourceCandidateQuality({
+      classification: SOURCE_CLASSIFICATIONS.ATS_BOARD,
+      provider: "COMPANY_CAREERS",
+      source: "WEB_SEARCH",
+      title: "Search for Jobs - Myworkdayjobs.com Software Engineer",
+      url: "https://amat.wd1.myworkdayjobs.com/External/search",
+      confidence: "HIGH",
+      status: "REVIEW",
+      createdLeadCount: 0,
+      extractedJobCount: 0
+    });
+
+    expect(quality.score).toBeLessThan(72);
+    expect(quality.tier).not.toBe("HIGH");
+    expect(quality.reasons).toContain("generic Workday board");
+  });
+
+  it("still lets exact Workday Israel job URLs score high", () => {
+    const quality = scoreSourceCandidateQuality({
+      classification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+      provider: "COMPANY_CAREERS",
+      source: "CAREER_LINK_EXTRACTION",
+      title: "Python Developer - Israel",
+      url: "https://amat.wd1.myworkdayjobs.com/External/job/Israel/Python-Developer_JR222",
+      confidence: "MEDIUM",
+      status: "REVIEW",
+      createdLeadCount: 0
+    });
+
+    expect(quality.tier).toBe("HIGH");
+    expect(quality.score).toBeGreaterThanOrEqual(72);
+  });
+
+  it("prioritizes real Israel/remote technical sources over noisy or non-target sources", () => {
+    const high = scoreSourceCandidateQuality({
+      classification: SOURCE_CLASSIFICATIONS.ATS_BOARD,
+      provider: "COMPANY_CAREERS",
+      source: "CAREER_LINK_EXTRACTION",
+      title: "Backend Developer Israel",
+      url: "https://example.com/jobs/backend-developer-israel",
+      confidence: "MEDIUM",
+      status: "REVIEW"
+    });
+    const nonTarget = scoreSourceCandidateQuality({
+      classification: SOURCE_CLASSIFICATIONS.ATS_BOARD,
+      title: "Software Engineer Santa Clara",
+      url: "https://example.com/jobs/software-engineer-santa-clara",
+      confidence: "HIGH",
+      status: "REVIEW"
+    });
+    const noisy = scoreSourceCandidateQuality({
+      classification: SOURCE_CLASSIFICATIONS.THIRD_PARTY_AGGREGATOR_LIST,
+      title: "Glassdoor software jobs",
+      url: "https://glassdoor.com/jobs/software-engineer",
+      status: "UNSUPPORTED",
+      error: "Unsupported aggregator/listing page."
+    });
+
+    expect(high.tier).toBe("HIGH");
+    expect(nonTarget.tier).toBe("VERY_LOW");
+    expect(noisy.tier).toBe("VERY_LOW");
+    expect(high.score).toBeGreaterThan(nonTarget.score);
+  });
+
+  it("groups repeated Workday ATS board candidates into one display group", () => {
+    const groups = collapseSourceCandidateGroups([
+      {
+        id: "workday-1",
+        classification: SOURCE_CLASSIFICATIONS.ATS_BOARD,
+        title: "Search for Jobs - Myworkdayjobs.com",
+        url: "https://amat.wd1.myworkdayjobs.com/External/search",
+        confidence: "HIGH",
+        status: "REVIEW",
+        createdLeadCount: 0
+      },
+      {
+        id: "workday-2",
+        classification: SOURCE_CLASSIFICATIONS.ATS_BOARD,
+        title: "Search for Jobs - Myworkdayjobs.com",
+        url: "https://amat.wd1.myworkdayjobs.com/External/jobs",
+        confidence: "MEDIUM",
+        status: "REVIEW",
+        createdLeadCount: 0
+      }
+    ]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].duplicateCount).toBe(1);
+    expect(groups[0].primary.id).toBe("workday-1");
+  });
+
+  it("separates source candidates that need action from processed and unsupported sources", () => {
+    const groups = groupSourceCandidatesForDiscoveryReview([
+      {
+        id: "ready-source",
+        classification: SOURCE_CLASSIFICATIONS.ATS_BOARD,
+        title: "QA Automation Junior Israel",
+        url: "https://example.com/jobs",
+        confidence: "MEDIUM",
+        status: "REVIEW",
+        createdLeadCount: 0
+      },
+      {
+        id: "exact-job-source",
+        classification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+        title: "Python Developer Israel",
+        url: "https://example.com/job/python-developer-israel",
+        confidence: "MEDIUM",
+        status: "REVIEW",
+        createdLeadCount: 0
+      },
+      {
+        id: "processed-source",
+        classification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+        title: "Backend Developer Israel",
+        url: "https://example.com/job/backend-developer-israel",
+        confidence: "MEDIUM",
+        status: "REVIEW",
+        createdLeadCount: 3
+      },
+      {
+        id: "unsupported-source",
+        classification: SOURCE_CLASSIFICATIONS.BLOCKED_OR_UNFETCHABLE,
+        title: "Blocked Workday",
+        url: "https://example.com/search",
+        status: "UNSUPPORTED",
+        error: "No public links."
+      }
+    ]);
+
+    expect(groups.primary.map((candidate) => candidate.id)).toEqual(["exact-job-source", "ready-source"]);
+    expect(groups.processed.map((candidate) => candidate.id)).toEqual(["processed-source"]);
+    expect(groups.skippedOrUnsupported.map((candidate) => candidate.id)).toEqual(["unsupported-source"]);
+  });
+
+  it("collapses repeated primary and processed source groups", () => {
+    const groups = groupSourceCandidatesForDiscoveryReview([
+      {
+        id: "workday-board-1",
+        classification: SOURCE_CLASSIFICATIONS.ATS_BOARD,
+        title: "Search for Jobs - Myworkdayjobs.com",
+        url: "https://amat.wd1.myworkdayjobs.com/External/search",
+        confidence: "HIGH",
+        status: "REVIEW",
+        createdLeadCount: 0
+      },
+      {
+        id: "workday-board-2",
+        classification: SOURCE_CLASSIFICATIONS.ATS_BOARD,
+        title: "Search for Jobs - Myworkdayjobs.com",
+        url: "https://amat.wd1.myworkdayjobs.com/External/jobs",
+        confidence: "HIGH",
+        status: "REVIEW",
+        createdLeadCount: 0
+      },
+      {
+        id: "processed-1",
+        classification: SOURCE_CLASSIFICATIONS.CAREERS_LISTING,
+        title: "Applied Materials Careers",
+        url: "https://www.appliedmaterials.com/careers",
+        confidence: "MEDIUM",
+        status: "REVIEW",
+        createdLeadCount: 2
+      },
+      {
+        id: "processed-2",
+        classification: SOURCE_CLASSIFICATIONS.CAREERS_LISTING,
+        title: "Applied Materials Careers",
+        url: "https://www.appliedmaterials.com/jobs",
+        confidence: "MEDIUM",
+        status: "REVIEW",
+        createdLeadCount: 1
+      }
+    ]);
+
+    expect(groups.primaryGroups).toHaveLength(1);
+    expect(groups.primaryGroups[0].duplicateCount).toBe(1);
+    expect(groups.processedGroups).toHaveLength(1);
+    expect(groups.processedGroups[0].duplicateCount).toBe(1);
   });
 });
 
@@ -639,5 +843,52 @@ describe("discovery run bulk safety", () => {
       label: "Needs review — not ready",
       reason: "Low confidence."
     });
+  });
+
+  it("orders verified postings by review action state", () => {
+    const ready = {
+      id: "ready",
+      sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+      confidence: "HIGH",
+      extractedDescription: "Backend Developer role using Python, APIs, databases, testing, and distributed systems in Israel.",
+      status: "NEW",
+      validationStatus: "ALLOWED"
+    };
+    const review = { ...ready, id: "review", confidence: "LOW" };
+    const duplicate = { ...ready, id: "duplicate", status: "DUPLICATE" };
+    const imported = { ...ready, id: "imported", status: "IMPORTED", importedJobId: "job-1" };
+    const blocked = { ...ready, id: "blocked", validationStatus: "FORBIDDEN" };
+
+    expect(rankDiscoveryPostingLeads([blocked, imported, duplicate, review, ready]).map((lead) => lead.id)).toEqual([
+      "ready",
+      "review",
+      "duplicate",
+      "imported",
+      "blocked"
+    ]);
+  });
+
+  it("groups repeated blocked verified postings for display without hiding them from review", () => {
+    const blockedOne = {
+      id: "blocked-1",
+      title: "Backend Developer",
+      company: "Defense Acme",
+      sourceUrl: "https://example.com/backend",
+      sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+      confidence: "HIGH",
+      extractedDescription: "Backend Developer role using Python, APIs, databases, testing, and distributed systems in Israel.",
+      status: "NEW",
+      validationStatus: "FORBIDDEN"
+    };
+    const blockedTwo = {
+      ...blockedOne,
+      id: "blocked-2"
+    };
+
+    const groups = groupDiscoveryPostingLeadsForDisplay([blockedOne, blockedTwo]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].primary.id).toBe("blocked-1");
+    expect(groups[0].duplicateCount).toBe(1);
+    expect(groups[0].leads).toHaveLength(2);
   });
 });

@@ -1,6 +1,9 @@
 import { isImportableSourceClassification } from "./pageClassifier";
 
 export type DiscoveryLeadViewItem = {
+  title?: string | null;
+  company?: string | null;
+  sourceUrl?: string | null;
   sourceClassification?: string | null;
   confidence?: string | null;
   extractedDescription?: string | null;
@@ -9,6 +12,28 @@ export type DiscoveryLeadViewItem = {
   importedJobId?: string | null;
   validationStatus?: string | null;
 };
+
+export type GroupedDiscoveryPostingLead<T extends DiscoveryLeadViewItem> = {
+  key: string;
+  primary: T;
+  leads: T[];
+  duplicateCount: number;
+};
+
+function normalizeText(value: string | null | undefined) {
+  return value?.toLocaleLowerCase().replace(/\s+/g, " ").trim() ?? "";
+}
+
+function normalizedUrl(value: string | null | undefined) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    url.hash = "";
+    return url.toString().toLocaleLowerCase();
+  } catch {
+    return normalizeText(value);
+  }
+}
 
 export function hasMeaningfulDiscoveryDescription(lead: DiscoveryLeadViewItem) {
   const description = lead.extractedDescription ?? lead.rawText;
@@ -104,4 +129,55 @@ export function discoveryPostingActionState(
     tone: "muted" as const,
     reason: discoveryPostingReviewReason(lead)
   };
+}
+
+export function discoveryPostingDisplayRank(
+  lead: DiscoveryLeadViewItem,
+  options: { duplicate?: boolean } = {}
+) {
+  if (isReadyToImportDiscoveryLead(lead, options)) return 0;
+  if (isDuplicateDiscoveryPostingLead(lead, options.duplicate)) return 2;
+  if (isImportedDiscoveryPostingLead(lead)) return 3;
+  if (isBlockedDiscoveryPostingLead(lead)) return 4;
+  return 1;
+}
+
+export function rankDiscoveryPostingLeads<T extends DiscoveryLeadViewItem>(
+  leads: T[],
+  duplicateForLead: (lead: T) => boolean = () => false
+) {
+  return [...leads].sort((a, b) => {
+    const rankA = discoveryPostingDisplayRank(a, { duplicate: duplicateForLead(a) });
+    const rankB = discoveryPostingDisplayRank(b, { duplicate: duplicateForLead(b) });
+    if (rankA !== rankB) return rankA - rankB;
+    return 0;
+  });
+}
+
+export function canonicalDiscoveryPostingDisplayKey(lead: DiscoveryLeadViewItem) {
+  return [
+    normalizeText(lead.title),
+    normalizeText(lead.company),
+    normalizedUrl(lead.sourceUrl),
+    lead.validationStatus ?? "",
+    lead.sourceClassification ?? ""
+  ].join("|");
+}
+
+export function groupDiscoveryPostingLeadsForDisplay<T extends DiscoveryLeadViewItem>(
+  leads: T[],
+  duplicateForLead: (lead: T) => boolean = () => false
+): GroupedDiscoveryPostingLead<T>[] {
+  const ranked = rankDiscoveryPostingLeads(leads, duplicateForLead);
+  const groups = new Map<string, T[]>();
+  for (const lead of ranked) {
+    const key = canonicalDiscoveryPostingDisplayKey(lead);
+    groups.set(key, [...(groups.get(key) ?? []), lead]);
+  }
+  return [...groups.entries()].map(([key, groupLeads]) => ({
+    key,
+    primary: groupLeads[0],
+    leads: groupLeads,
+    duplicateCount: Math.max(0, groupLeads.length - 1)
+  }));
 }

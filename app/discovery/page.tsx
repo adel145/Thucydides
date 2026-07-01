@@ -5,8 +5,9 @@ import { NeonButton } from "@/components/ui/NeonButton";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
 import { db } from "@/lib/db";
 import { getDiscoveryProviderStatus, getDiscoveryProviderLabel } from "@/lib/discovery/discoveryProviders";
-import { discoveryPostingActionState, isLegacyOrNoisyDiscoveryLead, isVerifiedImportableDiscoveryLead } from "@/lib/discovery/discoveryLeadViews";
+import { discoveryPostingActionState, groupDiscoveryPostingLeadsForDisplay, isLegacyOrNoisyDiscoveryLead, isVerifiedImportableDiscoveryLead } from "@/lib/discovery/discoveryLeadViews";
 import { countDiscoveryLeads } from "@/lib/discovery/jobDiscoveryCounts";
+import { groupSourceCandidatesForDiscoveryReview, scoreSourceCandidateQuality } from "@/lib/discovery/sourceCandidateQuality";
 import { isImportableSourceClassification } from "@/lib/discovery/pageClassifier";
 import { isProviderAuthFailureMessage } from "@/lib/discovery/providerDiagnostics";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
@@ -21,15 +22,6 @@ function validationTone(status: string) {
 function formatDate(value: Date | string | null | undefined) {
   if (!value) return "אין תאריך";
   return new Date(value).toLocaleString("he-IL");
-}
-
-function candidateNeedsAction(candidate: { status: string; classification: string; source?: string | null; createdLeadCount?: number | null }) {
-  if (candidate.status === "SKIPPED" || candidate.status === "UNSUPPORTED") return false;
-  if (candidate.source === "CAREER_LINK_EXTRACTION" && (candidate.createdLeadCount ?? 0) === 0) return true;
-  return (
-    !isImportableSourceClassification(candidate.classification) &&
-    ["ATS_BOARD", "CAREERS_LISTING", "COMPANY_CAREERS_HOME", "SEARCH_RESULTS_PAGE", "UNKNOWN"].includes(candidate.classification)
-  );
 }
 
 function isUnsupportedAggregator(candidate: { classification: string; title?: string | null; url?: string | null }) {
@@ -153,10 +145,26 @@ export default async function DiscoveryPage({
   const counts = countDiscoveryLeads(leads);
   const providerTest = notices?.providerTest === "SERPAPI_GOOGLE_JOBS" || notices?.providerTest === "TAVILY" ? notices.providerTest : null;
   const providerTestState = notices?.providerMessage ? { ok: notices.providerOk === "1", message: notices.providerMessage } : undefined;
-  const candidatesNeedingAction = candidates.filter(candidateNeedsAction);
-  const skippedOrUnsupportedCandidates = candidates.filter((candidate) => candidate.status === "SKIPPED" || candidate.status === "UNSUPPORTED");
-  const verifiedLeads = leads.filter(isVerifiedImportableDiscoveryLead);
+  const sourceCandidateGroups = groupSourceCandidatesForDiscoveryReview(candidates);
+  const maxPrimarySourceGroups = 10;
+  const primarySourceGroups = sourceCandidateGroups.primaryGroups;
+  const visiblePrimarySourceGroups = primarySourceGroups.slice(0, maxPrimarySourceGroups);
+  const lowerPrioritySourceGroups = [
+    ...primarySourceGroups.slice(maxPrimarySourceGroups),
+    ...sourceCandidateGroups.lowQualityGroups,
+    ...sourceCandidateGroups.skippedOrUnsupportedGroups
+  ];
+  const processedSourceGroups = sourceCandidateGroups.processedGroups;
+  const skippedOrUnsupportedCandidates = lowerPrioritySourceGroups.map((group) => group.primary);
+  const verifiedLeadGroups = groupDiscoveryPostingLeadsForDisplay(
+    leads.filter(isVerifiedImportableDiscoveryLead),
+    (lead) => Boolean(findDuplicateJobForLead(lead, existingJobs) && !(lead.status === "IMPORTED" && lead.importedJobId))
+  );
+  const verifiedLeads = verifiedLeadGroups.map((group) => group.primary);
   const legacyLeads = leads.filter(isLegacyOrNoisyDiscoveryLead);
+  const readyImportCount = verifiedLeads.filter((lead) => discoveryPostingActionState(lead, {
+    duplicate: Boolean(findDuplicateJobForLead(lead, existingJobs) && !(lead.status === "IMPORTED" && lead.importedJobId))
+  }).label === "Ready to import").length;
 
   return (
     <div dir="rtl" className="grid min-w-0 max-w-full gap-6 overflow-hidden text-right">
@@ -276,12 +284,12 @@ export default async function DiscoveryPage({
           <div className="mt-5 grid min-w-0 grid-cols-2 gap-3 md:grid-cols-3">
             {[
               ["הרצות", runs.length],
-              ["לטיפול", candidatesNeedingAction.length],
-              ["לידים חדשים", counts.newLeads],
-              ["הועשרו", counts.enrichedLeads],
-              ["דורשים בדיקה", counts.needsReview],
+              ["לטיפול", primarySourceGroups.length],
+              ["כבר עובדו", processedSourceGroups.length],
+              ["משרות מאומתות", verifiedLeadGroups.length],
+              ["מוכן לייבוא", readyImportCount],
               ["חסומים", counts.blocked],
-              ["יובאו", counts.imported]
+              ["לא בעדיפות / דולגו", skippedOrUnsupportedCandidates.length]
             ].map(([label, value]) => (
               <div key={label} className="min-w-0 rounded-lg border border-white/10 bg-white/[0.03] p-3">
                 <div className="break-words text-xs uppercase tracking-[0.16em] text-ink-400">{label}</div>
@@ -329,7 +337,7 @@ export default async function DiscoveryPage({
               אלה עדיין לא משרות. השתמש ב־“נסה לחלץ משרות” כדי למצוא קישורי משרה ספציפיים, או דלג.
             </p>
           </div>
-          <ScoreBadge tone="warning">{candidatesNeedingAction.length} לטיפול</ScoreBadge>
+          <ScoreBadge tone="warning">{primarySourceGroups.length} לטיפול</ScoreBadge>
         </div>
         <div className="mt-4 flex min-w-0 flex-wrap gap-2 text-xs text-ink-300">
           <ScoreBadge tone="aqua">משרות מאומתות</ScoreBadge>
@@ -338,12 +346,19 @@ export default async function DiscoveryPage({
           <ScoreBadge tone="muted">דולגו / לא נתמכים</ScoreBadge>
         </div>
         <div className="mt-5 grid min-w-0 gap-3">
-          {candidatesNeedingAction.length === 0 ? <p className="text-sm text-ink-400">אין כרגע מקורות שדורשים חילוץ.</p> : null}
-          {candidatesNeedingAction.map((candidate) => {
+          {primarySourceGroups.length === 0 ? <p className="text-sm text-ink-400">אין כרגע מקורות שדורשים חילוץ.</p> : null}
+          {primarySourceGroups.length > visiblePrimarySourceGroups.length ? (
+            <p className="rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-300">
+              עוד מקורות בעדיפות נמוכה יותר מופיעים למטה.
+            </p>
+          ) : null}
+          {visiblePrimarySourceGroups.map((group) => {
+            const candidate = group.primary;
             const unsupportedAggregator = isUnsupportedAggregator(candidate);
             const preview = candidate.snippet ?? candidate.rawText;
+            const quality = scoreSourceCandidateQuality(candidate);
             return (
-              <div key={candidate.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div key={group.key} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 max-w-3xl">
                     <div dir="auto" className="break-words font-semibold text-white">{sourceTitle(candidate.title, candidate.url)}</div>
@@ -358,8 +373,10 @@ export default async function DiscoveryPage({
                   <div className="flex min-w-0 flex-wrap gap-2">
                     <ScoreBadge tone="warning"><LtrText>{candidate.classification}</LtrText></ScoreBadge>
                     <ScoreBadge tone="warning">צריך חילוץ</ScoreBadge>
+                    <ScoreBadge tone={quality.tier === "HIGH" || quality.tier === "MEDIUM" ? "aqua" : "muted"}><LtrText>{quality.tier} {quality.score}</LtrText></ScoreBadge>
                     <ScoreBadge tone="muted"><LtrText>{candidate.confidence ?? "LOW"}</LtrText></ScoreBadge>
                     <ScoreBadge tone="aqua">{candidate.createdLeadCount} לידים</ScoreBadge>
+                    {group.duplicateCount > 0 ? <ScoreBadge tone="muted">קובצו {group.duplicateCount + 1} מקורות דומים</ScoreBadge> : null}
                   </div>
                 </div>
                 <PreviewText value={preview} detailsLabel="הצג טקסט מקור" />
@@ -386,13 +403,70 @@ export default async function DiscoveryPage({
       </GlassCard>
 
       <GlassCard className="min-w-0 max-w-full overflow-hidden">
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-xl font-semibold text-white">מקורות שכבר עובדו</h3>
+            <p className="mt-2 break-words text-sm leading-6 text-ink-200">
+              מקורות שכבר יצרו לידים או קישורי משרות. הם נשארים זמינים לבדיקה חוזרת, אבל לא תופסים את המקום של מקורות שדורשים פעולה עכשיו.
+            </p>
+          </div>
+          <ScoreBadge tone="muted">{processedSourceGroups.length} עובדו</ScoreBadge>
+        </div>
+        <div className="mt-5 grid min-w-0 gap-3">
+          {processedSourceGroups.length === 0 ? <p className="text-sm text-ink-400">אין כרגע מקורות שכבר עובדו.</p> : null}
+          {processedSourceGroups.map((group) => {
+            const candidate = group.primary;
+            const preview = candidate.snippet ?? candidate.rawText;
+            const quality = scoreSourceCandidateQuality(candidate);
+            return (
+              <div key={group.key} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.02] p-4">
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 max-w-3xl">
+                    <div dir="auto" className="break-words font-semibold text-white">{sourceTitle(candidate.title, candidate.url)}</div>
+                    <p className="mt-1 text-sm font-semibold text-ink-100">זה מקור שכבר עובד</p>
+                    <p className="mt-1 break-words text-sm text-ink-300">דומיין: <span dir="ltr">{domainFromUrl(candidate.url)}</span></p>
+                    <p className="mt-2 break-words text-sm text-aqua-400">פעולה מומלצת: חזור אליו רק אם חסר מידע או אם צריך לנסות חילוץ מחדש.</p>
+                    {candidate.url ? <Link dir="ltr" href={candidate.url} className="mt-2 inline-flex max-w-full break-all text-left text-sm font-semibold text-aqua-400">פתח מקור</Link> : null}
+                  </div>
+                  <div className="flex min-w-0 flex-wrap gap-2">
+                    <ScoreBadge tone="muted"><LtrText>{candidate.classification}</LtrText></ScoreBadge>
+                    <ScoreBadge tone="muted"><LtrText>{quality.tier} {quality.score}</LtrText></ScoreBadge>
+                    <ScoreBadge tone="aqua">{candidate.createdLeadCount ?? 0} לידים</ScoreBadge>
+                    {group.duplicateCount > 0 ? <ScoreBadge tone="muted">מקורות דומים: {group.duplicateCount + 1}</ScoreBadge> : null}
+                  </div>
+                </div>
+                <PreviewText value={preview} detailsLabel="הצג טקסט מקור" />
+                {candidate.error ? <p dir="ltr" className="mt-2 max-w-full break-words text-left text-sm text-signal-red">{candidate.error}</p> : null}
+                <div className="mt-4 flex min-w-0 flex-wrap gap-3">
+                  <form action={retryClassifySourceCandidate}>
+                    <input type="hidden" name="candidateId" value={candidate.id} />
+                    <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url}>סווג מחדש</NeonButton>
+                  </form>
+                  <form action={enumerateSourceCandidate}>
+                    <input type="hidden" name="candidateId" value={candidate.id} />
+                    <NeonButton className="border-white/20 text-ink-100" disabled={!candidate.url}>נסה לחלץ שוב</NeonButton>
+                  </form>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </GlassCard>
+
+      <GlassCard className="min-w-0 max-w-full overflow-hidden">
         <h3 className="text-xl font-semibold text-white">משרות מאומתות</h3>
         <p className="mt-2 break-words text-sm leading-6 text-ink-200">
           זו משרה אמיתית: דף משרה יחיד שאפשר לבדוק. חלק מהמשרות עדיין חסומות או דורשות בדיקה.
         </p>
+        <div className="mt-4 flex min-w-0 flex-wrap gap-2 text-xs text-ink-300">
+          <ScoreBadge tone="aqua">{readyImportCount} מוכן לייבוא</ScoreBadge>
+          <ScoreBadge tone="warning">{counts.blocked} חסומות</ScoreBadge>
+          <ScoreBadge tone="muted">{verifiedLeadGroups.length} משרות מאומתות</ScoreBadge>
+        </div>
         <div className="mt-5 grid min-w-0 gap-4">
-          {verifiedLeads.length === 0 ? <p className="text-sm text-ink-400">אין עדיין משרות אינטרנט מאומתות.</p> : null}
-          {verifiedLeads.map((lead) => {
+          {verifiedLeadGroups.length === 0 ? <p className="text-sm text-ink-400">אין עדיין משרות אינטרנט מאומתות.</p> : null}
+          {verifiedLeadGroups.map((group) => {
+            const lead = group.primary;
             const allowedSignals = jsonToStringArray(lead.allowedSignals);
             const forbiddenFlags = jsonToStringArray(lead.forbiddenFlags);
             const fitReasons = jsonToStringArray(lead.fitReasons);
@@ -424,7 +498,7 @@ export default async function DiscoveryPage({
                 ? "Looks like an existing local job."
                 : importBlockedReason;
             return (
-              <div key={lead.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div key={group.key} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 max-w-3xl">
                     <div className={`inline-flex min-h-11 max-w-full items-center rounded-lg border px-4 py-2 text-base font-semibold ${state.tone === "warning" ? "border-signal-red/40 bg-signal-red/10 text-signal-red" : state.tone === "aqua" ? "border-aqua-400/40 bg-aqua-400/10 text-aqua-400" : "border-white/20 bg-white/[0.08] text-ink-100"}`}>
@@ -441,6 +515,7 @@ export default async function DiscoveryPage({
                     <ScoreBadge tone={verifiedPosting ? "aqua" : "muted"}><LtrText>{lead.sourceClassification ?? "UNCLASSIFIED"}</LtrText></ScoreBadge>
                     <ScoreBadge tone="aqua">זו משרה אמיתית</ScoreBadge>
                     <ScoreBadge tone="muted"><LtrText>{lead.status}</LtrText></ScoreBadge>
+                    {group.duplicateCount > 0 ? <ScoreBadge tone="warning">כפול / הופיע {group.duplicateCount + 1} פעמים</ScoreBadge> : null}
                   </div>
                 </div>
                 {lead.sourceUrl ? <Link dir="ltr" href={lead.sourceUrl} className="mt-3 inline-flex max-w-full break-all text-left text-sm font-semibold text-aqua-400">פתח מקור</Link> : null}
@@ -534,9 +609,9 @@ export default async function DiscoveryPage({
       </GlassCard>
 
       <GlassCard className="min-w-0 max-w-full overflow-hidden">
-        <h3 className="text-xl font-semibold text-white">מקורות שדולגו / לא נתמכים</h3>
+        <h3 className="text-xl font-semibold text-white">מקורות לא בעדיפות / דולגו / לא נתמכים</h3>
         <div className="mt-5 grid min-w-0 gap-3">
-          {skippedOrUnsupportedCandidates.length === 0 ? <p className="text-sm text-ink-400">אין מקורות שדולגו או לא נתמכים.</p> : null}
+          {skippedOrUnsupportedCandidates.length === 0 ? <p className="text-sm text-ink-400">אין מקורות לא בעדיפות, דולגו או לא נתמכים.</p> : null}
           {skippedOrUnsupportedCandidates.map((candidate) => (
             <div key={candidate.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
               <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">

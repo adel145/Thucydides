@@ -592,3 +592,38 @@ Updated:
 Not changed:
 
 - No backend discovery behavior, schema, import eligibility, validation rules, providers, Gmail OAuth, browser automation, auto apply/email, real agents, upload parsing, or resume export.
+
+## 2026-07-01 Phase 6.2 - Real Discovery Quality + Candidate Ranking
+
+Updated:
+
+- Added deterministic source-candidate quality scoring and grouping for discovery review.
+- `/discovery` now keeps current sources with real next actions in the primary section and moves already-processed sources to a secondary processed-source section.
+- Discovery counts now emphasize sources needing action, processed sources, verified postings, ready-to-import postings, blocked postings, and low-priority/skipped/unsupported records.
+- Verified postings are sorted by action state: ready, needs review, duplicate, imported, blocked.
+- Career-link extraction now filters clear non-target Workday/career links before candidate creation while keeping Israel/remote and strong unknown-location technical links reviewable.
+
+Verified:
+
+- Added tests for source quality scoring, candidate grouping, verified posting ordering, Workday non-target filtering, and Israel/unknown-location Workday link handling.
+
+Not changed:
+
+- No schema changes, new providers, Gmail OAuth, automatic inbox reading, browser automation, login/captcha bypass, fake descriptions, import eligibility changes, forbidden-role weakening, automatic applications, automatic emails, real agents, or resume export.
+
+## 2026-07-01 Phase 6.2A - Discovery Candidate Deduping + Workday Board Score Correction
+
+Updated:
+
+- Demoted generic Workday search/listing boards in deterministic source scoring when they lack Israel/remote evidence and have produced no leads or public links.
+- Added canonical display grouping for repeated source candidates without deleting or mutating database records.
+- `/discovery` now caps the primary sources-to-process display to the top grouped candidates and moves lower-priority overflow below.
+- Processed source candidates and repeated verified postings are grouped for display with Hebrew duplicate/count badges.
+
+Verified:
+
+- Added tests for generic Workday board demotion, exact Workday Israel job scoring, repeated Workday board grouping, primary/processed source grouping, and blocked verified posting duplicate grouping.
+
+Not changed:
+
+- No schema changes, new providers, Gmail OAuth, automatic inbox reading, browser automation, login/captcha bypass, fake descriptions, import eligibility changes, forbidden-role weakening, automatic applications, automatic emails, real agents, or resume export.

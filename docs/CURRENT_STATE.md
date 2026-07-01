@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-06-30, Thucydides is in Phase 6.1G - Global Hebrew RTL UI Foundation state.
+As of 2026-07-01, Thucydides is in Phase 6.2 - Real Discovery Quality + Candidate Ranking state.
 
 ## What Exists
 
@@ -89,12 +89,17 @@ As of 2026-06-30, Thucydides is in Phase 6.1G - Global Hebrew RTL UI Foundation 
 - `/gmail` shows validation status, allowed signals, forbidden flags, risk notes, duplicate warnings, source URL, and raw snippets for lead review.
 - Safe non-forbidden leads can be manually imported into the normal Job Inbox.
 - Imported leads become normal local `Job` records and get an `ApplicationEvent`.
-- Forbidden leads remain blocked from normal import in Phase 6.1G.
+- Forbidden leads remain blocked from normal import in Phase 6.2.
 - `/discovery` supports env-gated internet job discovery through Tavily and SerpApi.
 - `/discovery` separates source candidates from job leads. Search/listing/generic/company pages stay as source candidates; only verified single job postings become importable leads.
 - `/discovery` can test Tavily and SerpApi from the UI. Provider badges say key present/missing until a test verifies or fails them. SerpApi 401 is shown as "SerpApi authorization failed: check SERPAPI_API_KEY/account." without printing keys.
 - `/discovery` source candidates now have retry classify, try enumerate jobs, and skip candidate actions.
 - `/discovery` now separates verified job postings, sources to process, legacy/noisy leads, and skipped/unsupported candidates.
+- `/discovery` now ranks source candidates with deterministic quality signals and keeps the primary sources-to-process section focused on records with a real next action.
+- `/discovery` now separates already-processed source candidates into a secondary "processed sources" section so old enumerated sources do not crowd current action work.
+- `/discovery` now collapses repeated source candidates by canonical display key, without deleting or mutating database records.
+- Generic Workday search/listing boards without Israel/remote evidence are demoted and should no longer appear as `HIGH 100` just because they mention technical roles.
+- `/discovery` counts now emphasize sources needing action, processed sources, verified postings, ready-to-import postings, blocked postings, and low-priority/skipped/unsupported records.
 - `/discovery` has a top "What to do next" guide and a top "Clean old noisy leads" action near provider tests.
 - `/discovery` is now a Hebrew RTL review page with right-aligned copy and action-oriented labels.
 - `/discovery` uses min-width, max-width, overflow, and word-wrapping guards so long URLs, Markdown snippets, provider text, and descriptions do not create horizontal page scroll.
@@ -104,11 +109,13 @@ As of 2026-06-30, Thucydides is in Phase 6.1G - Global Hebrew RTL UI Foundation 
 - `/discovery` keeps verified forbidden postings visible for review, but marks them as blocked and disables import.
 - Candidate enumeration supports Greenhouse boards, safe public Workday pages, and generic public career HTML link extraction.
 - Candidate enumeration extracts HTML links, Markdown links, and plain job URLs from fetched content plus saved candidate text/snippets, deduping by URL.
+- Career-link extraction now reduces obvious non-target location noise such as clear US-only/Santa Clara/Austin/New York/London/Germany/India signals while preserving Israel/remote links and strong unknown-location technical links for lower-priority review.
 - Markdown link titles are preserved. Plain Workday or career URLs use readable surrounding text when possible and fall back to "Untitled job link from Workday" or "Untitled job link from career page" instead of raw hash-like ids.
 - `JobDiscoveryRun` stores discovery run status, provider/query metadata, counts, and errors.
 - Discovery helpers support company-career queries, platform queries, Greenhouse public board detection/mapping, safe public page fetch, source classification, JSON-LD JobPosting extraction, HTML fallback extraction, deterministic fit scoring, and duplicate checks.
 - Greenhouse exact job URLs map only that job; Greenhouse boards are enumerated and filtered for Israel/remote target roles instead of blindly taking the first listing.
 - Workday search/listing pages are ATS board candidates, exact public Workday job pages can become ATS job leads only after title and meaningful description are visible, and JS-only/blocked Workday pages remain candidates with errors.
+- Workday extracted links no longer become candidates merely because they are on `myworkdayjobs.com`; exact/listing handling still follows the Phase 6.1E safety rule, with clear non-target links filtered out before candidate creation.
 - Generic career listing pages can create specific job-link source candidates, not direct job leads, unless a fetched page verifies as a single posting.
 - Pressing try enumerate repeatedly avoids duplicate source candidates and duplicate leads.
 - Unsafe URLs, generic company pages, search result pages, ATS boards, career listings, and noisy pages are not directly importable.

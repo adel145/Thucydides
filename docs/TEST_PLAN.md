@@ -247,6 +247,19 @@ Phase 6.1G coverage:
 - Manual QA should confirm long URLs, pasted job descriptions, source text, raw snippets, and notes do not create horizontal page scroll with the sidebar open at 100% zoom.
 - Manual QA should confirm no discovery/import eligibility, forbidden-role blocking, Gmail behavior, AI scope, schema, or provider behavior changed.
 
+Phase 6.2 coverage:
+
+- Unit tests cover deterministic source-candidate quality scoring for Israel/remote technical sources, noisy sources, and clear non-target locations.
+- Unit tests cover source candidate grouping into current action, processed, and unsupported buckets.
+- Unit tests cover generic Workday search/listing boards not scoring `HIGH 100` without Israel/remote evidence.
+- Unit tests cover display grouping for repeated Workday ATS board candidates and processed source candidates.
+- Unit tests cover repeated blocked verified postings grouping for display without deleting or hiding the underlying records.
+- Unit tests cover Workday/career-link extraction filtering clear non-target locations while preserving Israel and strong unknown-location technical links.
+- Unit tests cover verified posting ordering by action state: ready, needs review, duplicate, imported, blocked.
+- Build/type verification covers `/discovery` ranking/grouping UI, the processed-source section, source-quality helper imports, and career-link extraction changes.
+- Manual QA should confirm `/discovery` primary source review is less noisy and that processed sources remain available but secondary.
+- Manual QA should confirm no import eligibility, forbidden-role blocking, exact Workday verification, Gmail behavior, AI scope, schema, provider, scraping, or automation behavior changed.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

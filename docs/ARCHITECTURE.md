@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.1G Architecture
+## Phase 6.2 Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -219,6 +219,16 @@ Phase 6.1G is a global UI/readability patch with no backend behavior change:
 - Overflow containment from the discovery review is applied broadly to prevent long external text from causing horizontal page scroll.
 - Discovery backend logic, import eligibility, Workday classification, forbidden-role blocking, schema, providers, AI scope, and Gmail behavior are unchanged.
 
+Phase 6.2 improves discovery quality and review ordering without schema changes:
+
+- `lib/discovery/sourceCandidateQuality.ts` scores and groups source candidates with deterministic role, location, classification, provider/source, confidence, error, and processed-count signals.
+- The same helper owns canonical display keys for source candidates so repeated Workday/career candidates can collapse in UI without mutating stored rows.
+- Generic Workday search/listing boards are demoted unless Israel/remote or exact-job signals make them useful for review.
+- `/discovery` uses the quality helper to keep current sources with real next actions in the primary section, move already-processed sources to a secondary section, and keep low-quality/noisy records away from the main action list.
+- Verified postings are sorted by display state: ready to import, needs review, duplicate, imported, then blocked.
+- `lib/discovery/careerLinkExtractor.ts` uses shared role/location signals so clear non-target Workday/career links are filtered before candidate creation while Israel/remote and strong unknown-location technical links remain reviewable.
+- Import eligibility, forbidden-role blocking, exact Workday job-page verification, provider behavior, schema, AI scope, Gmail behavior, and automation boundaries are unchanged.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -239,7 +249,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.1G
+## Non-Goals in Phase 6.2
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

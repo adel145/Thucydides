@@ -1,3 +1,5 @@
+import { hasClearNonTargetLocationSignal, hasPreferredLocationSignal, hasTargetRoleSignal } from "./sourceCandidateQuality";
+
 export type ExtractedCareerJobLink = {
   title: string;
   url: string;
@@ -5,8 +7,6 @@ export type ExtractedCareerJobLink = {
   preferredLocationSignal: boolean;
 };
 
-const targetRolePattern = /(software|developer|engineer|backend|full\s*stack|fullstack|python|qa|automation|data|machine learning|deep learning|computer vision|research student|student|technical support|noc|implementation|integration)/i;
-const locationPattern = /(israel|tel aviv|haifa|jerusalem|beer|beersheba|remote|hybrid|\u05d9\u05e9\u05e8\u05d0\u05dc|\u05ea\u05dc \u05d0\u05d1\u05d9\u05d1|\u05d7\u05d9\u05e4\u05d4|\u05d9\u05e8\u05d5\u05e9\u05dc\u05d9\u05dd|\u05d1\u05d0\u05e8 \u05e9\u05d1\u05e2)/i;
 const hashLikePattern = /^[a-f0-9]{8,}$/i;
 
 function decodeHtml(value: string) {
@@ -69,8 +69,8 @@ function titleFromNearbyText(content: string, index: number) {
   const marker =
     before.match(/(?:^|\s)(open\s+role|role|job|position)\s*:?\s*(.{3,})$/i) ??
     before.match(/(?:^|\s)(careers?(?:\s+listing)?)\s*:?\s*(.{3,})$/i);
-  const candidate = marker?.[2] && targetRolePattern.test(marker[2]) ? marker[2] : before;
-  if (!targetRolePattern.test(candidate)) return null;
+  const candidate = marker?.[2] && hasTargetRoleSignal(marker[2]) ? marker[2] : before;
+  if (!hasTargetRoleSignal(candidate)) return null;
   return candidate
     .replace(/^(see|apply|open\s+role|role|job|position|careers?)\s*:?\s*/i, "")
     .slice(-110)
@@ -84,13 +84,17 @@ function pushLink(links: ExtractedCareerJobLink[], seen: Set<string>, titleValue
   const title = isReadableLinkTitle(providedTitle) ? providedTitle : titleFromUrl(url);
   const context = decodeHtml(`${contextValue ?? ""} ${title} ${url}`);
   const isSpecificJobUrl = /\/job\//i.test(url) || /myworkdayjobs\.com/i.test(url);
-  if (!title || (!targetRolePattern.test(context) && !isSpecificJobUrl)) return;
+  const hasRole = hasTargetRoleSignal(context);
+  const preferredLocationSignal = hasPreferredLocationSignal(context);
+  if (!title || hasClearNonTargetLocationSignal(context)) return;
+  if (!hasRole && !isSpecificJobUrl) return;
+  if (isSpecificJobUrl && !hasRole && !preferredLocationSignal) return;
   seen.add(url);
   links.push({
     title,
     url,
     snippet: title,
-    preferredLocationSignal: locationPattern.test(context)
+    preferredLocationSignal
   });
 }
 

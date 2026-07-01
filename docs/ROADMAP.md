@@ -75,4 +75,8 @@
 - Keep `/discovery` Hebrew RTL and responsive, with long raw provider text behind expandable details.
 - Extend Hebrew-first RTL readability across the whole app shell and core workflow pages without changing backend behavior.
 - Keep global pages overflow-safe so long URLs, pasted text, and raw snippets do not hide content with the sidebar open.
+- Rank discovery source candidates deterministically so Israel/remote technical sources and exact job-like candidates appear before noisy or already-processed sources.
+- Move already-processed source candidates out of the primary action list while keeping them available for manual retry/review.
+- Collapse repeated source candidates in display and demote generic Workday boards without Israel/remote evidence.
+- Filter clear non-target Workday/career links before candidate creation while keeping strong unknown-location technical links reviewable.
 - Add Lever/Ashby adapters only after public, non-authenticated behavior is understood.

@@ -238,10 +238,28 @@
 - Added responsive containment and wrapping to core cards, forms, raw descriptions, URLs, pasted text, and source snippets.
 - Preserved Phase 6.1E/6.1F discovery/import/forbidden/Workday/backend behavior.
 
+## Completed In Phase 6.2
+
+- Added deterministic source-candidate quality scoring and grouping for `/discovery`.
+- Ranked sources needing action by classification, provider/source, role signals, Israel/remote signals, confidence, errors, processed counts, and clear non-target locations.
+- Moved already-processed source candidates into a separate processed-source section.
+- Updated discovery counts to emphasize sources needing action, processed sources, verified postings, ready-to-import postings, blocked postings, and low-priority/skipped/unsupported records.
+- Sorted verified postings by action state: ready, needs review, duplicate, imported, blocked.
+- Reduced Workday/career-link noise by filtering clear non-target locations before candidate creation while keeping Israel/remote and strong unknown-location technical links reviewable.
+- Added tests for source quality scoring, candidate grouping, verified posting ordering, Workday non-target filtering, and Israel/unknown-location Workday link behavior.
+
+## Completed In Phase 6.2A
+
+- Demoted generic Workday search/listing boards without Israel/remote evidence so they no longer appear as top-priority `HIGH 100` action cards.
+- Added canonical display grouping for repeated source candidates without deleting or mutating database rows.
+- Capped the primary source action list and moved lower-priority overflow into the lower-priority/skipped area.
+- Collapsed repeated processed sources and repeated verified postings in display with Hebrew count badges.
+- Added tests for Workday board score correction, source grouping, processed grouping, and verified blocked duplicate grouping.
+
 ## Next Tasks
 
-- Manually QA global Hebrew RTL readability across Dashboard, Job Inbox, Application Packet, Resume Lab, Sources, Gmail, and Discovery.
-- Manually QA provider diagnostics, Markdown/URL candidate enumeration, discovery action clarity, and real Tavily/SerpApi runs.
+- Manually QA real Tavily/SerpApi/career-page discovery runs after Phase 6.2 ranking.
+- Manually QA that source candidates needing action, processed sources, low-priority/skipped sources, and verified postings feel clear in Hebrew RTL.
 - Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.
 - Improve packet quality review before exports.

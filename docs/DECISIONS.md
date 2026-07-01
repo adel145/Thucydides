@@ -353,3 +353,21 @@ Reason: real QA showed that Adel still felt lost when the rest of the app remain
 Decision: core pages should use responsive containment such as `min-w-0`, overflow guards, and word wrapping for long URLs, pasted descriptions, raw snippets, source text, and notes.
 
 Reason: long external content can hide UI on the right at normal browser zoom, especially with the sidebar open.
+
+## 2026-07-01: Discovery Sources Need Deterministic Quality Ranking
+
+Decision: source candidates should be ranked and grouped with deterministic quality signals before display. Primary `/discovery` source review should show records with a real next action first, processed sources should move to a secondary section, and clear non-target location noise should not crowd current work.
+
+Reason: real discovery QA showed too many source candidates with stale/noisy/raw provider text. Adel needs the board to prioritize Israel/remote technical sources while keeping all import and forbidden-role safety rules unchanged.
+
+## 2026-07-01: Workday Links Need Role/Location Quality Signals
+
+Decision: career-link extraction should not keep a Workday/career URL only because it is on an ATS domain. Clear non-target locations should be filtered out before candidate creation, Israel/remote links should be preferred, and strong technical roles with unknown location can remain for lower-priority manual review.
+
+Reason: Workday and career pages can expose many global jobs. Filtering obvious non-target links reduces noise without adding scraping, browser automation, fake descriptions, or changing exact-job import eligibility.
+
+## 2026-07-01: Generic Workday Boards Should Not Dominate Discovery Review
+
+Decision: generic Workday search/listing boards without Israel/remote evidence should not score as top-priority source candidates, and repeated source candidates should collapse in display by canonical key.
+
+Reason: real QA showed repeated `Search for Jobs - Myworkdayjobs.com` boards made `/discovery` feel like endless work. Collapsing duplicates and demoting generic boards reduces noise without deleting data or changing import eligibility.
