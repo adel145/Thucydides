@@ -12,6 +12,8 @@ import { isSafePublicHttpUrl } from "../lib/discovery/jobPageFetcher";
 import { cleanJobDescriptionText, extractJobDescriptionFromHtml, extractJsonLdJobPosting, extractRequirementsSection, hasExcessivePageChrome, isImportQualityJobDescription, isMeaningfulJobDescription } from "../lib/discovery/jobDescriptionExtractor";
 import { classifyDiscoverySource, SOURCE_CLASSIFICATIONS } from "../lib/discovery/pageClassifier";
 import { dedupeProviderMessages, formatProviderDiagnosticError, providerStatusLabel } from "../lib/discovery/providerDiagnostics";
+import { providerStatusKind, shouldDisableProviderForRunAfterError } from "../lib/discovery/providerDiagnostics";
+import { discoveryUsefulWorkCounts, groupDiscoveryProviderIssues, isLowPriorityStaleSourceCandidate } from "../lib/discovery/discoveryReviewHygiene";
 import { extractCareerJobLinks, isReadableLinkTitle } from "../lib/discovery/careerLinkExtractor";
 import { dedupePreparedSourceCandidates, enumerateCandidateFromHtml } from "../lib/discovery/sourceCandidateEnumeration";
 import { collapseSourceCandidateGroups, groupSourceCandidatesForDiscoveryReview, hasClearNonTargetLocationSignal, scoreSourceCandidateQuality } from "../lib/discovery/sourceCandidateQuality";
@@ -45,6 +47,10 @@ describe("discovery provider config", () => {
     expect(providerStatusLabel("SERPAPI_GOOGLE_JOBS", true)).toBe("SerpApi key present");
     expect(providerStatusLabel("SERPAPI_GOOGLE_JOBS", true, { ok: false, message: authMessage })).toBe("SerpApi auth failed");
     expect(providerStatusLabel("TAVILY", true, { ok: true })).toBe("Tavily verified");
+    expect(providerStatusKind("SERPAPI_GOOGLE_JOBS", true, { ok: false, message: authMessage })).toBe("AUTH_FAILED");
+    expect(providerStatusKind("SERPAPI_GOOGLE_JOBS", true, undefined, { disabledForRun: true })).toBe("DISABLED_FOR_RUN");
+    expect(shouldDisableProviderForRunAfterError("SERPAPI_GOOGLE_JOBS", authMessage)).toBe(true);
+    expect(shouldDisableProviderForRunAfterError("TAVILY", "Tavily authorization failed: check TAVILY_API_KEY/account.")).toBe(false);
   });
 });
 
@@ -649,6 +655,104 @@ describe("source candidate quality ranking", () => {
     expect(groups.primaryGroups[0].duplicateCount).toBe(1);
     expect(groups.processedGroups).toHaveLength(1);
     expect(groups.processedGroups[0].duplicateCount).toBe(1);
+  });
+});
+
+describe("discovery review hygiene 6.4", () => {
+  const strongReadyDescription = "Backend Developer role in Israel. Responsibilities include building Python APIs, SQL-backed services, production integrations, and automated tests for a software product team. Requirements include backend development experience, API design, databases, and ownership.";
+
+  it("groups repeated SerpApi 401 provider failures into one display issue", () => {
+    const groups = groupDiscoveryProviderIssues([
+      { id: "run-1", provider: "TAVILY_SERPAPI_OPTIONAL", error: "SerpApi authorization failed: check SERPAPI_API_KEY/account.", resultCount: 0 },
+      { id: "run-2", provider: "TAVILY_SERPAPI_OPTIONAL", error: "SerpApi authorization failed: check SERPAPI_API_KEY/account.", resultCount: 0 },
+      { id: "run-3", provider: "TAVILY_SERPAPI_OPTIONAL", error: null, resultCount: 2 }
+    ]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]).toMatchObject({
+      key: "SERPAPI_AUTH_FAILED",
+      count: 2,
+      title: "SerpApi נכשל בגלל הרשאה"
+    });
+  });
+
+  it("marks only low-priority stale source candidates as cleanup-eligible", () => {
+    expect(isLowPriorityStaleSourceCandidate({
+      classification: SOURCE_CLASSIFICATIONS.GENERIC_COMPANY_PAGE,
+      title: "Acme",
+      status: "REVIEW",
+      createdLeadCount: 0
+    })).toBe(true);
+
+    expect(isLowPriorityStaleSourceCandidate({
+      classification: SOURCE_CLASSIFICATIONS.BLOCKED_OR_UNFETCHABLE,
+      title: "Blocked Workday",
+      status: "REVIEW",
+      error: "Fetch failed",
+      createdLeadCount: 0
+    })).toBe(true);
+
+    expect(isLowPriorityStaleSourceCandidate({
+      classification: SOURCE_CLASSIFICATIONS.ATS_BOARD,
+      title: "Backend Engineer Israel jobs",
+      url: "https://example.com/jobs",
+      status: "REVIEW",
+      confidence: "HIGH",
+      createdLeadCount: 0
+    })).toBe(false);
+
+    expect(isLowPriorityStaleSourceCandidate({
+      classification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+      title: "Backend Engineer Israel",
+      status: "REVIEW",
+      createdLeadCount: 0
+    })).toBe(false);
+  });
+
+  it("keeps useful counts focused on actionable work", () => {
+    const counts = discoveryUsefulWorkCounts({
+      leads: [
+        {
+          sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+          confidence: "HIGH",
+          extractedDescription: strongReadyDescription,
+          status: "NEW",
+          validationStatus: "ALLOWED",
+          fitScore: 78,
+          allowedSignals: ["Junior Developer"]
+        },
+        {
+          sourceClassification: SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING,
+          confidence: "MEDIUM",
+          extractedDescription: strongReadyDescription,
+          status: "NEW",
+          validationStatus: "RISKY",
+          fitScore: 33,
+          allowedSignals: []
+        },
+        {
+          sourceClassification: SOURCE_CLASSIFICATIONS.SEARCH_RESULTS_PAGE,
+          confidence: "LOW",
+          status: "SKIPPED",
+          validationStatus: "RISKY"
+        }
+      ],
+      candidates: [
+        { classification: SOURCE_CLASSIFICATIONS.ATS_BOARD, title: "QA Automation Israel", status: "REVIEW", confidence: "HIGH" },
+        { classification: SOURCE_CLASSIFICATIONS.CAREERS_LISTING, title: "Processed careers", status: "REVIEW", createdLeadCount: 2 },
+        { classification: SOURCE_CLASSIFICATIONS.NOISY_PAGE, title: "Noise", status: "SKIPPED" }
+      ],
+      providerIssueCount: 1
+    });
+
+    expect(counts).toMatchObject({
+      readyToImport: 1,
+      needsReview: 1,
+      actionableSources: 1,
+      processedSources: 1,
+      providerIssues: 1,
+      hiddenNoise: 2
+    });
   });
 });
 

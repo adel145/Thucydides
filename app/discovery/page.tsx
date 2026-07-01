@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { enrichDiscoveryLead, enumerateSourceCandidate, hideOldNonImportableDiscoveryLeads, importDiscoveryLeadToInbox, markDiscoveryLeadDuplicate, retryClassifySourceCandidate, runJobDiscovery, skipDiscoveryLead, skipNonImportedLeadsFromRun, skipSourceCandidate, testDiscoveryProviderAction } from "@/app/discovery/actions";
+import { enrichDiscoveryLead, enumerateSourceCandidate, hideLowPriorityStaleSourceCandidates, hideOldNonImportableDiscoveryLeads, importDiscoveryLeadToInbox, markDiscoveryLeadDuplicate, retryClassifySourceCandidate, runJobDiscovery, skipDiscoveryLead, skipNonImportedLeadsFromRun, skipSourceCandidate, testDiscoveryProviderAction } from "@/app/discovery/actions";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { NeonButton } from "@/components/ui/NeonButton";
 import { ScoreBadge } from "@/components/ui/ScoreBadge";
@@ -10,6 +10,7 @@ import { countDiscoveryLeads } from "@/lib/discovery/jobDiscoveryCounts";
 import { groupSourceCandidatesForDiscoveryReview, scoreSourceCandidateQuality } from "@/lib/discovery/sourceCandidateQuality";
 import { isImportableSourceClassification } from "@/lib/discovery/pageClassifier";
 import { isProviderAuthFailureMessage } from "@/lib/discovery/providerDiagnostics";
+import { discoveryUsefulWorkCounts, groupDiscoveryProviderIssues } from "@/lib/discovery/discoveryReviewHygiene";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
 import { jsonToStringArray } from "@/lib/formParsing";
 
@@ -133,6 +134,7 @@ export default async function DiscoveryPage({
     candidateLinks?: string;
     candidateClassified?: string;
     oldLeadsHidden?: string;
+    staleSourcesHidden?: string;
   }>;
 }) {
   const notices = await searchParams;
@@ -171,10 +173,17 @@ export default async function DiscoveryPage({
   const readyImportCount = verifiedLeads.filter((lead) => discoveryPostingActionState(lead, {
     duplicate: Boolean(findDuplicateJobForLead(lead, existingJobs) && !(lead.status === "IMPORTED" && lead.importedJobId))
   }).label === "Ready to import").length;
+  const providerIssueGroups = groupDiscoveryProviderIssues(runs);
+  const visibleRuns = runs.filter((run) => !run.error);
+  const usefulCounts = discoveryUsefulWorkCounts({
+    leads: verifiedLeads,
+    candidates,
+    providerIssueCount: providerIssueGroups.length
+  });
 
   return (
     <div dir="rtl" className="grid min-w-0 max-w-full gap-6 overflow-hidden text-right">
-      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+      <GlassCard className="order-1 min-w-0 max-w-full overflow-hidden">
         <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 max-w-3xl">
             <p className="text-xs uppercase tracking-[0.18em] text-aqua-400">גילוי משרות באינטרנט</p>
@@ -206,6 +215,13 @@ export default async function DiscoveryPage({
             <NeonButton className="border-white/20 text-ink-100">בדוק SerpApi</NeonButton>
           </form>
         </div>
+        {providerIssueGroups.some((group) => group.key === "SERPAPI_AUTH_FAILED") ? (
+          <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-4 text-sm text-ink-100">
+            <div className="font-semibold text-signal-red">SerpApi נכשל בגלל הרשאה</div>
+            <p className="mt-2 break-words leading-6">המפתח קיים אבל SerpApi מחזיר 401. תקן את המפתח/החשבון מחוץ לאפליקציה, או המשך עם Tavily בלבד בינתיים.</p>
+            <p className="mt-2 break-words leading-6 text-ink-200">בינתיים Discovery יסתמך בעיקר על Tavily ולא יציף את הלוח בכשלונות SerpApi.</p>
+          </div>
+        ) : null}
         <div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-4">
           <div className="min-w-0 max-w-2xl">
             <div className="text-sm font-semibold text-white">נקה לידים רועשים ישנים</div>
@@ -215,6 +231,9 @@ export default async function DiscoveryPage({
           </div>
           <form action={hideOldNonImportableDiscoveryLeads}>
             <NeonButton className="border-white/20 text-ink-100">נקה לידים רועשים ישנים</NeonButton>
+          </form>
+          <form action={hideLowPriorityStaleSourceCandidates}>
+            <NeonButton className="border-white/20 text-ink-100">הסתר מקורות ישנים בעדיפות נמוכה</NeonButton>
           </form>
         </div>
         {notices?.run ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">הרצת גילוי נשמרה מקומית.</div> : null}
@@ -227,6 +246,7 @@ export default async function DiscoveryPage({
         {notices?.enumerated === "0" && notices?.candidateLinks === "0" ? <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">כבר חולץ / אין קישורים חדשים, או שלא נמצאו קישורי משרות ציבוריים.</div> : null}
         {notices?.candidateClassified ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">סיווג המקור עודכן.</div> : null}
         {notices?.oldLeadsHidden ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">לידים ישנים ורועשים הוסתרו. משרות שיובאו לא נגעו.</div> : null}
+        {notices?.staleSourcesHidden ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">מקורות ישנים בעדיפות נמוכה הוסתרו: {notices.staleSourcesHidden}. מקורות מובילים ומשרות מאומתות לא נגעו.</div> : null}
         {notices?.blocked ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">הייבוא נחסם: הליד FORBIDDEN לפי הכללים הדטרמיניסטיים.</div> : null}
         {notices?.duplicate ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">הייבוא נחסם: הליד נראה כמו משרה שכבר קיימת.</div> : null}
         {notices?.notImportable ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">לא ניתן לייבא: זה מקור/רשימה/חיפוש, לא משרה יחידה.</div> : null}
@@ -238,15 +258,14 @@ export default async function DiscoveryPage({
         {notices?.noUrl ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">אין למקור הזה URL להעשרה.</div> : null}
       </GlassCard>
 
-      <GlassCard className="min-w-0 max-w-full overflow-hidden">
-        <h3 className="text-xl font-semibold text-white">מה לעשות עכשיו</h3>
+      <GlassCard className="order-2 min-w-0 max-w-full overflow-hidden">
+        <h3 className="text-xl font-semibold text-white">פעולות מומלצות עכשיו</h3>
         <ol className="mt-4 grid gap-2 text-sm leading-6 text-ink-200">
-          <li>1. לחץ “בדוק Tavily”.</li>
-          <li>2. התעלם מ־SerpApi אם הוא נכשל 401.</li>
-          <li>3. במקורות, לחץ “נסה לחלץ משרות”.</li>
-          <li>4. עבור ל־“משרות מאומתות”.</li>
-          <li>5. ייבא רק משרות “מוכן לייבוא”.</li>
-          <li>6. נקה לידים רועשים ישנים כשצריך.</li>
+          <li>1. בדוק Tavily.</li>
+          <li>2. אם SerpApi נכשל 401, המשך עם Tavily עד שתתקן אותו.</li>
+          <li>3. הרץ גילוי.</li>
+          <li>4. עבד מקורות מובילים.</li>
+          <li>5. בדוק משרות מאומתות וייבא רק משרות “מוכן לייבוא”.</li>
         </ol>
       </GlassCard>
 
@@ -291,13 +310,12 @@ export default async function DiscoveryPage({
           <h3 className="text-xl font-semibold text-white">ספירת גילוי</h3>
           <div className="mt-5 grid min-w-0 grid-cols-2 gap-3 md:grid-cols-3">
             {[
-              ["הרצות", runs.length],
-              ["לטיפול", primarySourceGroups.length],
-              ["כבר עובדו", processedSourceGroups.length],
-              ["משרות מאומתות", verifiedLeadGroups.length],
-              ["מוכן לייבוא", readyImportCount],
-              ["חסומים", counts.blocked],
-              ["לא בעדיפות / דולגו", skippedOrUnsupportedCandidates.length]
+              ["משרות מוכנות לייבוא", usefulCounts.readyToImport],
+              ["משרות דורשות בדיקה", usefulCounts.needsReview],
+              ["מקורות לטיפול", usefulCounts.actionableSources],
+              ["מקורות שכבר עובדו", usefulCounts.processedSources],
+              ["בעיות ספקים", usefulCounts.providerIssues],
+              ["רעש מוסתר", usefulCounts.hiddenNoise]
             ].map(([label, value]) => (
               <div key={label} className="min-w-0 rounded-lg border border-white/10 bg-white/[0.03] p-3">
                 <div className="break-words text-xs uppercase tracking-[0.16em] text-ink-400">{label}</div>
@@ -311,11 +329,49 @@ export default async function DiscoveryPage({
         </GlassCard>
       </div>
 
-      <GlassCard className="min-w-0 max-w-full overflow-hidden">
-        <h3 className="text-xl font-semibold text-white">הרצות גילוי</h3>
-        <div className="mt-5 grid min-w-0 gap-3">
-          {runs.length === 0 ? <p className="text-sm text-ink-400">אין עדיין הרצות גילוי.</p> : null}
-          {runs.map((run) => (
+      <GlassCard className="order-7 min-w-0 max-w-full overflow-hidden">
+        <h3 className="text-xl font-semibold text-white">בעיות ספקים / ריצות כושלות</h3>
+        <p className="mt-2 break-words text-sm leading-6 text-ink-200">
+          כשלונות ספקים נשמרים לביקורת, אבל מקובצים כאן כדי שלא יציפו את לוח העבודה היומי.
+        </p>
+        <details className="mt-5 min-w-0">
+          <summary className="cursor-pointer font-semibold text-aqua-400">הצג בעיות ספקים</summary>
+          <div className="mt-4 grid min-w-0 gap-3">
+          {providerIssueGroups.length === 0 ? <p className="text-sm text-ink-400">אין כרגע בעיות ספקים להצגה.</p> : null}
+          {providerIssueGroups.map((group) => (
+            <div key={group.key} className="min-w-0 rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 max-w-3xl">
+                  <div className="break-words font-semibold text-white">{group.title}</div>
+                  <p className="mt-2 break-words text-sm leading-6 text-ink-200">{group.message}</p>
+                  <p className="mt-2 break-words text-sm leading-6 text-aqua-400">{group.actionHint}</p>
+                </div>
+                <ScoreBadge tone="warning">{group.count} ריצות</ScoreBadge>
+              </div>
+              <details className="mt-3 min-w-0 text-sm text-ink-300">
+                <summary className="cursor-pointer font-semibold text-aqua-400">הצג פרטי ריצות</summary>
+                <div className="mt-3 grid gap-2">
+                  {group.runs.map((run) => (
+                    <div key={run.id ?? `${run.startedAt}`} className="rounded-lg border border-white/10 bg-navy-950/40 p-3">
+                      <div className="break-words font-semibold text-ink-100">{run.query ?? "הרצת גילוי"}</div>
+                      <div className="mt-1 text-xs text-ink-400">{formatDate(run.startedAt)} | {run.resultCount ?? 0} לידים</div>
+                      {run.error ? <p dir="ltr" className="mt-2 max-w-full break-words text-left text-xs text-signal-red">{run.error}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              </details>
+            </div>
+          ))}
+          </div>
+        </details>
+      </GlassCard>
+
+      <GlassCard className="order-8 min-w-0 max-w-full overflow-hidden">
+        <details className="min-w-0">
+          <summary className="cursor-pointer text-xl font-semibold text-white">הרצות גילוי תקינות / אחרונות</summary>
+          <div className="mt-5 grid min-w-0 gap-3">
+          {visibleRuns.length === 0 ? <p className="text-sm text-ink-400">אין כרגע ריצות תקינות להצגה.</p> : null}
+          {visibleRuns.map((run) => (
             <div key={run.id} className="min-w-0 rounded-lg border border-white/10 bg-white/[0.03] p-4">
               <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -334,10 +390,11 @@ export default async function DiscoveryPage({
               </form>
             </div>
           ))}
-        </div>
+          </div>
+        </details>
       </GlassCard>
 
-      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+      <GlassCard className="order-5 min-w-0 max-w-full overflow-hidden">
         <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="text-xl font-semibold text-white">מקורות שצריך לעבד</h3>
@@ -410,7 +467,7 @@ export default async function DiscoveryPage({
         </div>
       </GlassCard>
 
-      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+      <GlassCard className="order-6 min-w-0 max-w-full overflow-hidden">
         <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="text-xl font-semibold text-white">מקורות שכבר עובדו</h3>
@@ -420,7 +477,9 @@ export default async function DiscoveryPage({
           </div>
           <ScoreBadge tone="muted">{processedSourceGroups.length} עובדו</ScoreBadge>
         </div>
-        <div className="mt-5 grid min-w-0 gap-3">
+        <details className="mt-5 min-w-0">
+          <summary className="cursor-pointer font-semibold text-aqua-400">הצג מקורות שעובדו</summary>
+          <div className="mt-4 grid min-w-0 gap-3">
           {processedSourceGroups.length === 0 ? <p className="text-sm text-ink-400">אין כרגע מקורות שכבר עובדו.</p> : null}
           {processedSourceGroups.map((group) => {
             const candidate = group.primary;
@@ -458,10 +517,11 @@ export default async function DiscoveryPage({
               </div>
             );
           })}
-        </div>
+          </div>
+        </details>
       </GlassCard>
 
-      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+      <GlassCard className="order-4 min-w-0 max-w-full overflow-hidden">
         <h3 className="text-xl font-semibold text-white">משרות מאומתות</h3>
         <p className="mt-2 break-words text-sm leading-6 text-ink-200">
           זו משרה אמיתית: דף משרה יחיד שאפשר לבדוק. חלק מהמשרות עדיין חסומות או דורשות בדיקה.
@@ -565,7 +625,7 @@ export default async function DiscoveryPage({
         </div>
       </GlassCard>
 
-      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+      <GlassCard className="order-9 min-w-0 max-w-full overflow-hidden">
         <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="text-xl font-semibold text-white">לידים ישנים / רועשים</h3>
@@ -577,7 +637,9 @@ export default async function DiscoveryPage({
             <NeonButton className="border-white/20 text-ink-100">נקה לידים רועשים ישנים</NeonButton>
           </form>
         </div>
-        <div className="mt-5 grid min-w-0 gap-3">
+        <details className="mt-5 min-w-0">
+          <summary className="cursor-pointer font-semibold text-aqua-400">הצג לידים ישנים / רועשים</summary>
+          <div className="mt-4 grid min-w-0 gap-3">
           {legacyLeads.length === 0 ? <p className="text-sm text-ink-400">אין לידים ישנים/רועשים גלויים.</p> : null}
           {legacyLeads.map((lead) => (
             <div key={lead.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
@@ -607,12 +669,15 @@ export default async function DiscoveryPage({
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        </details>
       </GlassCard>
 
-      <GlassCard className="min-w-0 max-w-full overflow-hidden">
+      <GlassCard className="order-10 min-w-0 max-w-full overflow-hidden">
         <h3 className="text-xl font-semibold text-white">מקורות לא בעדיפות / דולגו / לא נתמכים</h3>
-        <div className="mt-5 grid min-w-0 gap-3">
+        <details className="mt-5 min-w-0">
+          <summary className="cursor-pointer font-semibold text-aqua-400">הצג מקורות לא בעדיפות</summary>
+          <div className="mt-4 grid min-w-0 gap-3">
           {skippedOrUnsupportedCandidates.length === 0 ? <p className="text-sm text-ink-400">אין מקורות לא בעדיפות, דולגו או לא נתמכים.</p> : null}
           {skippedOrUnsupportedCandidates.map((candidate) => (
             <div key={candidate.id} className="min-w-0 max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] p-4">
@@ -628,7 +693,8 @@ export default async function DiscoveryPage({
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        </details>
       </GlassCard>
     </div>
   );

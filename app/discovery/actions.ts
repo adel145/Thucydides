@@ -11,6 +11,7 @@ import { isReadyToImportDiscoveryLead } from "@/lib/discovery/discoveryLeadViews
 import { prepareJobCreateFromDiscoveryLead } from "@/lib/discovery/jobDiscoveryImport";
 import { testDiscoveryProvider } from "@/lib/discovery/providerDiagnostics";
 import { dedupePreparedDiscoveryLeads, dedupePreparedSourceCandidates, enumerateDiscoverySourceCandidate, retryClassifyDiscoverySourceCandidate } from "@/lib/discovery/sourceCandidateEnumeration";
+import { isLowPriorityStaleSourceCandidate } from "@/lib/discovery/discoveryReviewHygiene";
 import { findDuplicateJobForLead } from "@/lib/gmail/jobLeadImport";
 
 function optionalPositiveInt(value: FormDataEntryValue | null, fallback: number) {
@@ -254,6 +255,26 @@ export async function skipSourceCandidate(formData: FormData) {
     }
   });
   revalidatePath("/discovery");
+}
+
+export async function hideLowPriorityStaleSourceCandidates() {
+  const candidates = await db.discoverySourceCandidate.findMany();
+  const candidateIds = candidates
+    .filter(isLowPriorityStaleSourceCandidate)
+    .map((candidate) => candidate.id);
+
+  if (candidateIds.length > 0) {
+    await db.discoverySourceCandidate.updateMany({
+      where: { id: { in: candidateIds } },
+      data: {
+        status: "SKIPPED",
+        reason: "Hidden from primary discovery review as a stale low-priority source candidate."
+      }
+    });
+  }
+
+  revalidatePath("/discovery");
+  redirect(`/discovery?staleSourcesHidden=${candidateIds.length}`);
 }
 
 export async function hideOldNonImportableDiscoveryLeads() {

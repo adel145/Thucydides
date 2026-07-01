@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.3A Architecture
+## Phase 6.4 Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -247,6 +247,16 @@ Phase 6.3A tightens enrichment import-readiness without schema changes:
 - Enrichment may save real extracted fields, validation, and scoring, but weak/noisy/RISKY/low-score/no-signal results redirect with a needs-review notice instead of becoming import-ready.
 - Page chrome such as "Skip to main content", "Job Search", "Menu", "Similar jobs", "Apply on employer site", "opens in new tab", cookie/privacy/footer/navigation, and broad search/listing text blocks import quality.
 
+Phase 6.4 cleans up Discovery review hygiene without schema changes:
+
+- `lib/discovery/discoveryReviewHygiene.ts` groups provider/run issues, detects low-priority stale source candidates, and calculates useful work counts for `/discovery`.
+- Repeated SerpApi 401/auth failures are grouped into one display issue; run details stay behind `<details>` for auditability.
+- `providerDiagnostics.ts` distinguishes missing key, key present, verified, auth failed, disabled for this run, and generic failed states.
+- `jobDiscoveryEngine.ts` stops additional SerpApi queries after an auth failure in the same run.
+- `hideLowPriorityStaleSourceCandidates` marks only eligible low-priority non-posting source candidates as `SKIPPED`.
+- Existing old-noisy lead cleanup still marks only non-imported, non-verified, non-importable leads as `SKIPPED`.
+- Failed-run compaction is display-only; no run records are hard-deleted or hidden by schema mutation.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -267,7 +277,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.3A
+## Non-Goals in Phase 6.4
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

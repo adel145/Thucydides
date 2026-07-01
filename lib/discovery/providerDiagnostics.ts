@@ -23,18 +23,39 @@ export function isProviderAuthFailureMessage(message: string) {
   return /authorization failed|failed:\s*401|\b401\b/i.test(message);
 }
 
+export function shouldDisableProviderForRunAfterError(provider: DiscoveryProviderDiagnostic["provider"], message: string) {
+  return provider === "SERPAPI_GOOGLE_JOBS" && isProviderAuthFailureMessage(message);
+}
+
 export function dedupeProviderMessages(messages: string[]) {
   return [...new Set(messages.filter(Boolean))];
 }
 
+export type DiscoveryProviderStatusKind = "MISSING_KEY" | "KEY_PRESENT" | "VERIFIED" | "AUTH_FAILED" | "DISABLED_FOR_RUN" | "FAILED";
+
+export function providerStatusKind(
+  provider: DiscoveryProviderDiagnostic["provider"],
+  keyPresent: boolean,
+  tested?: { ok: boolean; message?: string | null },
+  options: { disabledForRun?: boolean } = {}
+): DiscoveryProviderStatusKind {
+  if (!keyPresent) return "MISSING_KEY";
+  if (options.disabledForRun) return "DISABLED_FOR_RUN";
+  if (!tested) return "KEY_PRESENT";
+  if (tested.ok) return "VERIFIED";
+  if (provider === "SERPAPI_GOOGLE_JOBS" && tested.message && isProviderAuthFailureMessage(tested.message)) return "AUTH_FAILED";
+  return "FAILED";
+}
+
 export function providerStatusLabel(provider: DiscoveryProviderDiagnostic["provider"], keyPresent: boolean, tested?: { ok: boolean; message?: string | null }) {
   const name = provider === "SERPAPI_GOOGLE_JOBS" ? "SerpApi" : "Tavily";
-  if (tested) {
-    if (tested.ok) return `${name} verified`;
-    if (provider === "SERPAPI_GOOGLE_JOBS" && tested.message && isProviderAuthFailureMessage(tested.message)) return "SerpApi auth failed";
-    return `${name} failed`;
-  }
-  return `${name} ${keyPresent ? "key present" : "key missing"}`;
+  const kind = providerStatusKind(provider, keyPresent, tested);
+  if (kind === "MISSING_KEY") return `${name} key missing`;
+  if (kind === "KEY_PRESENT") return `${name} key present`;
+  if (kind === "VERIFIED") return `${name} verified`;
+  if (kind === "AUTH_FAILED") return "SerpApi auth failed";
+  if (kind === "DISABLED_FOR_RUN") return `${name} disabled for this run`;
+  return `${name} failed`;
 }
 
 export async function testDiscoveryProvider(

@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-07-01, Thucydides is in Phase 6.3A - Enrichment Import-Readiness Quality Gate state.
+As of 2026-07-01, Thucydides is in Phase 6.4 - Discovery Cleanup, Run History Hygiene, and Provider Failure Clarity state.
 
 ## What Exists
 
@@ -121,6 +121,11 @@ As of 2026-07-01, Thucydides is in Phase 6.3A - Enrichment Import-Readiness Qual
 - Broad meaningful-description extraction remains available, but import readiness now requires stricter import-quality body evidence.
 - Ready-to-import discovery postings require verified single-job classification, not forbidden/duplicate/imported/skipped, medium/high confidence, `ALLOWED` validation, fit score at least 50, at least one deterministic allowed technical signal, and an import-quality description with strong job-body signals and without excessive page chrome.
 - Enriched leads that are real but still weak, noisy, `RISKY`, low-score, or missing allowed technical signals stay visible as needs-review and have import disabled.
+- `/discovery` is organized as a daily review board: recommended actions, verified postings, actionable sources, processed sources, provider/run issues, old/noisy leads, and low-priority/skipped records.
+- Repeated SerpApi 401/auth failures are grouped into one provider issue card with details behind an expander. Normal run history is compact and no longer repeats failed SerpApi cards.
+- SerpApi support remains present, but after an auth failure in the current run the engine stops trying more SerpApi queries. The UI tells Adel to continue mainly with Tavily until SerpApi is fixed externally.
+- Low-priority stale source candidates can be safely hidden by marking eligible non-posting, non-processed, low-quality candidates `SKIPPED`.
+- Old noisy discovery leads can still be safely hidden without touching imported jobs, imported leads, or verified postings.
 - Requirements/qualifications can be extracted separately when clear headings exist, including English and Hebrew requirement headings.
 - Enrichment attempts that cannot find meaningful public static job text keep the existing lead data and show a Hebrew needs-review notice instead of inventing a description.
 - Generic career listing pages can create specific job-link source candidates, not direct job leads, unless a fetched page verifies as a single posting.

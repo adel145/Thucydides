@@ -669,3 +669,24 @@ Verified:
 Not changed:
 
 - No schema changes, new providers, Gmail OAuth, inbox reading, browser automation, login/captcha bypass, fake descriptions, AI-generated descriptions, automatic applications, automatic emails, forbidden-role weakening, or commits.
+
+## 2026-07-01 Phase 6.4 - Discovery Cleanup, Run History Hygiene, and Provider Failure Clarity
+
+Updated:
+
+- Added `lib/discovery/discoveryReviewHygiene.ts` for provider issue grouping, low-priority stale source cleanup eligibility, and useful work counts.
+- Added provider status kinds for missing key, key present, verified, auth failed, disabled for this run, and failed.
+- Kept SerpApi support but routed same-run auth failure stopping through a shared helper.
+- Added safe stale-source cleanup action that marks eligible low-priority non-posting candidates `SKIPPED`.
+- Updated `/discovery` to show one clear SerpApi 401 provider issue, communicate Tavily-first fallback, compact run history, and collapse processed/noisy/lower-priority sections.
+- Kept failed run compaction display-only; no run records are mutated or deleted.
+
+Verified:
+
+- Added tests for SerpApi 401 grouping, same-run SerpApi auth stop behavior, stale source cleanup eligibility, useful Discovery counts, and preserved 6.3A readiness behavior.
+- `npm run test` passed during implementation: 18 files, 154 tests.
+- `npm run build` passed during implementation.
+
+Not changed:
+
+- No schema changes, new providers, Gmail OAuth, inbox reading, browser automation, login/captcha bypass, fake descriptions, AI-generated descriptions, import-readiness weakening, forbidden-role weakening, automatic applications, automatic emails, hard deletion, or commits.

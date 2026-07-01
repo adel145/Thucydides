@@ -277,9 +277,21 @@
 - Enforced the same readiness gate in server-side discovery import.
 - Added regression tests for page-chrome-heavy Applied Materials/Metaintro text, MEDIUM 33/100 `RISKY` no-signal leads, strict import refusal, and strong allowed import-ready leads.
 
+## Completed In Phase 6.4
+
+- Added discovery review hygiene helpers for provider issue grouping, stale source cleanup eligibility, and useful work counts.
+- Grouped repeated SerpApi 401/auth failures into one compact provider issue with run details behind an expander.
+- Kept failed run compaction display-only for auditability.
+- Added provider status kinds for key present, verified, auth failed, disabled for this run, and missing key.
+- Kept SerpApi support but stopped additional SerpApi queries after auth failure in the same run.
+- Added safe stale-source cleanup that marks only eligible low-priority non-posting source candidates as `SKIPPED`.
+- Reordered/compacted `/discovery` sections so verified postings and actionable sources are above old/noisy archives.
+- Collapsed processed sources, normal run history, old/noisy leads, and low-priority/skipped sources by default.
+- Added tests for provider failure grouping, SerpApi auth stop behavior, stale source cleanup eligibility, useful work counts, and preserved 6.3A readiness.
+
 ## Next Tasks
 
-- Manually QA real public job-page enrichment screenshots after Phase 6.3A.
+- Manually QA Phase 6.4 Discovery screenshots and cleanup actions.
 - Manually QA weak/blocked/JS-only pages show needs-review feedback and do not overwrite useful lead data.
 - Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.

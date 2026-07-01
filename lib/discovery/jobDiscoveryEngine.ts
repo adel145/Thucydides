@@ -7,7 +7,7 @@ import { extractJobDescriptionFromHtml, extractJsonLdJobPosting, isMeaningfulJob
 import { fetchPublicJobPage } from "./jobPageFetcher";
 import { scoreDiscoveryLead } from "./jobDiscoveryScoring";
 import { classifyDiscoverySource, isImportableSourceClassification, SOURCE_CLASSIFICATIONS } from "./pageClassifier";
-import { dedupeProviderMessages, formatProviderDiagnosticError, isProviderAuthFailureMessage } from "./providerDiagnostics";
+import { dedupeProviderMessages, formatProviderDiagnosticError, shouldDisableProviderForRunAfterError } from "./providerDiagnostics";
 import { getSerpApiConfig, mapSerpApiJobsToLeads, serpApiGoogleJobsSearch } from "./serpApiJobsClient";
 import { getTavilyConfig, mapTavilyResultsToLeads, tavilySearch, type DiscoverySearchLead } from "./tavilySearchClient";
 
@@ -373,7 +373,7 @@ export async function runInternetJobDiscovery(options: {
         } catch (error) {
           const message = formatProviderDiagnosticError("SERPAPI_GOOGLE_JOBS", error);
           errors.push(message);
-          if (isProviderAuthFailureMessage(message)) break;
+          if (shouldDisableProviderForRunAfterError("SERPAPI_GOOGLE_JOBS", message)) break;
         }
       }
     }

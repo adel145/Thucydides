@@ -383,3 +383,9 @@ Reason: verified leads need better real descriptions before import, but the prod
 Decision: enriching a discovery lead may save real extracted fields, but "Ready to import" requires a stricter gate: verified single-job classification, active non-duplicate/non-imported state, medium/high confidence, `ALLOWED` validation, fit score at least 50, at least one deterministic allowed technical signal, and an import-quality job description without excessive page chrome.
 
 Reason: real QA showed a MEDIUM, 33/100, `RISKY` lead with no allowed technical signal and page-chrome-heavy text becoming "Ready to import." Enrichment success and import readiness must stay separate so weak/noisy leads remain manual review instead of entering Job Inbox.
+
+## 2026-07-01: Discovery Cleanup Must Preserve Auditability
+
+Decision: Phase 6.4 cleanup may mark eligible old/noisy leads or low-priority stale source candidates as `SKIPPED`, but failed discovery runs are grouped display-only instead of deleted or schema-hidden. Repeated SerpApi 401 failures are shown as one provider issue with details behind an expander, and Tavily remains the practical active provider until SerpApi is fixed externally.
+
+Reason: Adel needs a clean daily review board, but discovery history is still useful audit context. Cleanup must reduce visual noise without deleting runs, leads, imported jobs, or exact verified postings.

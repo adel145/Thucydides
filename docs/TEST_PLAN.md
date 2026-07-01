@@ -285,6 +285,17 @@ Phase 6.3A coverage:
 - Verification completed with `npm run test`, `npm run build`, `npm run lint`, and `npm run verify`.
 - Manual QA should confirm the import button is disabled for RISKY, low-score, no-allowed-signal, and page-chrome-heavy enriched leads.
 
+Phase 6.4 coverage:
+
+- Unit tests cover repeated SerpApi 401 failures grouping into one provider issue.
+- Unit tests cover SerpApi auth failures disabling further SerpApi attempts within the same run helper path.
+- Unit tests cover provider status kinds: key present, verified, auth failed, disabled for run, and missing key.
+- Unit tests cover low-priority stale source cleanup eligibility and confirm high-priority actionable/exact posting candidates are not eligible.
+- Unit tests cover useful Discovery counts separating ready jobs, needs-review jobs, actionable sources, processed sources, provider issues, and hidden noise.
+- Existing tests keep Phase 6.3A readiness intact: RISKY 33/100 no-signal is not ready, strong ALLOWED import-quality leads can be ready, and FORBIDDEN stays blocked.
+- Build/type verification covers `/discovery` section compaction, stale-source cleanup action, provider issue grouping, and helper imports.
+- Manual QA should confirm SerpApi 401 appears once, old/noisy sections are collapsed, and cleanup actions do not touch imported jobs/leads or verified postings.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

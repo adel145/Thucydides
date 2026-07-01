@@ -2,7 +2,7 @@
 
 Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. The repo and docs are the official project memory.
 
-As of Phase 6.3A, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, a Hebrew RTL global UI foundation, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, deterministic source-candidate quality ranking, processed-source separation, stronger deterministic public job-page enrichment, and a strict enrichment import-readiness quality gate.
+As of Phase 6.4, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet discovery with provider diagnostics, a Hebrew RTL global UI foundation, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, deterministic source-candidate quality ranking, processed-source separation, stronger deterministic public job-page enrichment, strict enrichment import-readiness, and discovery-board cleanup/hygiene.
 
 ## Product Mission
 
@@ -37,6 +37,10 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 - Extracted descriptions remove obvious navigation/search/menu/cookie/footer/employer-site apply noise, including page chrome embedded inside longer lines.
 - Ready-to-import now requires verified single-posting classification, not forbidden/duplicate/imported/skipped, medium/high confidence, `ALLOWED` validation, fit score at least 50, at least one deterministic allowed technical signal, and an import-quality description with strong job-body signals and no excessive page chrome.
 - Enriched but weak, noisy, `RISKY`, low-score, or no-allowed-signal leads show needs-review and keep import disabled.
+- `/discovery` now prioritizes the daily queue: recommended actions, verified postings, actionable sources, processed sources, provider issues, old/noisy leads, and low-priority/skipped records.
+- Repeated SerpApi 401 failures are grouped into one compact provider issue with details behind an expander. The app clearly says to continue mainly with Tavily until SerpApi is fixed outside the app.
+- The discovery engine stops trying additional SerpApi queries after an auth failure in the same run.
+- Safe cleanup can mark old noisy non-importable leads and low-priority stale non-posting source candidates as `SKIPPED`; imported jobs/leads and verified postings are not touched.
 - Requirements/qualifications are extracted separately only when clear headings exist.
 - Candidate enumeration extracts HTML anchors, Markdown links like `[Title](https://...)`, and plain public job URLs from fetched content plus saved candidate raw text/snippets. Markdown titles are preserved; plain Workday/career URLs prefer readable surrounding text and fall back to "Untitled job link from Workday" or "Untitled job link from career page" instead of raw ids when no title exists. Workday search URLs are not classified as ATS job postings. Repeated enumeration dedupes candidates and leads.
 - Career-link extraction now filters clear non-target location noise such as US-only/Santa Clara/Austin/New York/London/Germany/India-style postings before candidate creation, while keeping Israel/remote links and strong unknown-location technical roles for review.
@@ -65,6 +69,7 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 - `lib/discovery/sourceCandidateQuality.ts`: deterministic source-candidate quality scoring, canonical display grouping, ranking, grouping, and role/location signal helpers.
 - `lib/discovery/sourceCandidateEnumeration.ts`: source-candidate retry/enumeration logic that creates candidates or verified leads.
 - `lib/discovery/discoveryLeadViews.ts`: verified versus legacy/noisy discovery lead view helpers and strict ready-to-import state reasons.
+- `lib/discovery/discoveryReviewHygiene.ts`: provider issue grouping, stale source cleanup eligibility, and useful Discovery work counts.
 - `lib/discovery/jobPageFetcher.ts`: safe public HTTP(S) page fetch with timeout and content-type checks.
 - `lib/discovery/jobDescriptionExtractor.ts`: JSON-LD JobPosting extraction, static public ATS extraction, cleaned visible HTML fallback, meaningful-description checks, strict import-quality description checks, page-chrome detection, strong job-body signal checks, and requirements extraction.
 - `lib/discovery/pageClassifier.ts`: source candidate classification and importability rules.
@@ -120,7 +125,7 @@ OPENAI_MODEL=
 
 ## Recommended Next Work
 
-1. Manually QA `/discovery` enrichment screenshots after Phase 6.3A, especially MEDIUM/low-score/RISKY/no-allowed-signal and page-chrome-heavy leads.
+1. Manually QA `/discovery` screenshots after Phase 6.4, especially section order, SerpApi 401 grouping, collapsed old/noisy sections, and stale-source cleanup.
 2. Confirm weak/JS-only/blocked/noisy pages remain needs-review with clear Hebrew feedback instead of fake descriptions or import-ready badges.
 3. Add more public ATS adapters only after inspecting real public behavior, likely Lever and Ashby first.
 4. Add a dedicated discovery lead detail page if cards become too dense.
