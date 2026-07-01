@@ -256,10 +256,21 @@
 - Collapsed repeated processed sources and repeated verified postings in display with Hebrew count badges.
 - Added tests for Workday board score correction, source grouping, processed grouping, and verified blocked duplicate grouping.
 
+## Completed In Phase 6.3
+
+- Reworked deterministic public job-page extraction to prefer JSON-LD JobPosting, then static ATS/public HTML patterns, then cleaned visible HTML fallback.
+- Added description cleanup that removes common navigation, search, menu, cookie, and footer noise.
+- Added meaningful-description checks so weak page chrome does not become an importable job description.
+- Added requirements/qualifications extraction for clear English/Hebrew section headings.
+- Improved exact Workday static job-page enrichment while keeping JS-only/blocked Workday pages as needs-review.
+- Added safe static Greenhouse and Lever-style HTML extraction.
+- Updated enrichment retry to keep existing lead data when no meaningful static description is available and show Hebrew needs-review feedback.
+- Added tests for JSON-LD requirements, noise cleanup, requirements extraction, weak HTML rejection, Workday static/JS-only behavior, Greenhouse static extraction, Lever static extraction, and existing import/forbidden safety.
+
 ## Next Tasks
 
-- Manually QA real Tavily/SerpApi/career-page discovery runs after Phase 6.2 ranking.
-- Manually QA that source candidates needing action, processed sources, low-priority/skipped sources, and verified postings feel clear in Hebrew RTL.
+- Manually QA real public job-page enrichment after Phase 6.3.
+- Manually QA weak/blocked/JS-only pages show needs-review feedback and do not overwrite useful lead data.
 - Add more public ATS adapters only after manual QA.
 - Tune pasted Gmail alert parsing conservatively after real copied alerts.
 - Improve packet quality review before exports.

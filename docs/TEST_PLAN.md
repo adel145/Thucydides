@@ -260,6 +260,20 @@ Phase 6.2 coverage:
 - Manual QA should confirm `/discovery` primary source review is less noisy and that processed sources remain available but secondary.
 - Manual QA should confirm no import eligibility, forbidden-role blocking, exact Workday verification, Gmail behavior, AI scope, schema, provider, scraping, or automation behavior changed.
 
+Phase 6.3 coverage:
+
+- Unit tests cover JSON-LD JobPosting extraction with title, company, location, description, and requirements.
+- Unit tests cover visible HTML fallback cleaning navigation/menu/cookie noise.
+- Unit tests cover requirements/qualifications section extraction.
+- Unit tests cover weak/noisy HTML staying non-meaningful.
+- Unit tests cover Workday exact static pages enriching with real description/requirements.
+- Unit tests cover Workday JS-only pages creating no fake description and staying unsupported/needs-review.
+- Unit tests cover static Greenhouse public job HTML extraction.
+- Unit tests cover static Lever-style public job HTML extraction.
+- Existing tests keep hard-forbidden verified postings blocked and low-confidence/missing-description leads non-importable.
+- Build/type verification covers the extractor, enrichment action feedback, Workday exact-page handling, and source candidate enumeration.
+- Manual QA should confirm enrichment retry does not overwrite useful lead data when public page extraction fails.
+
 ## Future Automated Tests
 
 - Role allow/deny rule tests.

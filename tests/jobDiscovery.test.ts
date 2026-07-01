@@ -9,7 +9,7 @@ import { prepareJobCreateFromDiscoveryLead } from "../lib/discovery/jobDiscovery
 import { discoveryPostingActionState, groupDiscoveryPostingLeadsForDisplay, isLegacyOrNoisyDiscoveryLead, isReadyToImportDiscoveryLead, isVerifiedImportableDiscoveryLead, rankDiscoveryPostingLeads, shouldHideOldNonImportableLead } from "../lib/discovery/discoveryLeadViews";
 import { scoreDiscoveryLead } from "../lib/discovery/jobDiscoveryScoring";
 import { isSafePublicHttpUrl } from "../lib/discovery/jobPageFetcher";
-import { extractJobDescriptionFromHtml, extractJsonLdJobPosting } from "../lib/discovery/jobDescriptionExtractor";
+import { cleanJobDescriptionText, extractJobDescriptionFromHtml, extractJsonLdJobPosting, extractRequirementsSection, isMeaningfulJobDescription } from "../lib/discovery/jobDescriptionExtractor";
 import { classifyDiscoverySource, SOURCE_CLASSIFICATIONS } from "../lib/discovery/pageClassifier";
 import { dedupeProviderMessages, formatProviderDiagnosticError, providerStatusLabel } from "../lib/discovery/providerDiagnostics";
 import { extractCareerJobLinks, isReadableLinkTitle } from "../lib/discovery/careerLinkExtractor";
@@ -420,7 +420,7 @@ describe("career listing and Workday enumeration", () => {
 
   it("turns exact public Workday job-like pages into ATS job posting leads", () => {
     const url = "https://acme.wd5.myworkdayjobs.com/acme_external/job/Tel-Aviv/Backend-Developer_JR123";
-    const html = "<title>Backend Developer</title><main><h1>Backend Developer</h1><p>Job description: Backend Developer role using Python, APIs, databases, and distributed systems for a product engineering team in Israel.</p><p>Requirements: Python, SQL, APIs, teamwork.</p></main>";
+    const html = "<title>Backend Developer</title><main><h1>Backend Developer</h1><p>Job description: Backend Developer role using Python, APIs, databases, and distributed systems for a product engineering team in Israel.</p><h2>Requirements</h2><p>Python, SQL, APIs, teamwork, ownership, and production backend engineering experience.</p></main>";
     expect(isWorkdayExactJobUrl(url)).toBe(true);
     expect(prepareWorkdayLeadFromHtml({ url, html })?.title).toContain("Backend Developer");
 
@@ -428,6 +428,8 @@ describe("career listing and Workday enumeration", () => {
     expect(result.leads).toHaveLength(1);
     expect(result.candidateUpdate.classification).toBe(SOURCE_CLASSIFICATIONS.ATS_JOB_POSTING);
     expect(result.candidateUpdate.createdLeadCount).toBe(3);
+    expect(result.leads[0]?.extractedDescription).toContain("distributed systems");
+    expect(result.leads[0]?.extractedRequirements).toContain("Python");
   });
 
   it("keeps Workday JS-only pages as candidates with an error and no lead", () => {
@@ -439,6 +441,10 @@ describe("career listing and Workday enumeration", () => {
     expect(result.newCandidates).toHaveLength(0);
     expect(result.candidateUpdate.status).toBe("UNSUPPORTED");
     expect(result.candidateUpdate.error).toContain("JS-only");
+    expect(prepareWorkdayLeadFromHtml({
+      url: "https://acme.wd5.myworkdayjobs.com/acme_external/job/Tel-Aviv/Backend-Developer_JR123",
+      html: "<html><head><script src='/wday/app.js'></script></head><body><div id='root'></div></body></html>"
+    })).toBeNull();
   });
 });
 
@@ -633,24 +639,85 @@ describe("job description extraction", () => {
       title: "Full Stack Software Engineer",
       hiringOrganization: { name: "Acme" },
       jobLocation: { address: { addressLocality: "Tel Aviv" } },
-      description: "Full stack software engineering role.",
-      qualifications: "React and Node.js"
+      description: "Full stack software engineering role. You will build production APIs, React interfaces, backend services, and automated tests for customers in Israel.",
+      qualifications: "React, Node.js, API design, SQL, and production software experience."
     })}</script>`;
     const extracted = extractJsonLdJobPosting(html);
     expect(extracted).toMatchObject({
       title: "Full Stack Software Engineer",
       company: "Acme",
-      description: "Full stack software engineering role.",
-      requirements: "React and Node.js",
+      description: "Full stack software engineering role. You will build production APIs, React interfaces, backend services, and automated tests for customers in Israel.",
+      requirements: "React, Node.js, API design, SQL, and production software experience.",
       confidence: "HIGH"
     });
   });
 
-  it("falls back to visible HTML text", () => {
-    const extracted = extractJobDescriptionFromHtml("<title>Python Developer</title><main>Requirements: Python, SQL, Israel hybrid role.</main>");
+  it("falls back to visible HTML text and removes navigation noise", () => {
+    const extracted = extractJobDescriptionFromHtml(`
+      <title>Python Developer</title>
+      <nav>Skip to main content Search jobs Menu Cookie preferences</nav>
+      <main>
+        <h1>Python Developer</h1>
+        <p>Python Developer role building backend APIs, SQL services, automated tests, and production integrations for an Israel hybrid product team.</p>
+        <h2>Requirements</h2>
+        <ul><li>Python and SQL experience.</li><li>Backend API development.</li><li>Strong communication and ownership.</li></ul>
+      </main>
+    `);
     expect(extracted.title).toBe("Python Developer");
-    expect(extracted.description).toContain("Python");
+    expect(extracted.description).toContain("backend APIs");
+    expect(extracted.description).not.toContain("Skip to main content");
     expect(extracted.remotePolicy).toContain("Remote");
+    expect(extracted.requirements).toContain("Python and SQL");
+    expect(isMeaningfulJobDescription(extracted.description)).toBe(true);
+  });
+
+  it("extracts requirements sections without duplicating the full description", () => {
+    const requirements = extractRequirementsSection(`
+      About the role
+      Build backend systems for production customers.
+      Requirements
+      2+ years with Python.
+      Experience with SQL and APIs.
+      Benefits
+      Lunch and learning budget.
+    `);
+    expect(requirements).toContain("2+ years with Python");
+    expect(requirements).not.toContain("Build backend systems");
+    expect(requirements).not.toContain("Lunch and learning budget");
+  });
+
+  it("does not treat weak page chrome as a meaningful job description", () => {
+    const cleaned = cleanJobDescriptionText("Skip to main content\nSearch jobs\nMenu\nCookie settings\nApply now");
+    expect(cleaned).not.toContain("Skip to main content");
+    const extracted = extractJobDescriptionFromHtml("<title>Search Jobs</title><main>Search jobs Menu Cookie settings Apply now</main>");
+    expect(extracted.description).toBeNull();
+    expect(extracted.reason).toBe("NO_MEANINGFUL_JOB_DESCRIPTION");
+  });
+
+  it("extracts Greenhouse static public job HTML", () => {
+    const extracted = extractJobDescriptionFromHtml(`
+      <html><head><title>Backend Engineer</title><meta property="og:site_name" content="Greenhouse Acme"></head>
+      <body><div id="content"><h1>Backend Engineer</h1><div class="location">Tel Aviv</div>
+      <p>Backend Engineer role building APIs, distributed systems, SQL-backed services, and automated tests for a production engineering team in Israel.</p>
+      <h2>Qualifications</h2><p>Python, SQL, cloud systems, and API design experience.</p></div></body></html>
+    `);
+    expect(extracted.reason).toBe("GREENHOUSE_STATIC_HTML");
+    expect(extracted.title).toBe("Backend Engineer");
+    expect(extracted.location).toBe("Tel Aviv");
+    expect(extracted.description).toContain("distributed systems");
+  });
+
+  it("extracts Lever static public job HTML", () => {
+    const extracted = extractJobDescriptionFromHtml(`
+      <html><head><title>QA Automation Engineer</title><meta property="og:site_name" content="Lever Acme"></head>
+      <body><div class="posting-page"><h2 class="posting-headline">QA Automation Engineer</h2><div class="location">Israel Remote</div>
+      <div class="section-wrapper"><p>QA Automation Engineer role writing test automation, API checks, CI workflows, and regression coverage for a software product team.</p>
+      <h3>What you'll bring</h3><p>Automation experience, JavaScript or Python, API testing, and clear bug reporting.</p></div></div></body></html>
+    `);
+    expect(extracted.reason).toBe("LEVER_STATIC_HTML");
+    expect(extracted.title).toBe("QA Automation Engineer");
+    expect(extracted.location).toBe("Israel Remote");
+    expect(extracted.requirements).toContain("Automation experience");
   });
 });
 

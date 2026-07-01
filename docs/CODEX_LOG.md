@@ -627,3 +627,22 @@ Verified:
 Not changed:
 
 - No schema changes, new providers, Gmail OAuth, automatic inbox reading, browser automation, login/captcha bypass, fake descriptions, import eligibility changes, forbidden-role weakening, automatic applications, automatic emails, real agents, or resume export.
+
+## 2026-07-01 Phase 6.3 - Real Job Enrichment Quality
+
+Updated:
+
+- Reworked public job-page extraction into a deterministic pipeline: JSON-LD JobPosting, safe static ATS/public HTML extraction, then cleaned visible HTML fallback.
+- Added description cleanup for navigation/search/menu/cookie/footer noise and meaningful-description checks before creating/enriching leads.
+- Added requirements/qualifications extraction from clear English/Hebrew headings.
+- Improved exact Workday static page enrichment and kept JS-only/blocked Workday pages as needs-review with no fake descriptions.
+- Added safe static Greenhouse and Lever-style HTML extraction.
+- Enrichment retry now keeps existing lead data when no meaningful public static description is available and shows Hebrew needs-review feedback.
+
+Verified:
+
+- Added tests for JSON-LD requirements, visible HTML cleanup, requirements extraction, weak/noisy HTML rejection, Workday static/JS-only behavior, Greenhouse static extraction, and Lever static extraction.
+
+Not changed:
+
+- No schema changes, new providers, Gmail OAuth, automatic inbox reading, browser automation, login/captcha bypass, scraping behind auth, fake descriptions, AI-generated descriptions, import eligibility weakening, forbidden-role weakening, automatic applications, automatic emails, real agents, or resume export.

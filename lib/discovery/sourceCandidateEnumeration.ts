@@ -1,6 +1,6 @@
 import { detectGreenhouseBoardToken, detectGreenhouseJobId, fetchGreenhouseBoardJobs } from "./companyCareerDiscovery";
 import { extractCareerJobLinks, type ExtractedCareerJobLink } from "./careerLinkExtractor";
-import { extractJobDescriptionFromHtml, extractJsonLdJobPosting } from "./jobDescriptionExtractor";
+import { extractJobDescriptionFromHtml, extractJsonLdJobPosting, isMeaningfulJobDescription } from "./jobDescriptionExtractor";
 import { fetchPublicJobPage } from "./jobPageFetcher";
 import { prepareDiscoveryLeadForCreate, type PreparedDiscoveryLead, type PreparedDiscoverySourceCandidate } from "./jobDiscoveryEngine";
 import { classifyDiscoverySource, isImportableSourceClassification, SOURCE_CLASSIFICATIONS } from "./pageClassifier";
@@ -111,7 +111,8 @@ function candidateFromLink(parent: SourceCandidateForEnumeration, link: Extracte
 function leadFromExtractedPage(candidate: SourceCandidateForEnumeration, html: string, classification: string): PreparedDiscoveryLead | null {
   const extracted = extractJobDescriptionFromHtml(html);
   const description = extracted.description;
-  if (!description || description.trim().length < 80) return null;
+  if (!description) return null;
+  if (!isMeaningfulJobDescription(description)) return null;
   const lead: DiscoverySearchLead = {
     title: extracted.title ?? candidate.title ?? "Untitled job",
     company: extracted.company ?? null,
@@ -223,7 +224,7 @@ export function enumerateCandidateFromHtml(candidate: SourceCandidateForEnumerat
     extractedTitle: extracted.title,
     extractedDescription: extracted.description
   });
-  if (classification.importable && isImportableSourceClassification(classification.classification)) {
+  if (classification.importable && isImportableSourceClassification(classification.classification) && isMeaningfulJobDescription(extracted.description)) {
     const lead = leadFromExtractedPage(candidate, html, classification.classification);
     if (lead) {
       return {

@@ -79,4 +79,6 @@
 - Move already-processed source candidates out of the primary action list while keeping them available for manual retry/review.
 - Collapse repeated source candidates in display and demote generic Workday boards without Israel/remote evidence.
 - Filter clear non-target Workday/career links before candidate creation while keeping strong unknown-location technical links reviewable.
+- Improve public single-job-page enrichment from JSON-LD, safe static ATS pages, and cleaned visible HTML without inventing missing descriptions.
+- Keep JS-only, blocked, or noisy pages in needs-review instead of making them importable.
 - Add Lever/Ashby adapters only after public, non-authenticated behavior is understood.

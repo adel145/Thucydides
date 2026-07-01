@@ -371,3 +371,9 @@ Reason: Workday and career pages can expose many global jobs. Filtering obvious 
 Decision: generic Workday search/listing boards without Israel/remote evidence should not score as top-priority source candidates, and repeated source candidates should collapse in display by canonical key.
 
 Reason: real QA showed repeated `Search for Jobs - Myworkdayjobs.com` boards made `/discovery` feel like endless work. Collapsing duplicates and demoting generic boards reduces noise without deleting data or changing import eligibility.
+
+## 2026-07-01: Job Enrichment Must Use Real Public Content Only
+
+Decision: public job-page enrichment should follow a deterministic extraction order: JSON-LD JobPosting, safe static ATS/public HTML extraction, then cleaned visible HTML fallback. Weak, JS-only, blocked, or noisy pages must remain needs-review instead of receiving invented descriptions.
+
+Reason: verified leads need better real descriptions before import, but the product must not fake job details, use AI to fill gaps, bypass login/captcha, or loosen import eligibility.

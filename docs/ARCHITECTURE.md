@@ -1,6 +1,6 @@
 # Architecture
 
-## Phase 6.2 Architecture
+## Phase 6.3 Architecture
 
 The current project is a root-level Next.js App Router application with TypeScript, Tailwind CSS, Prisma, and local SQLite persistence.
 
@@ -229,6 +229,15 @@ Phase 6.2 improves discovery quality and review ordering without schema changes:
 - `lib/discovery/careerLinkExtractor.ts` uses shared role/location signals so clear non-target Workday/career links are filtered before candidate creation while Israel/remote and strong unknown-location technical links remain reviewable.
 - Import eligibility, forbidden-role blocking, exact Workday job-page verification, provider behavior, schema, AI scope, Gmail behavior, and automation boundaries are unchanged.
 
+Phase 6.3 improves deterministic public job-page enrichment without schema changes:
+
+- `lib/discovery/jobDescriptionExtractor.ts` now owns the extraction pipeline: JSON-LD JobPosting, safe static ATS/public HTML extraction, then cleaned semantic visible HTML fallback.
+- The extractor removes common navigation/search/menu/cookie noise, checks whether a description is meaningful, and extracts requirements/qualifications only from clear sections.
+- Workday exact public job pages can enrich only when static HTML exposes a title and meaningful description; JS-only/blocked pages remain candidates or needs-review.
+- Static Greenhouse and Lever-style pages can be parsed from public HTML when usable content is present.
+- Enrichment retry keeps existing lead data when extraction is weak and shows a needs-review notice instead of overwriting with page chrome.
+- Import eligibility, forbidden-role blocking, schema, providers, AI scope, Gmail behavior, browser automation, scraping boundaries, and no-fake-description rules are unchanged.
+
 ## Rules Architecture
 
 `lib/rules/roleRules.ts` defines allowed and forbidden keyword rules. `lib/rules/validateJob.ts` returns:
@@ -249,7 +258,7 @@ Planned later layers:
 - Integration layer for Gmail, Calendar, OpenAI, and possibly browser automation.
 - Export layer for DOCX/PDF only after resume templates and QA rules exist.
 
-## Non-Goals in Phase 6.2
+## Non-Goals in Phase 6.3
 
 - Gmail OAuth
 - Automatic Gmail inbox reading

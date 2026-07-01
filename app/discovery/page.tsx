@@ -116,6 +116,7 @@ export default async function DiscoveryPage({
     blocked?: string;
     duplicate?: string;
     enriched?: string;
+    enrichFailed?: string;
     missingLead?: string;
     missingCandidate?: string;
     noUrl?: string;
@@ -225,6 +226,7 @@ export default async function DiscoveryPage({
         {notices?.duplicate ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">הייבוא נחסם: הליד נראה כמו משרה שכבר קיימת.</div> : null}
         {notices?.notImportable ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">לא ניתן לייבא: זה מקור/רשימה/חיפוש, לא משרה יחידה.</div> : null}
         {notices?.enriched ? <div className="mt-4 rounded-lg border border-aqua-400/30 bg-aqua-400/10 p-3 text-sm text-aqua-400">בוצע ניסיון העשרה מחדש מה־URL הציבורי.</div> : null}
+        {notices?.enrichFailed ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">העמוד נראה דינמי/חסום או שחסר תיאור משרה ברור. הליד נשאר לבדיקה ידנית ולא הומצא תיאור.</div> : null}
         {notices?.missingLead ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">הליד לא נמצא.</div> : null}
         {notices?.missingCandidate ? <div className="mt-4 rounded-lg border border-signal-red/30 bg-signal-red/10 p-3 text-sm text-ink-100">המקור לא נמצא.</div> : null}
         {notices?.noUrl ? <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-ink-100">אין למקור הזה URL להעשרה.</div> : null}

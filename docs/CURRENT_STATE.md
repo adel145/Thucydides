@@ -1,6 +1,6 @@
 # Current State
 
-As of 2026-07-01, Thucydides is in Phase 6.2 - Real Discovery Quality + Candidate Ranking state.
+As of 2026-07-01, Thucydides is in Phase 6.3 - Real Job Enrichment Quality state.
 
 ## What Exists
 
@@ -89,7 +89,7 @@ As of 2026-07-01, Thucydides is in Phase 6.2 - Real Discovery Quality + Candidat
 - `/gmail` shows validation status, allowed signals, forbidden flags, risk notes, duplicate warnings, source URL, and raw snippets for lead review.
 - Safe non-forbidden leads can be manually imported into the normal Job Inbox.
 - Imported leads become normal local `Job` records and get an `ApplicationEvent`.
-- Forbidden leads remain blocked from normal import in Phase 6.2.
+- Forbidden leads remain blocked from normal import in Phase 6.3.
 - `/discovery` supports env-gated internet job discovery through Tavily and SerpApi.
 - `/discovery` separates source candidates from job leads. Search/listing/generic/company pages stay as source candidates; only verified single job postings become importable leads.
 - `/discovery` can test Tavily and SerpApi from the UI. Provider badges say key present/missing until a test verifies or fails them. SerpApi 401 is shown as "SerpApi authorization failed: check SERPAPI_API_KEY/account." without printing keys.
@@ -116,6 +116,10 @@ As of 2026-07-01, Thucydides is in Phase 6.2 - Real Discovery Quality + Candidat
 - Greenhouse exact job URLs map only that job; Greenhouse boards are enumerated and filtered for Israel/remote target roles instead of blindly taking the first listing.
 - Workday search/listing pages are ATS board candidates, exact public Workday job pages can become ATS job leads only after title and meaningful description are visible, and JS-only/blocked Workday pages remain candidates with errors.
 - Workday extracted links no longer become candidates merely because they are on `myworkdayjobs.com`; exact/listing handling still follows the Phase 6.1E safety rule, with clear non-target links filtered out before candidate creation.
+- Public job-page enrichment now uses a deterministic extraction order: JSON-LD JobPosting, safe static ATS patterns for Greenhouse/Workday/Lever-style pages, then cleaned visible HTML fallback.
+- Extracted descriptions are cleaned to remove common navigation, menu, search, cookie, and footer noise, and weak page chrome is not treated as a meaningful job description.
+- Requirements/qualifications can be extracted separately when clear headings exist, including English and Hebrew requirement headings.
+- Enrichment attempts that cannot find meaningful public static job text keep the existing lead data and show a Hebrew needs-review notice instead of inventing a description.
 - Generic career listing pages can create specific job-link source candidates, not direct job leads, unless a fetched page verifies as a single posting.
 - Pressing try enumerate repeatedly avoids duplicate source candidates and duplicate leads.
 - Unsafe URLs, generic company pages, search result pages, ATS boards, career listings, and noisy pages are not directly importable.

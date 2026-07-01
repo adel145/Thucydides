@@ -6,6 +6,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { optionalString, requiredString } from "@/lib/formParsing";
 import { enrichDiscoveryLeadFromUrl, prepareDiscoveryLeadForCreate, runInternetJobDiscovery, asPrismaDiscoveryLeadCreate, asPrismaSourceCandidateCreate, type PreparedDiscoverySourceCandidate } from "@/lib/discovery/jobDiscoveryEngine";
+import { isMeaningfulJobDescription } from "@/lib/discovery/jobDescriptionExtractor";
 import { prepareJobCreateFromDiscoveryLead } from "@/lib/discovery/jobDiscoveryImport";
 import { testDiscoveryProvider } from "@/lib/discovery/providerDiagnostics";
 import { dedupePreparedDiscoveryLeads, dedupePreparedSourceCandidates, enumerateDiscoverySourceCandidate, retryClassifyDiscoverySourceCandidate } from "@/lib/discovery/sourceCandidateEnumeration";
@@ -126,6 +127,17 @@ export async function enrichDiscoveryLead(formData: FormData) {
     discoveryQuery: lead.discoveryQuery ?? "",
     confidence: lead.confidence === "HIGH" || lead.confidence === "MEDIUM" ? lead.confidence : "LOW"
   });
+  if (!("extractedDescription" in enriched) || !isMeaningfulJobDescription(enriched.extractedDescription)) {
+    await db.jobDiscoveryLead.update({
+      where: { id },
+      data: {
+        lastEnrichedAt: new Date(),
+        notes: "Enrichment attempted, but the public page did not expose a clear static job description."
+      }
+    });
+    revalidatePath("/discovery");
+    redirect("/discovery?enrichFailed=1");
+  }
   const prepared = prepareDiscoveryLeadForCreate(enriched);
 
   await db.jobDiscoveryLead.update({

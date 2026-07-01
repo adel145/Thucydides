@@ -3,7 +3,7 @@ import { validateJob } from "../rules/validateJob";
 import { detectGreenhouseBoardToken, detectGreenhouseJobId, fetchGreenhouseBoardJobs } from "./companyCareerDiscovery";
 import { DISCOVERY_PROVIDERS, getDiscoveryProviderStatus } from "./discoveryProviders";
 import { buildCompanyCareerQueries, buildPlatformDiscoveryQueries } from "./discoveryQueries";
-import { extractJobDescriptionFromHtml, extractJsonLdJobPosting } from "./jobDescriptionExtractor";
+import { extractJobDescriptionFromHtml, extractJsonLdJobPosting, isMeaningfulJobDescription } from "./jobDescriptionExtractor";
 import { fetchPublicJobPage } from "./jobPageFetcher";
 import { scoreDiscoveryLead } from "./jobDiscoveryScoring";
 import { classifyDiscoverySource, isImportableSourceClassification, SOURCE_CLASSIFICATIONS } from "./pageClassifier";
@@ -95,6 +95,7 @@ export async function enrichDiscoveryLeadFromUrl(lead: DiscoverySearchLead) {
     const fetched = await fetchPublicJobPage(lead.sourceUrl);
     if (!fetched.ok) return lead;
     const extracted = extractJobDescriptionFromHtml(fetched.html);
+    if (!isMeaningfulJobDescription(extracted.description)) return lead;
     return {
       ...lead,
       title: extracted.title ?? lead.title,
@@ -256,7 +257,7 @@ async function classifyAndExpandSourceCandidate(lead: DiscoverySearchLead): Prom
     extractedDescription: extracted?.description
   });
   const importable = classification.importable && isImportableSourceClassification(classification.classification);
-  const prepared = importable && extracted
+  const prepared = importable && extracted && isMeaningfulJobDescription(extracted.description)
     ? [prepareDiscoveryLeadForCreate({
         ...lead,
         title: extracted.title ?? lead.title,

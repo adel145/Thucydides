@@ -2,7 +2,7 @@
 
 Thucydides is a local-first Next.js app in `C:\Users\adelm\Documents\Thucydides`. The repo and docs are the official project memory.
 
-As of Phase 6.2, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, a Hebrew RTL global UI foundation, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, deterministic source-candidate quality ranking, and processed-source separation.
+As of Phase 6.3, the app supports local SQLite profile/jobs/sources/pipeline data, deterministic validation, job filters, priority/reminder fields, audit events, manual evidence links, application packets, controlled Application Packet AI drafting, local/manual Gmail job-alert paste intake, and env-gated internet job discovery with provider diagnostics, a Hebrew RTL global UI foundation, Markdown/plain URL extraction, Workday/plain-URL title cleanup, explicit verified-posting states, deterministic source-candidate quality ranking, processed-source separation, and stronger deterministic public job-page enrichment.
 
 ## Product Mission
 
@@ -33,6 +33,9 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 - Broad Glassdoor/listing/search pages remain source candidates and are not importable.
 - Verified job postings can be Ready to import, Blocked, Duplicate, Imported, or Needs review. Low-confidence and duplicate verified postings stay in the verified section rather than legacy/noisy.
 - Workday support is safe/public and limited: search/listing pages are ATS board candidates, visible exact job links become source candidates, exact public job pages can create ATS job leads only when title and meaningful description are available, and JS-only/blocked pages stay candidates with errors.
+- Job-page enrichment now prefers JSON-LD JobPosting, then safe static ATS/public HTML extraction for Greenhouse, Workday exact pages, and Lever-style static pages, then cleaned semantic visible HTML fallback.
+- Extracted descriptions remove obvious navigation/search/menu/cookie noise. Weak or noisy pages remain needs-review and do not become fake descriptions.
+- Requirements/qualifications are extracted separately only when clear headings exist.
 - Candidate enumeration extracts HTML anchors, Markdown links like `[Title](https://...)`, and plain public job URLs from fetched content plus saved candidate raw text/snippets. Markdown titles are preserved; plain Workday/career URLs prefer readable surrounding text and fall back to "Untitled job link from Workday" or "Untitled job link from career page" instead of raw ids when no title exists. Workday search URLs are not classified as ATS job postings. Repeated enumeration dedupes candidates and leads.
 - Career-link extraction now filters clear non-target location noise such as US-only/Santa Clara/Austin/New York/London/Germany/India-style postings before candidate creation, while keeping Israel/remote links and strong unknown-location technical roles for review.
 - Safe non-forbidden discovery leads can be manually imported into normal local `Job` records.
@@ -61,7 +64,7 @@ Hard forbidden roles remain sales, regular customer service, non-technical servi
 - `lib/discovery/sourceCandidateEnumeration.ts`: source-candidate retry/enumeration logic that creates candidates or verified leads.
 - `lib/discovery/discoveryLeadViews.ts`: verified versus legacy/noisy discovery lead view helpers.
 - `lib/discovery/jobPageFetcher.ts`: safe public HTTP(S) page fetch with timeout and content-type checks.
-- `lib/discovery/jobDescriptionExtractor.ts`: JSON-LD JobPosting extraction and visible HTML fallback.
+- `lib/discovery/jobDescriptionExtractor.ts`: JSON-LD JobPosting extraction, static public ATS extraction, cleaned visible HTML fallback, meaningful-description checks, and requirements extraction.
 - `lib/discovery/pageClassifier.ts`: source candidate classification and importability rules.
 - `lib/discovery/jobDiscoveryEngine.ts`: provider orchestration, source-candidate creation, and verified lead preparation.
 - `lib/discovery/jobDiscoveryScoring.ts`: deterministic fit scoring.
@@ -115,8 +118,8 @@ OPENAI_MODEL=
 
 ## Recommended Next Work
 
-1. Manually QA `/discovery` with real Tavily/SerpApi/career-page results after the Phase 6.2 ranking cleanup.
-2. Confirm source candidates needing action, processed sources, low-priority/skipped sources, and verified postings feel clear in Hebrew RTL.
+1. Manually QA `/discovery` enrichment on real public job posting URLs, especially Workday exact pages, Greenhouse public pages, Lever static pages, and generic company job pages.
+2. Confirm weak/JS-only/blocked pages remain needs-review with clear Hebrew feedback instead of fake descriptions.
 3. Add more public ATS adapters only after inspecting real public behavior, likely Lever and Ashby first.
 4. Add a dedicated discovery lead detail page if cards become too dense.
 5. Keep imports manual and forbidden leads blocked unless a future override flow is explicitly designed.

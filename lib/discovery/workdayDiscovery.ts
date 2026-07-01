@@ -1,7 +1,17 @@
 import { extractCareerJobLinks, type ExtractedCareerJobLink } from "./careerLinkExtractor";
 import { DISCOVERY_PROVIDERS } from "./discoveryProviders";
-import { extractJobDescriptionFromHtml } from "./jobDescriptionExtractor";
+import { extractJobDescriptionFromHtml, isMeaningfulJobDescription } from "./jobDescriptionExtractor";
 import type { DiscoverySearchLead } from "./tavilySearchClient";
+
+type EnrichedWorkdayLead = DiscoverySearchLead & {
+  extractedTitle?: string | null;
+  extractedCompany?: string | null;
+  extractedLocation?: string | null;
+  extractedDescription?: string | null;
+  extractedRequirements?: string | null;
+  extractedRemotePolicy?: string | null;
+  extractedLanguage?: string | null;
+};
 
 export function isWorkdayUrl(value: string | null | undefined) {
   if (!value) return false;
@@ -53,12 +63,13 @@ export function prepareWorkdayLeadFromHtml(input: {
   fallbackTitle?: string | null;
   fallbackSnippet?: string | null;
   query?: string | null;
-}): DiscoverySearchLead | null {
+}): EnrichedWorkdayLead | null {
   if (!isWorkdayExactJobUrl(input.url)) return null;
   const extracted = extractJobDescriptionFromHtml(input.html);
   const title = extracted.title ?? input.fallbackTitle;
   const description = extracted.description;
-  if (!title || !description || description.trim().length < 80) return null;
+  if (!description) return null;
+  if (!title || !isMeaningfulJobDescription(description)) return null;
 
   return {
     title,
@@ -67,6 +78,13 @@ export function prepareWorkdayLeadFromHtml(input: {
     sourceUrl: input.url,
     rawSnippet: description.slice(0, 1200),
     rawText: description,
+    extractedTitle: extracted.title ?? title,
+    extractedCompany: extracted.company ?? null,
+    extractedLocation: extracted.location ?? null,
+    extractedDescription: description,
+    extractedRequirements: extracted.requirements ?? null,
+    extractedRemotePolicy: extracted.remotePolicy ?? null,
+    extractedLanguage: extracted.language ?? null,
     discoverySource: "WORKDAY_PUBLIC",
     discoveryProvider: DISCOVERY_PROVIDERS.COMPANY_CAREERS,
     discoveryQuery: input.query ?? "workday",
